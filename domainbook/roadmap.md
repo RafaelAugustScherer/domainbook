@@ -56,6 +56,11 @@ Recorded here until Phase 0, when each becomes an ADR in this book.
 | Versioning | Git-native — no snapshot folders; changelog + ADR supersede chains carry history |
 | Migration | Interview-driven agent skill; CLI only scaffolds and validates |
 | Book root | `domainbook/` at repo root (configurable) |
+| Runtime | Node active LTS only — `engines: >=24` today, bumped each time a new major reaches LTS. ESM-only |
+| Package manager | npm workspaces — no extra tooling required of contributors |
+| Monorepo layout | 4 packages: `@domainbook/core`, `domainbook` (CLI), `@domainbook/mcp`, `@domainbook/site` |
+| Schema authoring | zod-first; JSON Schema (draft 2020-12) generated from zod and committed |
+| MCP SDK | `@modelcontextprotocol/server` v2 |
 | File naming | Lowercase inside the book (`roadmap.md`, `glossary.md`, `changelog.md`); uppercase reserved for repo-root ecosystem files (`README.md`, `AGENTS.md`, `LICENSE`) |
 | License | MIT (confirm in Phase 0 ADR) |
 
@@ -129,21 +134,21 @@ they bring.
 **Roadmap (`roadmap.md`)** — this file: milestone index in frontmatter
 (`id`, `name`, `status: planned | in-progress | done`), detail per milestone in the body.
 
-JSON Schema files (draft 2020-12) are the source of truth for all frontmatter; zod
-mirrors are a consumer convenience for the site and CLI.
+Frontmatter schemas are authored once in zod; JSON Schema files (draft 2020-12) are
+generated from them and committed, so editors and non-JS tools consume the same spec
+without drift.
 
 ## Architecture
 
-pnpm workspace monorepo, changesets for releases:
+npm workspaces monorepo, changesets for releases:
 
 | Package | Contents |
 |---|---|
-| `@domainbook/schemas` | JSON Schemas per artifact + zod mirrors. Everything else depends on this. |
-| `@domainbook/core` | Loader (remark/gray-matter), model graph, reference resolution, validation, staged-diff check logic |
+| `@domainbook/core` | zod schemas (JSON Schema generated at build), loader (remark/gray-matter), model graph, reference resolution, validation, staged-diff check logic |
 | `domainbook` (CLI) | `init`, `new`, `validate`, `check`, `hooks install`, `export`, `mcp`, `dev`/`build` (delegates to site) |
 | `@domainbook/mcp` | MCP server on `@modelcontextprotocol/server` v2 |
 | `@domainbook/site` | Custom Astro app (content collections share the zod schemas) |
-| `integrations/` | Claude Code plugin (hooks + skills), AGENTS.md/CLAUDE.md/Gemini templates, GitHub Action, lefthook snippet |
+| `integrations/` | Repo directory, not a published package: Claude Code plugin (hooks + skills), AGENTS.md/CLAUDE.md/Gemini templates, GitHub Action, lefthook snippet |
 
 ## Milestones
 
@@ -152,8 +157,10 @@ format, the enforcement loop, and the MCP server come before the website.
 
 ### Phase 0 — Foundations and spec
 
-- Monorepo scaffold: pnpm workspaces, TypeScript (ESM, Node ≥ 20), vitest, changesets, CI.
-- `@domainbook/schemas`: JSON Schemas for the artifact types + config file.
+- Monorepo scaffold: npm workspaces, TypeScript (ESM, Node active LTS), vitest,
+  changesets, CI.
+- `@domainbook/core` schemas: zod definitions for the artifact types + config file, with
+  generated JSON Schema files committed alongside.
 - Dogfood: expand this book — domains for domainbook's own bounded contexts (format,
   enforcement, mcp, site), glossary, and ADRs recording every locked decision above.
 - Golden fixtures: one small valid example book + deliberately broken variants for tests.
