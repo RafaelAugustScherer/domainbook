@@ -36,7 +36,7 @@ each fixture Phase 1 adds makes it worse.
 ## Considered Options
 
 - Scope to `packages` and TypeScript, at `minTokens: 50` / `minLines: 5`,
-  threshold 3.
+  threshold 5.
 - Gate the whole repo and add an ignore entry per fixture as each one trips it.
 - Raise the threshold until the whole repo passes as it stands.
 - No duplication gate.
@@ -48,7 +48,7 @@ Chosen option: "Scope to `packages` and TypeScript". `.jscpd.json` sets
 `dist`, the generated `schema` output, and `test/fixtures`. `minTokens: 50` and
 `minLines: 5` mean a clone has to run to five lines and fifty tokens before it
 counts, so a shared import block or a repeated type signature does not. Threshold
-3 is stricter than the 5 jscpd's own examples use, and it is affordable only
+5 is the value jscpd's own CI and hook examples use, and it means something only
 because the scoped figure starts at zero: the bar is set where the code is, not
 where it would have to be to let the markdown through.
 
@@ -73,10 +73,10 @@ one version number and no other change.
 - Bad, because copy-and-paste in the fixtures, the schemas, and the book goes
   unmeasured — and the book is where this project most insists on not repeating
   itself.
-- Bad, because a percentage threshold moves with the size of the tree. Three
-  percent of today's TypeScript is about thirty lines; the same three percent
-  will be hundreds later, so the gate is strictest now and loosens as the
-  codebase grows.
+- Bad, because a percentage threshold moves with the size of the tree. Five
+  percent of today's TypeScript is about forty-seven lines; the same five
+  percent will be hundreds later, so the gate is strictest now and loosens as
+  the codebase grows.
 - Bad, because jscpd 5.x is young and singly maintained, and it now sits in the
   path of every build. The fallback is recorded, but taking it is still a commit
   made under pressure.
