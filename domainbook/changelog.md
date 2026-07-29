@@ -31,9 +31,9 @@ against: the schemas are committed, and this book validates against them.
 - Domain pages for domainbook's own contexts — format, enforcement, mcp, site —
   with the relationships between them, and a glossary of the words this project
   uses about itself.
-- A golden fixture book under `fixtures/book/`, and one deliberately broken file
-  per rule under `fixtures/broken/`. The fixture book is the worked example of
-  every convention.
+- A golden fixture book under `packages/core/test/fixtures/book/`, and one
+  deliberately broken file per rule under `packages/core/test/fixtures/broken/`.
+  The fixture book is the worked example of every convention.
 
 ### Changed
 
@@ -43,5 +43,10 @@ against: the schemas are committed, and this book validates against them.
 - Frontmatter is read with `yaml`, not `gray-matter` as the roadmap previously
   named. YAML dates arrive as strings, so a `date:` field is checked as an ISO
   date rather than as a JavaScript `Date` (`format/ADR-0011`).
-- The supported Node floor is `>=24.0.0`, and it rises when the previous floor
-  goes end-of-life rather than each time a new major reaches LTS (`ADR-0002`).
+- The supported Node floor is `>=24.18.0`, up from `>=24.0.0`. Node 24.17.0
+  carried the June 2026 security fixes, and the floor now moves to the newest
+  patch of the line it sits on whenever a security release lands there
+  (`ADR-0008`). The line itself still moves only when the previous one goes
+  end-of-life, not each time a new major reaches LTS (`ADR-0002`). This repo also
+  sets `engine-strict`, so an older Node fails `npm install` here rather than
+  warning about it.

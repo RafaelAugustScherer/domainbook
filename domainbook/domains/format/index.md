@@ -13,7 +13,6 @@ code:
   - packages/core/schema/**
   - packages/core/scripts/**
   - packages/core/test/**
-  - fixtures/**
 ---
 
 ## Purpose

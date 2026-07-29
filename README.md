@@ -42,10 +42,12 @@ The CLI, MCP server, and site packages arrive in their own phases.
 ```bash
 npm install
 npm test
-npm run schemas   # regenerate the committed JSON Schema files
+npm run schemas       # regenerate the committed JSON Schema files
+npm run duplication   # jscpd copy/paste check
 ```
 
-Requires Node 24 or newer.
+Requires Node 24.18.0 or newer — the version in `.nvmrc` is what CI runs, and
+`engine-strict` makes npm refuse to install under anything older.
 
 ## License
 

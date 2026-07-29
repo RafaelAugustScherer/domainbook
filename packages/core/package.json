@@ -5,18 +5,19 @@
   "license": "MIT",
   "type": "module",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.18.0"
   },
   "exports": {
     ".": "./dist/index.js"
   },
   "files": [
     "dist",
-    "schema"
+    "schema",
+    "!dist/tsconfig.tsbuildinfo"
   ],
   "scripts": {
     "build": "tsc --build",
-    "schemas": "tsc --build && node scripts/generate-json-schema.js"
+    "schemas": "tsc --build && node scripts/generate-json-schema.ts"
   },
   "dependencies": {
     "yaml": "2.9.0",

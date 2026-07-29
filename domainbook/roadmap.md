@@ -59,7 +59,7 @@ since are in the same logs and not repeated here.
 | Versioning | Git-native — no snapshot folders; changelog + ADR supersede chains carry history | `ADR-0006` |
 | Migration | Interview-driven agent skill; CLI only scaffolds and validates | `ADR-0007` |
 | Book root | `domainbook/` at repo root (a tool argument, not a config key) | `format/ADR-0010` |
-| Runtime | ESM-only; `engines: >=24.0.0` as a floor, raised when the previous floor goes EOL — not on every new LTS | `ADR-0002` |
+| Runtime | ESM-only; `engines: >=24.18.0` as a floor. The release line moves when the previous one goes EOL, not on every new LTS (`ADR-0002`); the patch moves when a security release lands on that line (`ADR-0008`) | `ADR-0002`, `ADR-0008` |
 | Package manager | npm workspaces — no extra tooling required of contributors | `ADR-0003` |
 | Monorepo layout | 4 packages: `@domainbook/core`, `domainbook` (CLI), `@domainbook/mcp`, `@domainbook/site` | `ADR-0003` |
 | Schema authoring | zod-first; JSON Schema (draft 2020-12) generated from zod and committed | `format/ADR-0001` |
@@ -192,7 +192,7 @@ format, the enforcement loop, and the MCP server come before the website.
 
 ### Phase 0 — Foundations and spec
 
-- Monorepo scaffold: npm workspaces, TypeScript (ESM, `engines: >=24.0.0`), vitest,
+- Monorepo scaffold: npm workspaces, TypeScript (ESM, `engines: >=24.18.0`), vitest,
   changesets, CI.
 - `@domainbook/core` schemas: zod definitions for the artifact types + config file, with
   generated JSON Schema files committed alongside.

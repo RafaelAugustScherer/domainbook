@@ -20,7 +20,7 @@ The folder of artifacts that documents one repo. There is one book per repo, and
 domainbook the tool reads it, checks it, serves it, and publishes it.
 
 - **Status:** validated
-- **Example:** This repo's book is `domainbook/`; the fixture book under `fixtures/book/` is a second, complete book used by tests.
+- **Example:** This repo's book is `domainbook/`; the fixture book under `packages/core/test/fixtures/book/` is a second, complete book used by tests.
 
 ## Book root
 
@@ -79,17 +79,18 @@ scenarios; a scenario on its own is a Gherkin keyword, not an artifact.
 
 - **Aliases:** feature scenario
 - **Status:** draft
-- **Example:** `features/hold-seats-during-checkout.md` is one feature carrying three rules and four examples.
+- **Example:** `packages/core/test/fixtures/book/domains/ticketing/features/hold-seats-during-checkout.md` is one feature carrying three rules and four examples.
 
 ## Golden fixture
 
-A book kept in the repo for tests to run against: `fixtures/book/` is valid in
-every respect, and each file under `fixtures/broken/` is invalid in exactly one
-respect, named after the reason.
+A book kept in the repo for tests to run against:
+`packages/core/test/fixtures/book/` is valid in every respect, and each file
+under `packages/core/test/fixtures/broken/` is invalid in exactly one respect,
+named after the reason.
 
 - **Aliases:** fixture book
 - **Status:** validated
-- **Example:** `fixtures/broken/domain-symmetric-with-direction.md` exists so a test can prove `separate-ways` with a `direction` is rejected.
+- **Example:** `packages/core/test/fixtures/broken/domain-symmetric-with-direction.md` exists so a test can prove `separate-ways` with a `direction` is rejected.
 
 ## Instruction layer
 

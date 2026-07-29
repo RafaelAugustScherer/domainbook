@@ -4,7 +4,7 @@
   "type": "module",
   "license": "MIT",
   "engines": {
-    "node": ">=24.0.0"
+    "node": ">=24.18.0"
   },
   "workspaces": [
     "packages/*"
@@ -14,11 +14,13 @@
     "typecheck": "tsc --build",
     "test": "vitest run",
     "schemas": "npm run schemas --workspace @domainbook/core",
+    "duplication": "jscpd",
     "changeset": "changeset"
   },
   "devDependencies": {
     "@changesets/cli": "2.31.1",
     "@types/node": "^24.9.2",
+    "jscpd": "5.0.14",
     "typescript": "6.0.3",
     "vitest": "4.1.10"
   }

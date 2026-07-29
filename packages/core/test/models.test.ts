@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { changelogSchema, glossarySchema } from "../src/index.js";
-import { bookDir, read } from "./fixtures.js";
+import { bookDir, read } from "./paths.js";
 import { changelogFrom, glossaryFrom } from "./transcribe.js";
 
 const bookGlossary = glossaryFrom(read(bookDir, "glossary.md"));
@@ -9,7 +9,7 @@ const ticketingChangelog = changelogFrom(
 );
 
 describe("the glossary model", () => {
-  it("holds what fixtures/book/glossary.md says", () => {
+  it("holds what test/fixtures/book/glossary.md says", () => {
     expect(bookGlossary).toEqual({
       terms: [
         {
@@ -55,7 +55,7 @@ describe("the glossary model", () => {
 });
 
 describe("the changelog model", () => {
-  it("holds what fixtures/book/domains/ticketing/changelog.md says", () => {
+  it("holds what test/fixtures/book/domains/ticketing/changelog.md says", () => {
     expect(ticketingChangelog).toEqual({
       unreleased: {
         added: [

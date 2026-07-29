@@ -1,0 +1,15 @@
+{
+  "path": ["packages"],
+  "format": ["typescript"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/dist/**",
+    "**/schema/**",
+    "**/test/fixtures/**"
+  ],
+  "minTokens": 50,
+  "minLines": 5,
+  "threshold": 3,
+  "reporters": ["console"],
+  "noTips": true
+}

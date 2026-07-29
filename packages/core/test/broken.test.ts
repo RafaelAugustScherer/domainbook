@@ -12,7 +12,7 @@ import {
   parseFrontmatter,
   roadmapSchema,
 } from "../src/index.js";
-import { bookDir, brokenDir, read } from "./fixtures.js";
+import { bookDir, brokenDir, read } from "./paths.js";
 import { changelogFrom, glossaryFrom } from "./transcribe.js";
 
 const frontmatterFixtures = [

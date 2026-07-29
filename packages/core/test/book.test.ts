@@ -11,7 +11,7 @@ import {
   parseFrontmatter,
   roadmapSchema,
 } from "../src/index.js";
-import { bookDir, read } from "./fixtures.js";
+import { bookDir, read } from "./paths.js";
 
 const withFrontmatter: Array<[string, ZodType]> = [
   ["roadmap.md", roadmapSchema],
