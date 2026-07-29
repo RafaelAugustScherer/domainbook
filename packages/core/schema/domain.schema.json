@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1
+    },
+    "classification": {
+      "type": "object",
+      "properties": {
+        "domain": {
+          "type": "string",
+          "enum": [
+            "core-domain",
+            "supporting-domain",
+            "generic"
+          ]
+        },
+        "business-model": {
+          "type": "string",
+          "enum": [
+            "revenue-generator",
+            "engagement-creator",
+            "compliance-enforcer"
+          ]
+        },
+        "evolution": {
+          "type": "string",
+          "enum": [
+            "genesis",
+            "custom-built",
+            "product",
+            "commodity"
+          ]
+        }
+      },
+      "required": [
+        "domain",
+        "business-model",
+        "evolution"
+      ],
+      "additionalProperties": false
+    },
+    "owners": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "code": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "relationships": {
+      "minItems": 1,
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "with": {
+                "type": "string",
+                "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+              },
+              "type": {
+                "type": "string",
+                "enum": [
+                  "partnership",
+                  "shared-kernel",
+                  "separate-ways"
+                ]
+              }
+            },
+            "required": [
+              "with",
+              "type"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "with": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "customer-supplier",
+                      "upstream-downstream"
+                    ]
+                  },
+                  "direction": {
+                    "type": "string",
+                    "const": "upstream"
+                  },
+                  "patterns": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "OHS",
+                        "PL"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "with",
+                  "type",
+                  "direction"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "with": {
+                    "type": "string",
+                    "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+                  },
+                  "type": {
+                    "type": "string",
+                    "enum": [
+                      "customer-supplier",
+                      "upstream-downstream"
+                    ]
+                  },
+                  "direction": {
+                    "type": "string",
+                    "const": "downstream"
+                  },
+                  "patterns": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "ACL",
+                        "CF"
+                      ]
+                    }
+                  }
+                },
+                "required": [
+                  "with",
+                  "type",
+                  "direction"
+                ],
+                "additionalProperties": false
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "classification"
+  ],
+  "additionalProperties": false,
+  "title": "domainbook domain frontmatter"
+}

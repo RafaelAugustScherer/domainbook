@@ -24,7 +24,7 @@ any work.
   glossary (searchable, per-context scoping), feature browser (highlighted gherkin),
   decision log (status badges, supersede chains), changelog timeline. Pagefind for
   full-text search.
-- The site must build from *any* valid book, not just the dogfood book — test against
+- The site must build from *any* valid book, not just domainbook's own book — test against
   the golden fixtures.
 - Verify the current Astro major and its content-collection API online before
   scaffolding or upgrading — do not code against remembered APIs.

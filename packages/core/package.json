@@ -1,0 +1,29 @@
+{
+  "name": "@domainbook/core",
+  "version": "0.0.0",
+  "description": "Schemas and shared model for domainbook books",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "schema"
+  ],
+  "scripts": {
+    "build": "tsc --build",
+    "schemas": "tsc --build && node scripts/generate-json-schema.js"
+  },
+  "dependencies": {
+    "yaml": "2.9.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "vitest": "4.1.10"
+  }
+}

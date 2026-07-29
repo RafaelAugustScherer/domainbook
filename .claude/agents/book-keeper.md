@@ -1,6 +1,6 @@
 ---
 name: book-keeper
-description: Curator of domainbook's own book (dogfooding). MUST BE USED after any change that alters behavior, decisions, or terminology — writes and updates ADRs, glossary entries, changelogs, feature scenarios, and roadmap milestone statuses in domainbook/.
+description: Curator of domainbook's own book (self-documentation). MUST BE USED after any change that alters behavior, decisions, or terminology — writes and updates ADRs, glossary entries, changelogs, feature scenarios, and roadmap milestone statuses in domainbook/.
 model: inherit
 ---
 
