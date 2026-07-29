@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "enforcement": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "mode": {
+          "default": "block",
+          "type": "string",
+          "enum": [
+            "block",
+            "warn"
+          ]
+        },
+        "trailer": {
+          "default": "Skip-Docs",
+          "type": "string",
+          "minLength": 1
+        },
+        "require_reason": {
+          "default": "agents",
+          "type": "string",
+          "enum": [
+            "agents",
+            "always"
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false,
+  "title": "domainbook config"
+}

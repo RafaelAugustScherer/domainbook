@@ -1,7 +1,7 @@
 ---
 id: domainbook
 milestones:
-  - { id: phase-0, name: Foundations and spec, status: planned }
+  - { id: phase-0, name: Foundations and spec, status: done }
   - { id: phase-1, name: Core and CLI, status: planned }
   - { id: phase-2, name: Enforcement loop, status: planned }
   - { id: phase-3, name: MCP server, status: planned }
@@ -27,7 +27,7 @@ commit onward.
 - **Domain-centric**: bounded contexts, ubiquitous language, feature scenarios, and
   decisions — the knowledge an agent needs to work on *any* app, regardless of
   architecture style.
-- **Feature scenarios are first-class**: behavior is documented as stories, rules, and
+- **Feature scenarios are first-class**: behaviour is documented as stories, rules, and
   concrete Gherkin examples, not left implicit in test code.
 - **Enforcement, not hope**: agent instructions alone are steering; the guarantee comes
   from a three-layer loop (in-session agent hook → git hook → CI) with waivers recorded
@@ -39,31 +39,33 @@ commit onward.
 
 domainbook draws inspiration from docs-as-code tools — notably [EventCatalog](https://www.eventcatalog.dev/),
 which pioneered git-versioned architecture catalogs — and focuses on domain knowledge,
-feature behavior, and documentation enforcement.
+feature behaviour, and documentation enforcement.
 
 ## Locked decisions
 
-Recorded here until Phase 0, when each becomes an ADR in this book.
+Each row is now an ADR. The ADR is the record — its context, the options weighed,
+and what the choice costs; this table is only an index into it. Decisions taken
+since are in the same logs and not repeated here.
 
-| Decision | Choice |
-|---|---|
-| Audience | Open-source product, installable in any repo |
-| Stack | TypeScript/Node end-to-end |
-| Agent targets | Claude Code first-class + AGENTS.md/MCP baseline for all others |
-| Enforcement | Layered: in-session agent hook + git hook + CI backstop; explicit waiver via commit trailer |
-| Waiver | `Skip-Docs: <reason>` trailer — agents must justify; humans may skip prose via `SKIP_DOCS=1` (auto-stamped trailer). `enforcement.require_reason: agents \| always` |
-| Scenario format | Markdown with Example Mapping structure + fenced ```gherkin blocks |
-| Website | Custom Astro app with content collections |
-| Versioning | Git-native — no snapshot folders; changelog + ADR supersede chains carry history |
-| Migration | Interview-driven agent skill; CLI only scaffolds and validates |
-| Book root | `domainbook/` at repo root (configurable) |
-| Runtime | Node active LTS only — `engines: >=24` today, bumped each time a new major reaches LTS. ESM-only |
-| Package manager | npm workspaces — no extra tooling required of contributors |
-| Monorepo layout | 4 packages: `@domainbook/core`, `domainbook` (CLI), `@domainbook/mcp`, `@domainbook/site` |
-| Schema authoring | zod-first; JSON Schema (draft 2020-12) generated from zod and committed |
-| MCP SDK | `@modelcontextprotocol/server` v2 |
-| File naming | Lowercase inside the book (`roadmap.md`, `glossary.md`, `changelog.md`); uppercase reserved for repo-root ecosystem files (`README.md`, `AGENTS.md`, `LICENSE`) |
-| License | MIT (confirm in Phase 0 ADR) |
+| Decision | Choice | Recorded in |
+|---|---|---|
+| Audience | Open-source product, installable in any repo | `ADR-0001` |
+| Stack | TypeScript/Node end-to-end | `ADR-0002` |
+| Agent targets | Claude Code first-class + AGENTS.md/MCP baseline for all others | `ADR-0005` |
+| Enforcement | Layered: in-session agent hook + git hook + CI backstop; explicit waiver via commit trailer | `enforcement/ADR-0001` |
+| Waiver | `Skip-Docs: <reason>` trailer — agents must justify; humans may skip prose via `SKIP_DOCS=1` (auto-stamped trailer). `enforcement.require_reason: agents \| always` | `enforcement/ADR-0002` |
+| Scenario format | Markdown with Example Mapping structure + fenced ```gherkin blocks | `format/ADR-0008` |
+| Website | Custom Astro app with content collections | `site/ADR-0001` |
+| Versioning | Git-native — no snapshot folders; changelog + ADR supersede chains carry history | `ADR-0006` |
+| Migration | Interview-driven agent skill; CLI only scaffolds and validates | `ADR-0007` |
+| Book root | `domainbook/` at repo root (a tool argument, not a config key) | `format/ADR-0010` |
+| Runtime | ESM-only; `engines: >=24.18.0` as a floor. The release line moves when the previous one goes EOL, not on every new LTS (`ADR-0002`); the patch moves when a security release lands on that line (`ADR-0008`) | `ADR-0002`, `ADR-0008` |
+| Package manager | npm workspaces — no extra tooling required of contributors | `ADR-0003` |
+| Monorepo layout | 4 packages: `@domainbook/core`, `domainbook` (CLI), `@domainbook/mcp`, `@domainbook/site` | `ADR-0003` |
+| Schema authoring | zod-first; JSON Schema (draft 2020-12) generated from zod and committed | `format/ADR-0001` |
+| MCP SDK | `@modelcontextprotocol/server` v2 | `mcp/ADR-0001` |
+| File naming | Lowercase inside the book (`roadmap.md`, `glossary.md`, `changelog.md`); uppercase reserved for repo-root ecosystem files (`README.md`, `AGENTS.md`, `LICENSE`) | `format/ADR-0003` |
+| License | MIT, including the MCP server | `ADR-0001` |
 
 ## The book format
 
@@ -72,61 +74,83 @@ existing standard so exports are mechanical:
 
 ```
 domainbook/
-├── domainbook.config.yaml        # schema-validated config
+├── domainbook.config.yaml        # schema-validated config (optional)
 ├── roadmap.md                    # milestone index (frontmatter) + prose
 ├── glossary.md                   # shared terms (optional)
+├── changelog.md                  # book-wide changes (optional)
 ├── decisions/                    # cross-domain ADRs (MADR 4.0)
 │   └── 0001-record-title.md
 └── domains/
     └── billing/
         ├── index.md              # bounded context canvas
         ├── glossary.md           # ubiquitous language for this context
-        ├── changelog.md          # Keep a Changelog 1.1 format, date-based
+        ├── changelog.md          # Keep a Changelog 1.1.0 format, date-based
         ├── features/
         │   └── refund-order.md   # story + rules + gherkin examples
         └── decisions/
             └── 0001-outbox.md    # domain-scoped MADR
 ```
 
-**Domain (`index.md`)** — body renders the Bounded Context Canvas sections (Purpose,
-Strategic Classification, Domain Roles, Inbound/Outbound Communication, Business
-Decisions, Assumptions, Open Questions); the machine-readable part lives in frontmatter:
+**Domain (`index.md`)** — a Bounded Context Canvas V5 split between frontmatter and
+body. Name and Strategic Classification are frontmatter, because tools index them;
+Ubiquitous Language is the context's own `glossary.md`, so terms can be referenced and
+exported one by one. The body is the remaining eight sections as H2s, in canvas order:
+Purpose, Domain Roles, Inbound Communication, Outbound Communication, Business
+Decisions, Assumptions, Verification Metrics, Open Questions. No H1 — the page's name is
+in frontmatter.
 
 ```yaml
 ---
 id: billing
 name: Billing
-classification: { domain: core, evolution: custom }
-owners: [rafael]
-code:                              # globs that map code changes to this domain
+classification:                      # all three axes are required
+  domain: core-domain                # core-domain | supporting-domain | generic
+  business-model: revenue-generator  # revenue-generator | engagement-creator |
+                                     #   compliance-enforcer
+  evolution: custom-built            # genesis | custom-built | product | commodity
+owners: [RafaelAugustScherer]
+code:                                # globs that map code changes to this domain
   - src/billing/**
-relationships:
-  - with: ordering
-    type: customer-supplier        # partnership | shared-kernel | customer-supplier |
-    direction: downstream          #   upstream-downstream | separate-ways
-    patterns: [ACL]                # upstream: OHS, PL — downstream: ACL, CF
+relationships:                       # partnership | shared-kernel | separate-ways are
+  - with: ordering                   #   symmetric: no direction, no patterns
+    type: customer-supplier          # customer-supplier | upstream-downstream take a
+    direction: downstream            #   direction; patterns are optional —
+    patterns: [ACL]                  #   upstream: OHS, PL — downstream: ACL, CF
 ---
 ```
 
 The `code:` globs make enforcement precise ("src/billing changed → Billing book
 untouched → block"), and `relationships:` (Context Mapper vocabulary) makes the context
-map derivable instead of hand-drawn.
+map derivable instead of hand-drawn. A relationship is declared once, by either side;
+the map is the union of every declaration. One value is ours rather than Context
+Mapper's: `separate-ways` is standard DDD but has no production in the CML grammar, so
+`export cml` is lossy for it by design.
 
 **Glossary (`glossary.md`)** — heading-per-term, each with definition, aliases, examples,
 status (draft/validated/deprecated). Exports to Contextive `*.glossary.yml` for IDE hover
 definitions.
 
-**Feature (`features/*.md`)** — Example Mapping structure: frontmatter (id, status,
+**Feature (`features/*.md`)** — Example Mapping structure: frontmatter (id, name, status,
 owners, related terms/decisions), then Story, one H2 per Rule with concrete examples as
-fenced ```gherkin blocks, and an Open Questions section. Declarative scenarios (behavior,
-not UI clicks). Parseable with `@cucumber/gherkin`.
+fenced ```gherkin blocks, and an Open Questions section. Declarative scenarios (behaviour,
+not UI clicks). `@cucumber/gherkin` does not read fenced blocks in markdown: each block
+is extracted and wrapped in a `Feature:` before it is parsed, and error line numbers are
+mapped back to the markdown file.
 
-**Decision (`decisions/NNNN-*.md`)** — MADR 4.0 verbatim: `status`, `date`,
-`decision-makers` frontmatter; Context → Options → Decision Outcome → Consequences body;
-4-digit sequential numbers never reused; accepted ADRs are immutable — changes are a new
-ADR that marks the old one `superseded by ADR-NNNN`.
+**Decision (`decisions/NNNN-*.md`)** — MADR 4.0 body, in MADR's own order: Context and
+Problem Statement, optional Decision Drivers, Considered Options, Decision Outcome with
+Consequences and optional Confirmation nested under it as H3s, then optional Pros and
+Cons of the Options and More Information. The frontmatter is narrower than MADR's, which
+leaves all five keys optional and the status set open: `status` and `date` are required,
+status is one of `proposed | rejected | accepted | deprecated | superseded by ADR-NNNN`
+— with the reference qualified as `<domain-id>/ADR-NNNN` when it points into a domain's
+own log (`format/ADR-0005`) — and `decision-makers`/`consulted`/`informed` are YAML
+sequences rather than prose.
+4-digit sequential numbers, never reused. One rule is domainbook's alone: an accepted ADR
+is immutable, so changing course is a new ADR that marks the old one superseded — where
+MADR's `date` means "last updated", ours means the date the decision was taken.
 
-**Changelog (`changelog.md`)** — Keep a Changelog 1.1 content format with dated sections
+**Changelog (`changelog.md`)** — Keep a Changelog 1.1.0 content format with dated sections
 and the six buckets (Added/Changed/Deprecated/Removed/Fixed/Security). Together with ADR
 chains this carries decision history; git holds the full archive, so there are no
 copy-on-version snapshot folders and none of the duplication and maintenance friction
@@ -135,9 +159,11 @@ they bring.
 **Roadmap (`roadmap.md`)** — this file: milestone index in frontmatter
 (`id`, `name`, `status: planned | in-progress | done`), detail per milestone in the body.
 
-Frontmatter schemas are authored once in zod; JSON Schema files (draft 2020-12) are
-generated from them and committed, so editors and non-JS tools consume the same spec
-without drift.
+Schemas are authored once in zod; JSON Schema files (draft 2020-12) are generated from
+them and committed, so editors and non-JS tools consume the same spec without drift. The
+four artifacts with frontmatter — roadmap, domain, feature, decision — have their
+frontmatter described that way; the glossary and changelog carry none, so their schemas
+describe the parsed body.
 
 ## Architecture
 
@@ -145,7 +171,7 @@ npm workspaces monorepo, changesets for releases:
 
 | Package | Contents |
 |---|---|
-| `@domainbook/core` | zod schemas (JSON Schema generated at build), loader (remark/gray-matter), model graph, reference resolution, validation, staged-diff check logic |
+| `@domainbook/core` | zod schemas (JSON Schema generated at build), loader (`yaml` frontmatter + markdown body), model graph, reference resolution, validation, staged-diff check logic |
 | `domainbook` (CLI) | `init`, `new`, `validate`, `check`, `hooks install`, `export`, `mcp`, `dev`/`build` (delegates to site) |
 | `@domainbook/mcp` | MCP server on `@modelcontextprotocol/server` v2 |
 | `@domainbook/site` | Custom Astro app (content collections share the zod schemas) |
@@ -154,7 +180,7 @@ npm workspaces monorepo, changesets for releases:
 Development itself is agent-assisted: `.claude/agents/` defines the specialist
 sub-agents that build domainbook — one engineer per package boundary
 (format, core/CLI, enforcement, MCP, site) plus four cross-cutting roles
-(book-keeper for the dogfood book, research-scout for online verification,
+(book-keeper for domainbook's own book, research-scout for online verification,
 spec-reviewer for adversarial review against the locked decisions, and
 qa-engineer for acceptance verification and end-to-end proof of the book's
 feature scenarios).
@@ -166,12 +192,13 @@ format, the enforcement loop, and the MCP server come before the website.
 
 ### Phase 0 — Foundations and spec
 
-- Monorepo scaffold: npm workspaces, TypeScript (ESM, Node active LTS), vitest,
+- Monorepo scaffold: npm workspaces, TypeScript (ESM, `engines: >=24.18.0`), vitest,
   changesets, CI.
 - `@domainbook/core` schemas: zod definitions for the artifact types + config file, with
   generated JSON Schema files committed alongside.
-- Dogfood: expand this book — domains for domainbook's own bounded contexts (format,
-  enforcement, mcp, site), glossary, and ADRs recording every locked decision above.
+- Self-documentation: expand this book — domains for domainbook's own bounded contexts
+  (format, enforcement, mcp, site), glossary, and ADRs recording every locked decision
+  above.
 - Golden fixtures: one small valid example book + deliberately broken variants for tests.
 
 Exit: schemas published internally; domainbook's own book validates against them.
@@ -233,8 +260,12 @@ commit is auto-stamped, and both are queryable from git log.
   small tool count — `search_book`, `get_domain`, `get_context_map`, `explain_terms`,
   `get_feature`, `get_decisions`, and `where_to_document` (given changed paths, returns
   which book files need updating — ties MCP into the enforcement loop).
+- Retrieval is scoped: `get_decisions` returns an index — one line per record — scoped to
+  a domain or to changed paths, with superseded and rejected records left out and bodies
+  fetched by id; the whole log takes an explicit ask (`mcp/ADR-0002`).
 - Same documents exposed as MCP resources for @-mention/browse UX, with cache hints.
-- `llms.txt` / `llms-full.txt` generation (`domainbook export llms`).
+- `llms.txt` / `llms-full.txt` generation (`domainbook export llms`) — an opt-in export of
+  the book for tools that speak no MCP, not a default retrieval path (`mcp/ADR-0002`).
 - `init` writes `.mcp.json` (Claude Code project scope) + config snippets for Cursor,
   VS Code, Codex, and Gemini CLI.
 
@@ -257,9 +288,10 @@ Exit: the site builds from any valid book; this book published as the live demo.
 ### Phase 5 — Migration and agent authoring
 
 - **Init skill** (Claude Code skill in the plugin, markdown fallback for other agents):
-  scan codebase + existing docs (READMEs, docs/ trees, existing ADR folders — MADR
-  imports near-verbatim), propose domains/glossary/features/decisions, interview the
-  user to confirm boundaries and terms, write the book, run `validate`.
+  scan codebase + existing docs (READMEs, docs/ trees, existing ADR folders — a MADR
+  body imports unchanged, but its frontmatter has to be filled in to satisfy the
+  narrowed schema, `format/ADR-0004`), propose domains/glossary/features/decisions,
+  interview the user to confirm boundaries and terms, write the book, run `validate`.
 - **Maintenance skills**: "document this change" (used when the Stop hook blocks),
   "record a decision", "groom the glossary".
 
@@ -300,9 +332,12 @@ docs without reading the source.
 - **MCP spec churn**: the v2 SDK's dual-era default absorbs it; pin the SDK.
 - **Site scope creep**: derived Mermaid only, static-first, no visual editor in v1.
 
-## Open items (resolve as Phase 0 ADRs)
+## Open items
 
-- Config format: YAML (schema-validated, recommended) vs JS.
-- Whether `domainbook check` also demands a `changelog.md` entry per change, or only for
-  user-visible behavior changes.
-- Formalize the `roadmap` artifact schema (this file is the prototype).
+The three items Phase 0 was to resolve are resolved: config is schema-validated YAML
+inside the book (`format/ADR-0010`), `domainbook check` demands a changelog entry only
+for user-visible behaviour changes (`enforcement/ADR-0003`), and the roadmap artifact has
+a schema (`format/ADR-0009`).
+
+What is still open is recorded where it belongs — in the Open Questions section of the
+context that owns it, under `domains/`.

@@ -1,0 +1,28 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Generated JSON Schema is up to date
+        run: |
+          npm run schemas
+          git add -A -- packages/core/schema
+          git diff --cached --exit-code -- packages/core/schema
+      - name: No high or critical vulnerabilities
+        run: npm audit --audit-level=high --package-lock-only
+      - name: No duplicated code above threshold
+        run: npm run duplication
