@@ -11,21 +11,28 @@ own format under [domainbook/](domainbook/).
 
 ## The book
 
-One folder per repo (default `domainbook/`). Six artifact types, each adopting an
-existing versioned standard so exports are mechanical:
+One folder per repo (default `domainbook/`). domainbook invents as little as it can —
+five of the six artifact types adopt an existing, independently maintained standard, so
+the data exports back into the tools those communities already use:
 
-| Artifact | Standard |
-|---|---|
-| Domain page | Bounded Context Canvas V5 + Context Mapper relationship vocabulary |
-| Glossary | heading-per-term, Contextive-exportable |
-| Feature | Example Mapping structure with Gherkin examples |
-| Decision | MADR 4.0 |
-| Changelog | Keep a Changelog 1.1.0 |
-| Roadmap | milestone index in frontmatter |
+| Artifact | Standard | Maintained by |
+|---|---|---|
+| Domain page | [Bounded Context Canvas V5](https://github.com/ddd-crew/bounded-context-canvas) + [Context Mapper](https://contextmapper.org/docs/context-map/) relationship vocabulary | DDD Crew; Context Mapper |
+| Glossary | heading-per-term, exports to [Contextive](https://contextive.tech/) | domainbook; Contextive |
+| Feature | [Example Mapping](https://cucumber.io/blog/bdd/example-mapping-introduction/) structure with [Gherkin](https://cucumber.io/docs/gherkin/reference/) examples | Cucumber |
+| Decision | [MADR 4.0](https://adr.github.io/madr/) | the MADR project |
+| Changelog | [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) | Olivier Lacan and contributors |
+| Roadmap | milestone index in frontmatter | domainbook — no external standard |
 
-Schemas are authored in zod; JSON Schema (draft 2020-12) files are generated from them and
-committed under `packages/core/schema`, so editors and non-JS tools consume the same spec
-without drift. Roadmap, domain, feature and decision pages carry their machine-readable
+Credit where it is due: those projects did the design work, and domainbook's job is to
+keep faith with them field for field rather than to invent a parallel vocabulary. Where
+we deviate, an ADR says so and why — for example `separate-ways` is standard DDD but has
+no production in the Context Mapper grammar, so it is kept and recorded as lossy on
+export.
+
+Schemas are authored in zod; [JSON Schema draft 2020-12](https://json-schema.org/draft/2020-12/schema)
+files are generated from them and committed under `packages/core/schema`, so editors and
+non-JS tools consume the same spec without drift. Roadmap, domain, feature and decision pages carry their machine-readable
 part in frontmatter; the glossary and changelog carry theirs in the body, and their
 schemas describe the parsed result.
 
