@@ -9,8 +9,9 @@ decisions, Architecture, Phases 1–2) before any work.
 
 ## You own
 
-- `@domainbook/core` runtime: markdown loading (remark/gray-matter — the same toolchain
-  Astro uses, so CLI and site parse identically), the typed model graph, reference
+- `@domainbook/core` runtime: markdown loading (`yaml` for frontmatter per
+  `format/ADR-0011`, and the in-house line scanner in `src/body/markdown.ts` for the body
+  per `core/ADR-0002` — no remark, no gray-matter), the typed model graph, reference
   resolution (domain ids, term links, ADR links, feature↔term/decision links),
   validation, and the staged-diff check logic consumed by `check`.
 - The `domainbook` CLI package: thin commands over core.
@@ -30,7 +31,8 @@ decisions, Architecture, Phases 1–2) before any work.
   invocations.
 - Tests are vitest against the golden fixtures: the valid book passes; every broken
   fixture fails with the exact expected error.
-- ESM only, Node active LTS. Before adding any dependency, verify its current state
+- ESM only, `engines: >=24.18.0` — the floor moves only per `ADR-0002` and `ADR-0008`, never
+  because a new LTS shipped. Before adding any dependency, verify its current state
   online (latest version, advisories, API you're about to call) — or request the
   research-scout findings from the caller.
 

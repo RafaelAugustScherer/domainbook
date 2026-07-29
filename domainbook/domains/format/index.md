@@ -7,19 +7,18 @@ classification:
   evolution: custom-built
 owners: [RafaelAugustScherer]
 code:
-  - packages/core/src/index.ts
   - packages/core/src/schemas/**
   - packages/core/src/frontmatter.ts
   - packages/core/schema/**
   - packages/core/scripts/**
-  - packages/core/test/**
+  - packages/core/test/fixtures/**
 ---
 
 ## Purpose
 
 Say what a book is — which artifacts it holds, what their frontmatter carries, and
-what their body must look like — so enforcement, MCP, and the site all read one
-model instead of three parsers.
+what their body must look like — so everything that reads a book works from one
+definition instead of each tool inventing its own.
 
 ## Domain Roles
 
@@ -30,26 +29,28 @@ model instead of three parsers.
 
 ## Inbound Communication
 
-| Message              | Collaborator            | Type    |
-| -------------------- | ----------------------- | ------- |
-| `ValidateArtifact`   | CLI                     | Command |
-| `LoadBook`           | enforcement, mcp, site  | Query   |
-| `GenerateJsonSchema` | build script            | Command |
+| Message              | Collaborator     | Type    |
+| -------------------- | ---------------- | ------- |
+| `ValidateArtifact`   | core             | Command |
+| `ReadSchema`         | site, editors    | Query   |
+| `GenerateJsonSchema` | build script     | Command |
 
 ## Outbound Communication
 
-| Message            | Collaborator           | Type  |
-| ------------------ | ---------------------- | ----- |
-| `ValidationFailed` | CLI, CI                | Event |
-| `SchemaChanged`    | enforcement, mcp, site | Event |
+| Message         | Collaborator            | Type  |
+| --------------- | ----------------------- | ----- |
+| `SchemaChanged` | core, enforcement, site | Event |
 
 ## Business Decisions
 
 - Schemas are authored once in zod; JSON Schema is generated from them and
   committed, never hand-edited (`format/ADR-0001`).
 - Structure is expressed with types and discriminated unions; cross-field rules
-  live only in the CLI, so an editor accepts files `validate` rejects
-  (`format/ADR-0002`).
+  run in core rather than in the published schema, so an editor accepts files
+  `validate` rejects (`format/ADR-0002`).
+- This context is the spec and nothing else. The loader, the checks, and the CLI
+  that runs them belong to core; the fixtures stay here, because a fixture is a
+  worked example of the spec (`ADR-0011`).
 - Every artifact adopts an existing standard at a pinned version — MADR 4.0,
   Bounded Context Canvas V5, Keep a Changelog 1.1.0, Context Mapper relationship
   vocabulary, Gherkin — and narrowing a standard is recorded, not assumed
@@ -84,3 +85,9 @@ model instead of three parsers.
   three-field index it is today?
 - Does the book need a format version field so a future schema change can migrate
   older books, or is the git history enough?
+- Should a slug accept Unicode? Folding drops what it cannot reach, so a team
+  whose ubiquitous language is written in Japanese, Greek, Arabic or Hebrew can
+  define a term and then has no id to reference it by. Widening the slug to
+  letters in any script would fix that and would cost filename portability, case
+  folding that differs by locale, and a reference syntax two spellings of the
+  same name could both satisfy.

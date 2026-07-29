@@ -2,7 +2,7 @@
 id: domainbook
 milestones:
   - { id: phase-0, name: Foundations and spec, status: done }
-  - { id: phase-1, name: Core and CLI, status: planned }
+  - { id: phase-1, name: Core and CLI, status: done }
   - { id: phase-2, name: Enforcement loop, status: planned }
   - { id: phase-3, name: MCP server, status: planned }
   - { id: phase-4, name: Website, status: planned }

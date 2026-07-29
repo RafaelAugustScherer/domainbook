@@ -78,19 +78,22 @@ Example Mapping in markdown, with Gherkin in fenced blocks. A feature holds
 scenarios; a scenario on its own is a Gherkin keyword, not an artifact.
 
 - **Aliases:** feature scenario
-- **Status:** draft
-- **Example:** `packages/core/test/fixtures/book/domains/ticketing/features/hold-seats-during-checkout.md` is one feature carrying three rules and four examples.
+- **Status:** validated
+- **Example:** `domains/core/features/validate-a-book.md` is one feature carrying four rules and six examples.
 
 ## Golden fixture
 
-A book kept in the repo for tests to run against:
-`packages/core/test/fixtures/book/` is valid in every respect, and each file
-under `packages/core/test/fixtures/broken/` is invalid in exactly one respect,
-named after the reason.
+A book, or a single artifact, kept in the repo for tests to run against — valid
+on purpose or broken on purpose, and named after the reason it exists.
+`packages/core/test/fixtures/book/` is one book valid in every respect. Under
+`broken-books/`, each folder is a whole book invalid in exactly one respect;
+under `valid-books/`, each folder is a whole book that must load clean, kept for
+a rule only a legal book can prove. Under `broken/`, each file is one artifact
+rather than a book, read by a single schema or a single body parser.
 
 - **Aliases:** fixture book
 - **Status:** validated
-- **Example:** `packages/core/test/fixtures/broken/domain-symmetric-with-direction.md` exists so a test can prove `separate-ways` with a `direction` is rejected.
+- **Example:** `broken-books/decision-number-gap/` proves a log holding 0001 and 0003 reports the missing 0002, `valid-books/mirrored-relationship/` proves two agreeing halves of one relationship are legal, and `broken/domain-symmetric-with-direction.md` proves `separate-ways` with a `direction` is rejected.
 
 ## Instruction layer
 
@@ -101,6 +104,27 @@ three layers.
 
 - **Status:** validated
 - **Example:** An agent that ignores its AGENTS.md still gets blocked by the git hook, which is the point of keeping the two separate.
+
+## Issue
+
+One thing wrong with a book, in the shape `validate` reports it: a file, often a
+line and a field, and a message naming the fix. One mistake produces one issue,
+not one per consequence of it, and every issue is a failure — there is no
+warning level to fall back on.
+
+- **Status:** validated
+- **Example:** `domainbook/domains/core/index.md:2 id: "cor" does not match the folder "core" — rename the folder to "cor" or set id to "core"` is one issue as a terminal sees it.
+
+## Rule
+
+A statement in a feature that is always true, written as a `## Rule: …` heading
+with its examples under it — the Example Mapping sense of the word. The same
+word is used for what `validate` enforces about the format itself: canvas order,
+ADR numbering, gherkin that parses. Those are rules of the format; a feature's
+rule is about the software the book documents.
+
+- **Status:** draft
+- **Example:** "Rule: A hold expires ten minutes after it is placed" is a feature's rule; "a decision log runs from 0001 with no gaps" is a rule of the format.
 
 ## Self-documentation
 
@@ -115,8 +139,14 @@ this book is a claim the project has to keep true about itself.
 A lowercase identifier made of words joined by single hyphens. Every id in the
 book is a slug, and a glossary term is referenced by the slug of its name.
 
+Slugging folds a name to NFKD and drops the combining marks, so an accented
+letter becomes the letter underneath it. Everything that is then not `a-z0-9`
+becomes a hyphen. A name written in a script that leaves nothing behind — most
+of the world's, outside Latin — slugs to the empty string, and the tool says so
+rather than pretending the name was badly written.
+
 - **Status:** validated
-- **Example:** The term "Seat Map" is referenced as `seat-map`.
+- **Example:** The term "Seat Map" is referenced as `seat-map`, "Café Order" as `cafe-order`, and "Naïve résumé" as `naive-resume`; "日本語" slugs to nothing at all.
 
 ## Trailer
 

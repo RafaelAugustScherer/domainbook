@@ -1,0 +1,4 @@
+enforcement:
+  mode: report
+  trailer: Skip-Docs
+  require_reason: agents

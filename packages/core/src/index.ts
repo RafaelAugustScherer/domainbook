@@ -1,4 +1,23 @@
+export { canvas } from "./body/domain.js";
+export type { ParsedRule } from "./body/feature.js";
+export { checkBook } from "./check.js";
 export { parseFrontmatter } from "./frontmatter.js";
+export { formatIssue, sortIssues } from "./issue.js";
+export type { Issue } from "./issue.js";
+export { configFile, loadBook } from "./load.js";
+export { termSlug } from "./model.js";
+export type {
+  Book,
+  ChangelogRecord,
+  DecisionFile,
+  DecisionRecord,
+  DomainRecord,
+  FeatureRecord,
+  FieldLines,
+  GlossaryRecord,
+  RoadmapRecord,
+  TermRecord,
+} from "./model.js";
 export {
   changelogReleaseSchema,
   changelogSchema,
@@ -21,3 +40,4 @@ export { glossarySchema, glossaryTermSchema } from "./schemas/glossary.js";
 export type { Glossary, GlossaryTerm } from "./schemas/glossary.js";
 export { milestoneSchema, roadmapSchema } from "./schemas/roadmap.js";
 export type { Milestone, Roadmap } from "./schemas/roadmap.js";
+export { validateBook } from "./validate.js";

@@ -2,6 +2,16 @@
 
 The ubiquitous language of the ticketing context.
 
+## Event
+
+A performance with seats on sale: it has a published seat map, a hold window,
+and a door time. Ticketing never sells for a performance until all three exist,
+so a performance the box office knows about is not yet an event here.
+
+- **Status:** validated
+- **Example:** A show announced without a seat map is not an event to ticketing
+  until seating publishes one.
+
 ## Hold
 
 A claim on named seats that keeps other fans out of them for ten minutes while

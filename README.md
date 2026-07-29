@@ -4,8 +4,10 @@ Living documentation for codebases worked on by agents. Markdown in-repo, git-ve
 explorable as a website, queryable over MCP, and — the differentiator — **enforced**:
 every code change must update the book or carry an explicit, auditable waiver.
 
-**Status: early development.** Phase 0 (foundations and spec) is the first milestone;
-there is no installable CLI yet. The build plan lives in
+**Status: early development.** Phase 0 (foundations and spec) and Phase 1 (core and CLI)
+are done: the format is specified, and a CLI scaffolds a book and validates one. Nothing
+is published to npm yet, so the tool runs from a checkout. Enforcement, the MCP server,
+and the website are still ahead. The build plan lives in
 [domainbook/roadmap.md](domainbook/roadmap.md), and domainbook documents itself with its
 own format under [domainbook/](domainbook/).
 
@@ -40,17 +42,25 @@ schemas describe the parsed result.
 
 | Package | Contents |
 |---|---|
-| `@domainbook/core` | zod schemas, generated JSON Schema, frontmatter parsing |
+| `@domainbook/core` | zod schemas, generated JSON Schema, frontmatter parsing, the loader and model graph, reference resolution, validation |
+| `domainbook` | the CLI: `init`, `validate`, and `new` for domains, features and decisions. Its only dependency is `@domainbook/core` |
 
-The CLI, MCP server, and site packages arrive in their own phases.
+The MCP server and site packages arrive in their own phases.
 
 ## Development
 
 ```bash
 npm install
 npm test
+npm run build         # compile both packages
 npm run schemas       # regenerate the committed JSON Schema files
 npm run duplication   # jscpd copy/paste check
+```
+
+The CLI runs from the build, and this repo's own book is what it reads by default:
+
+```bash
+node packages/cli/dist/bin.js validate
 ```
 
 Requires Node 24.18.0 or newer — the version in `.nvmrc` is what CI runs, and

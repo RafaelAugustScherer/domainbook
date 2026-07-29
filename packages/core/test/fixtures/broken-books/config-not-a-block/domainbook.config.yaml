@@ -1,0 +1,4 @@
+- enforcement:
+    mode: warn
+    trailer: Skip-Docs
+    require_reason: agents

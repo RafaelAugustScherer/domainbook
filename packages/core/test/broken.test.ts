@@ -2,18 +2,25 @@ import { readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 import type { ZodType } from "zod";
+import { parseChangelog } from "../src/body/changelog.js";
+import { parseFeatureBody } from "../src/body/feature.js";
+import { parseGlossary } from "../src/body/glossary.js";
+import { parseMarkdown } from "../src/body/markdown.js";
 import {
-  changelogSchema,
   configSchema,
   decisionSchema,
   domainSchema,
   featureSchema,
-  glossarySchema,
+  formatIssue,
   parseFrontmatter,
   roadmapSchema,
 } from "../src/index.js";
-import { bookDir, brokenDir, read } from "./paths.js";
-import { changelogFrom, glossaryFrom } from "./transcribe.js";
+import { schemaIssues } from "../src/issue.js";
+import {
+  brokenBooks,
+  brokenBooksDir,
+} from "./fixtures/broken-books/manifest.js";
+import { brokenDir, read } from "./paths.js";
 
 const frontmatterFixtures = [
   "domain-unknown-key.md",
@@ -22,11 +29,16 @@ const frontmatterFixtures = [
   "domain-symmetric-with-direction.md",
   "domain-missing-direction.md",
   "domain-upstream-with-downstream-pattern.md",
+  "domain-owners-not-a-list.md",
+  "domain-classification-not-a-block.md",
+  "domain-code-lists-nothing.md",
+  "domain-name-empty.md",
   "decision-missing-status.md",
   "decision-bad-date.md",
   "decision-bad-status.md",
   "feature-unknown-status.md",
   "roadmap-unknown-milestone-status.md",
+  "roadmap-milestone-name-not-text.md",
   "config-unknown-mode.yaml",
 ];
 
@@ -34,6 +46,8 @@ const bodyFixtures = [
   "changelog-unknown-bucket.md",
   "glossary-unknown-term-status.md",
   "feature-malformed-gherkin.md",
+  "feature-gherkin-fence-with-info.md",
+  "feature-gherkin-fence-unclosed.md",
 ];
 
 function issuesFor(file: string, schema: ZodType) {
@@ -51,6 +65,17 @@ function onlyIssue(file: string, schema: ZodType) {
   const issues = issuesFor(file, schema);
   expect(issues).toHaveLength(1);
   return issues[0]!;
+}
+
+function written(file: string, schema: ZodType, label: string): string[] {
+  const data = parseFrontmatter(read(brokenDir, file)).data;
+  return schemaIssues(
+    file,
+    schema.safeParse(data).error,
+    data,
+    label,
+    () => undefined
+  ).map(formatIssue);
 }
 
 describe("broken frontmatter fixtures", () => {
@@ -167,48 +192,120 @@ describe("broken frontmatter fixtures", () => {
   });
 });
 
+describe("what a schema issue reads like on the page", () => {
+  it("asks for a list where a scalar was written", () => {
+    expect(
+      written("domain-owners-not-a-list.md", domainSchema, "domain page")
+    ).toEqual([
+      'domain-owners-not-a-list.md owners: must be a list — write each value as a "- " bullet below it',
+    ]);
+  });
+
+  it("asks for a block of keys where a scalar was written", () => {
+    expect(
+      written(
+        "domain-classification-not-a-block.md",
+        domainSchema,
+        "domain page"
+      )
+    ).toEqual([
+      "domain-classification-not-a-block.md classification: must be a block of keys indented below it",
+    ]);
+  });
+
+  it("asks for text where YAML read a number", () => {
+    expect(
+      written("roadmap-milestone-name-not-text.md", roadmapSchema, "roadmap")
+    ).toEqual([
+      "roadmap-milestone-name-not-text.md milestones[1].name: must be text — put the value in quotes",
+    ]);
+  });
+
+  it("says a list that names nothing may go", () => {
+    expect(
+      written("domain-code-lists-nothing.md", domainSchema, "domain page")
+    ).toEqual([
+      "domain-code-lists-nothing.md code: lists nothing — name at least one, or remove the key",
+    ]);
+  });
+
+  it("says an empty value may go", () => {
+    expect(
+      written("domain-name-empty.md", domainSchema, "domain page")
+    ).toEqual([
+      "domain-name-empty.md name: is empty — write a value, or remove it",
+    ]);
+  });
+
+  it("names the field a stray key sits in, once per key", () => {
+    expect(
+      written("domain-symmetric-with-direction.md", domainSchema, "domain page")
+    ).toEqual([
+      'domain-symmetric-with-direction.md relationships[0].direction: is not a field of "relationships[0]" — check the spelling, or remove it',
+      'domain-symmetric-with-direction.md relationships[0].patterns: is not a field of "relationships[0]" — check the spelling, or remove it',
+    ]);
+  });
+});
+
 describe("broken body fixtures", () => {
   it("changelog-unknown-bucket names the bucket that is not one of the six", () => {
     const source = read(brokenDir, "changelog-unknown-bucket.md");
-    const issues = changelogSchema.safeParse(changelogFrom(source)).error
-      ?.issues;
-    expect(issues).toMatchObject([
-      { code: "unrecognized_keys", path: ["releases", 0], keys: ["notes"] },
-    ]);
     expect(parseFrontmatter(source).data).toBeUndefined();
+    const issues = parseChangelog(
+      "changelog.md",
+      parseMarkdown(source, 1)
+    ).issues;
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.message).toContain('"Notes" is not a changelog section');
   });
 
   it("glossary-unknown-term-status points at the term's status", () => {
     const source = read(brokenDir, "glossary-unknown-term-status.md");
-    const issues = glossarySchema.safeParse(glossaryFrom(source)).error?.issues;
-    expect(issues).toMatchObject([
-      {
-        code: "invalid_value",
-        path: ["terms", 0, "status"],
-        values: ["draft", "validated", "deprecated"],
-      },
-    ]);
     expect(parseFrontmatter(source).data).toBeUndefined();
+    const issues = parseGlossary(
+      "glossary.md",
+      parseMarkdown(source, 1)
+    ).issues;
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatchObject({ field: "status" });
+    expect(issues[0]?.message).toContain('"draft", "validated", "deprecated"');
   });
 
-  it("feature-malformed-gherkin leaves a docstring unterminated", () => {
+  it("feature-malformed-gherkin fails on the block and nothing else", () => {
     const source = read(brokenDir, "feature-malformed-gherkin.md");
-    expect(
-      featureSchema.safeParse(parseFrontmatter(source).data).error?.issues ?? []
-    ).toEqual([]);
-    const broken = gherkinBlocks(source);
-    expect(broken).toHaveLength(1);
-    expect(docStringFences(broken[0]!) % 2).toBe(1);
-
-    const valid = gherkinBlocks(
-      read(bookDir, "domains/ticketing/features/hold-seats-during-checkout.md")
+    const { data, body } = parseFrontmatter(source);
+    expect(featureSchema.safeParse(data).error?.issues ?? []).toEqual([]);
+    const { issues } = parseFeatureBody(
+      "feature-malformed-gherkin.md",
+      parseMarkdown(body, 2)
     );
-    expect(valid.map(docStringFences)).toEqual([0, 0, 0]);
-    expect(valid.map(opener)).toEqual([
-      "Example: Seats go back on sale when the hold expires",
-      "Example: Paying inside the window issues one ticket per seat",
-      "Example: A late capture never becomes a ticket",
+    expect(issues).toHaveLength(1);
+    expect(issues[0]?.message).toContain("gherkin does not parse");
+  });
+
+  it("feature-gherkin-fence-with-info checks a block tagged with more than the language", () => {
+    const source = read(brokenDir, "feature-gherkin-fence-with-info.md");
+    expect(source).toContain('```gherkin title="hold-expiry.feature"');
+    const { issues } = parseFeatureBody(
+      "feature-gherkin-fence-with-info.md",
+      parseMarkdown(source, 1)
+    );
+    expect(issues.map(formatIssue)).toEqual([
+      "feature-gherkin-fence-with-info.md:25: gherkin does not parse — inconsistent cell count within the table",
     ]);
+  });
+
+  it("feature-gherkin-fence-unclosed reports no line below the last one in the file", () => {
+    const source = read(brokenDir, "feature-gherkin-fence-unclosed.md");
+    const { issues } = parseFeatureBody(
+      "feature-gherkin-fence-unclosed.md",
+      parseMarkdown(source, 1)
+    );
+    expect(issues.map(formatIssue)).toEqual([
+      'feature-gherkin-fence-unclosed.md: a feature closes with "## Open Questions" — a feature is Story, then its rules, then Open Questions',
+      "feature-gherkin-fence-unclosed.md:26: gherkin does not parse — unexpected end of file, expected: #DocStringSeparator, #Other",
+    ]);
+    expect(source.split("\n")).toHaveLength(26);
   });
 });
 
@@ -220,16 +317,52 @@ describe("the broken fixture set", () => {
   });
 });
 
-function gherkinBlocks(source: string): string[] {
-  return [...source.matchAll(/```gherkin\n([\s\S]*?)```/g)].map(
-    (match) => match[1]!
-  );
-}
+describe("the broken book set", () => {
+  it("covers every book", () => {
+    const found = readdirSync(brokenBooksDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+    expect(found).toEqual(brokenBooks.map((book) => book.dir).sort());
+  });
 
-function opener(block: string): string {
-  return block.trim().split("\n")[0]!.trim();
-}
+  it("names every rule the catalogue needs a book for", () => {
+    const rules = new Set(brokenBooks.map((book) => book.rule));
+    expect([...rules].sort()).toEqual([
+      "B1",
+      "B2",
+      "B3",
+      "B4",
+      "B5",
+      "B6",
+      "B7",
+      "B8",
+      "C1",
+      "C2",
+      "C3",
+      "C4",
+      "C5",
+      "C6",
+      "C7",
+      "L2",
+      "L3",
+      "L4",
+      "L5",
+      "L6",
+      "L7",
+      "R1",
+      "R2",
+      "R3",
+      "R4",
+      "R5",
+      "R6",
+      "R7",
+      "S1",
+    ]);
+  });
 
-function docStringFences(block: string): number {
-  return block.split("\n").filter((line) => line.trim() === '"""').length;
-}
+  it("expects a distinct message from each book", () => {
+    const messages = brokenBooks.map((book) => book.expect);
+    expect(new Set(messages).size).toBe(messages.length);
+  });
+});

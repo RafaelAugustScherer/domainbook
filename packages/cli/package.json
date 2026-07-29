@@ -1,0 +1,30 @@
+{
+  "name": "domainbook",
+  "version": "0.0.0",
+  "description": "Scaffold and validate a domainbook book",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.18.0"
+  },
+  "bin": {
+    "domainbook": "./dist/bin.js"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@domainbook/core": "0.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "vitest": "4.1.10"
+  }
+}
