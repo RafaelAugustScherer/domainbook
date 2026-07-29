@@ -51,6 +51,7 @@ Recorded here until Phase 0, when each becomes an ADR in this book.
 | Stack | TypeScript/Node end-to-end |
 | Agent targets | Claude Code first-class + AGENTS.md/MCP baseline for all others |
 | Enforcement | Layered: in-session agent hook + git hook + CI backstop; explicit waiver via commit trailer |
+| Waiver | `Skip-Docs: <reason>` trailer — agents must justify; humans may skip prose via `SKIP_DOCS=1` (auto-stamped trailer). `enforcement.require_reason: agents \| always` |
 | Scenario format | Markdown with Example Mapping structure + fenced ```gherkin blocks |
 | Website | Custom Astro app with content collections |
 | Versioning | Git-native — no snapshot folders; changelog + ADR supersede chains carry history |
@@ -150,6 +151,14 @@ npm workspaces monorepo, changesets for releases:
 | `@domainbook/site` | Custom Astro app (content collections share the zod schemas) |
 | `integrations/` | Repo directory, not a published package: Claude Code plugin (hooks + skills), AGENTS.md/CLAUDE.md/Gemini templates, GitHub Action, lefthook snippet |
 
+Development itself is agent-assisted: `.claude/agents/` defines the specialist
+sub-agents that build domainbook — one engineer per package boundary
+(format, core/CLI, enforcement, MCP, site) plus four cross-cutting roles
+(book-keeper for the dogfood book, research-scout for online verification,
+spec-reviewer for adversarial review against the locked decisions, and
+qa-engineer for acceptance verification and end-to-end proof of the book's
+feature scenarios).
+
 ## Milestones
 
 Ordering rationale: the gap being filled is *agents don't document their work* — so the
@@ -183,10 +192,15 @@ fixture.
 
 The differentiator, shipped before anything visual. Three layers plus a durable waiver:
 
-1. **Waiver format**: git commit trailer — `Docs-Skip: <reason>` (key configurable) —
+1. **Waiver format**: git commit trailer — `Skip-Docs: <reason>` (key configurable) —
    following the established trailer convention (`Signed-off-by:`, GitLab's
    `Changelog:`). Machine-readable via `git log --format='%(trailers:...)'`, auditable
-   forever.
+   forever. The requirement is tiered by actor: agent shells (detected via the
+   environment markers agent CLIs export, e.g. `CLAUDECODE=1`) must supply a non-empty
+   reason; a human at a terminal may waive without prose via `SKIP_DOCS=1 git commit …`,
+   which the hook converts into an auto-stamped `Skip-Docs: waived interactively`
+   trailer — CI stays deterministic and the audit trail complete either way.
+   Config: `enforcement.require_reason: agents | always`.
 2. **`domainbook check --staged`**: staged paths matched against domain `code:` globs;
    mapped code changed + owning domain's book unchanged + no waiver trailer → exit 1
    with an actionable message naming the stale files. Installed as a `commit-msg` hook
@@ -195,9 +209,12 @@ The differentiator, shipped before anything visual. Three layers plus a durable 
    accumulated changes — blocks completion with the actionable reason so the agent fixes
    docs *while it still has context*. Guards: honor `stop_hook_active`, cap retries,
    always name concrete files. A silent `PostToolUse` hook only accumulates touched
-   paths — no per-edit nagging. Optional `PreToolUse` guard for `git commit --no-verify`.
+   paths — no per-edit nagging. A `PreToolUse` guard denies `git commit --no-verify`,
+   commands that unset agent markers, and the human-only `SKIP_DOCS=1` escape.
 4. **CI backstop**: GitHub Action — `domainbook validate` + re-run the paths/trailer
-   check over the PR's commit range. Server-side, non-bypassable authority.
+   check over the PR's commit range. Server-side, non-bypassable authority. Optionally
+   treats commits carrying an AI `Co-Authored-By:` trailer as agent-authored and
+   requires a non-empty waiver reason for them.
 5. **Instruction layer** (steering, not enforcement): generated `AGENTS.md` section with
    the rule + exact waiver syntax; `CLAUDE.md` containing `@AGENTS.md`; optional Gemini
    settings snippet; Claude Code `.claude/rules/` path-scoped rules generated from
@@ -205,7 +222,8 @@ The differentiator, shipped before anything visual. Three layers plus a durable 
 
 Exit: in a sample repo — a commit touching mapped code without a book change and without
 a trailer fails locally and in CI; a Claude Code session gets blocked at Stop, updates
-the book, and completes; a waived commit passes and is queryable from git log.
+the book, and completes; an agent waiver carries its reason, a human `SKIP_DOCS=1`
+commit is auto-stamped, and both are queryable from git log.
 
 ### Phase 3 — MCP server
 
@@ -275,8 +293,8 @@ docs without reading the source.
 - **Stop-hook loops**: block only on a clearable condition (a real diff check), honor
   `stop_hook_active`, cap retries, always name concrete files. Advisory mode (`warn`)
   available in config.
-- **False-positive fatigue**: the cheap explicit waiver with a required reason is the
-  pressure valve — always available, always audited.
+- **False-positive fatigue**: the cheap explicit waiver (prose required only of agents)
+  is the pressure valve — always available, always audited.
 - **Instructions get ignored**: by design the instruction layer is steering only;
   guarantees live in hooks and CI.
 - **MCP spec churn**: the v2 SDK's dual-era default absorbs it; pin the SDK.
@@ -284,7 +302,6 @@ docs without reading the source.
 
 ## Open items (resolve as Phase 0 ADRs)
 
-- Trailer key name: `Docs-Skip` vs `Book-Skip` vs `Domainbook-Skip`.
 - Config format: YAML (schema-validated, recommended) vs JS.
 - Whether `domainbook check` also demands a `changelog.md` entry per change, or only for
   user-visible behavior changes.
