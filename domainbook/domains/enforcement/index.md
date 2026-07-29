@@ -5,7 +5,7 @@ classification:
   domain: core-domain
   business-model: compliance-enforcer
   evolution: custom-built
-owners: [rafael]
+owners: [RafaelAugustScherer]
 code:
   - integrations/**
 relationships:

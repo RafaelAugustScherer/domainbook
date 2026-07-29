@@ -5,7 +5,7 @@ classification:
   domain: supporting-domain
   business-model: engagement-creator
   evolution: product
-owners: [rafael]
+owners: [RafaelAugustScherer]
 code:
   - packages/site/**
 relationships:

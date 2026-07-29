@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-07-29
-decision-makers: [rafael]
+decision-makers: [RafaelAugustScherer]
 ---
 
 # Fail CI on high-severity advisories

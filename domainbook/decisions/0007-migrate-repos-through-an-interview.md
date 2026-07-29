@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-07-28
-decision-makers: [rafael]
+decision-makers: [RafaelAugustScherer]
 ---
 
 # Migrate repos through an interview

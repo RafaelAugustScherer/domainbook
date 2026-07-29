@@ -5,7 +5,7 @@ classification:
   domain: supporting-domain
   business-model: engagement-creator
   evolution: product
-owners: [rafael]
+owners: [RafaelAugustScherer]
 code:
   - packages/mcp/**
 relationships:
@@ -54,6 +54,11 @@ agent reading the whole repo.
 - Built on `@modelcontextprotocol/server` v2, stdio first (`mcp/ADR-0001`).
 - The tool surface stays small and search-first: find, then fetch by id. A tool
   is added only when search plus a getter cannot answer the question.
+- Decision retrieval is scoped and indexed by default. `get_decisions` answers
+  with an index — title, status, date, domain, one-line outcome — scoped to a
+  domain or to changed paths, with superseded and rejected records left out and
+  full bodies fetched by id (`mcp/ADR-0002`). A whole log is available and has to
+  be asked for.
 - `where_to_document` runs enforcement's path matching, not a second copy of it.
   The two contexts share that code, so an agent asking the MCP server and a hook
   blocking a commit can never disagree about which files are stale.
@@ -64,8 +69,9 @@ agent reading the whole repo.
 
 - Clients speak stdio today; Streamable HTTP is a later transport, not a
   different server.
-- After a search narrows the result, a single artifact fits comfortably in one
-  tool response.
+- A single artifact fits comfortably in one tool response. A whole log of them
+  does not, and that gap grows with the book — which is why a collection is
+  served as an index and never as a set of full records (`mcp/ADR-0002`).
 - Clients cache resources when told to, so serving the whole glossary is cheap on
   repeat.
 
@@ -73,6 +79,9 @@ agent reading the whole repo.
 
 - Number of tools exposed — it going up is the signal to look, not to celebrate.
 - Share of questions answered in two calls or fewer.
+- Size of a default answer measured against the size of the book behind it, as
+  the book grows. Two calls that return an entire decision log is not a win, and
+  the call count is blind to it.
 - Disagreements between `where_to_document` and `domainbook check` on the same
   diff. Any is a bug in the shared kernel.
 

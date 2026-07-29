@@ -5,7 +5,7 @@ classification:
   domain: core-domain
   business-model: engagement-creator
   evolution: custom-built
-owners: [rafael]
+owners: [RafaelAugustScherer]
 code:
   - packages/core/src/index.ts
   - packages/core/src/schemas/**

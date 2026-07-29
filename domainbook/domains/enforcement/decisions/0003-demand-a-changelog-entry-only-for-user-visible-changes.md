@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-07-28
-decision-makers: [rafael]
+decision-makers: [RafaelAugustScherer]
 ---
 
 # Demand a changelog entry only for user-visible changes

@@ -1,7 +1,7 @@
 ---
 status: accepted
 date: 2026-07-28
-decision-makers: [rafael]
+decision-makers: [RafaelAugustScherer]
 ---
 
 # Make Claude Code first-class and every other agent supported

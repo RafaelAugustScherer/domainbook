@@ -27,7 +27,7 @@ commit onward.
 - **Domain-centric**: bounded contexts, ubiquitous language, feature scenarios, and
   decisions — the knowledge an agent needs to work on *any* app, regardless of
   architecture style.
-- **Feature scenarios are first-class**: behavior is documented as stories, rules, and
+- **Feature scenarios are first-class**: behaviour is documented as stories, rules, and
   concrete Gherkin examples, not left implicit in test code.
 - **Enforcement, not hope**: agent instructions alone are steering; the guarantee comes
   from a three-layer loop (in-session agent hook → git hook → CI) with waivers recorded
@@ -39,7 +39,7 @@ commit onward.
 
 domainbook draws inspiration from docs-as-code tools — notably [EventCatalog](https://www.eventcatalog.dev/),
 which pioneered git-versioned architecture catalogs — and focuses on domain knowledge,
-feature behavior, and documentation enforcement.
+feature behaviour, and documentation enforcement.
 
 ## Locked decisions
 
@@ -108,7 +108,7 @@ classification:                      # all three axes are required
   business-model: revenue-generator  # revenue-generator | engagement-creator |
                                      #   compliance-enforcer
   evolution: custom-built            # genesis | custom-built | product | commodity
-owners: [rafael]
+owners: [RafaelAugustScherer]
 code:                                # globs that map code changes to this domain
   - src/billing/**
 relationships:                       # partnership | shared-kernel | separate-ways are
@@ -132,7 +132,7 @@ definitions.
 
 **Feature (`features/*.md`)** — Example Mapping structure: frontmatter (id, name, status,
 owners, related terms/decisions), then Story, one H2 per Rule with concrete examples as
-fenced ```gherkin blocks, and an Open Questions section. Declarative scenarios (behavior,
+fenced ```gherkin blocks, and an Open Questions section. Declarative scenarios (behaviour,
 not UI clicks). `@cucumber/gherkin` does not read fenced blocks in markdown: each block
 is extracted and wrapped in a `Feature:` before it is parsed, and error line numbers are
 mapped back to the markdown file.
@@ -260,8 +260,12 @@ commit is auto-stamped, and both are queryable from git log.
   small tool count — `search_book`, `get_domain`, `get_context_map`, `explain_terms`,
   `get_feature`, `get_decisions`, and `where_to_document` (given changed paths, returns
   which book files need updating — ties MCP into the enforcement loop).
+- Retrieval is scoped: `get_decisions` returns an index — one line per record — scoped to
+  a domain or to changed paths, with superseded and rejected records left out and bodies
+  fetched by id; the whole log takes an explicit ask (`mcp/ADR-0002`).
 - Same documents exposed as MCP resources for @-mention/browse UX, with cache hints.
-- `llms.txt` / `llms-full.txt` generation (`domainbook export llms`).
+- `llms.txt` / `llms-full.txt` generation (`domainbook export llms`) — an opt-in export of
+  the book for tools that speak no MCP, not a default retrieval path (`mcp/ADR-0002`).
 - `init` writes `.mcp.json` (Claude Code project scope) + config snippets for Cursor,
   VS Code, Codex, and Gemini CLI.
 
@@ -332,7 +336,7 @@ docs without reading the source.
 
 The three items Phase 0 was to resolve are resolved: config is schema-validated YAML
 inside the book (`format/ADR-0010`), `domainbook check` demands a changelog entry only
-for user-visible behavior changes (`enforcement/ADR-0003`), and the roadmap artifact has
+for user-visible behaviour changes (`enforcement/ADR-0003`), and the roadmap artifact has
 a schema (`format/ADR-0009`).
 
 What is still open is recorded where it belongs — in the Open Questions section of the
