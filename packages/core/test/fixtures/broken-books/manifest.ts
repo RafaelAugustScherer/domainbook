@@ -39,7 +39,7 @@ export const brokenBooks: BrokenBook[] = [
     dir: "unknown-file-in-book",
     rule: "L5",
     expect:
-      "domains/ticketing/overview.md: the format does not know this file — a domain folder holds index.md, glossary.md, changelog.md, features/*.md, and decisions/*.md",
+      "domains/ticketing/overview.md: the format does not know this file — a domain folder holds index.md, glossary.md, changelog.md, features/*.md, decisions/*.md, and debt/*.md",
   },
   {
     dir: "domains-holds-only-domains",
@@ -70,6 +70,12 @@ export const brokenBooks: BrokenBook[] = [
     rule: "L5",
     expect:
       "decisions/0002-refund-a-late-capture-in-full.txt: the format does not know this file — a decision log holds .md files and nothing else",
+  },
+  {
+    dir: "debt-log-file-not-markdown",
+    rule: "L5",
+    expect:
+      "debt/0001-door-scanners-trust-their-own-clock.txt: the format does not know this file — a debt record log holds .md files and nothing else",
   },
   {
     dir: "domain-without-index",
@@ -140,6 +146,12 @@ export const brokenBooks: BrokenBook[] = [
     rule: "S1",
     expect:
       "roadmap.md:5 milestones[1].id: must be words joined by single hyphens — a word starts with a letter or digit in any script, and carries no capitals",
+  },
+  {
+    dir: "debt-severity-unknown",
+    rule: "S1",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md:4 severity: must be one of "low", "medium", "high", "critical"',
   },
   {
     dir: "canvas-section-missing",
@@ -364,6 +376,36 @@ export const brokenBooks: BrokenBook[] = [
       'decisions/0001-store-every-timestamp-in-utc.md:7: a decision opens with its title as an H1 — write "# <the decision>" above "## Context and Problem Statement"',
   },
   {
+    dir: "debt-section-missing",
+    rule: "B9",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md: the debt record section "Remedy" is missing — a debt record carries Debt, Impact, and Remedy',
+  },
+  {
+    dir: "debt-unknown-section",
+    rule: "B9",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md:25: "Effort" is not a debt record section — a debt record carries only Debt, Impact, and Remedy',
+  },
+  {
+    dir: "debt-section-repeated",
+    rule: "B9",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md:25: the debt record section "Impact" appears twice — a debt record carries only Debt, Impact, and Remedy',
+  },
+  {
+    dir: "debt-sections-out-of-order",
+    rule: "B9",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md:20: debt record sections are out of order — "Impact" comes after "Remedy"; the order is Debt, Impact, Remedy',
+  },
+  {
+    dir: "debt-without-title",
+    rule: "B9",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md:8: a debt record opens with its title as an H1 — write "# <the debt>" above "## Debt"',
+  },
+  {
     dir: "relationship-names-unknown-domain",
     rule: "R1",
     expect:
@@ -424,6 +466,18 @@ export const brokenBooks: BrokenBook[] = [
       'domains/ticketing/features/hold-seats-during-checkout.md:6 decisions[0]: no decision "ticketing/ADR-0001" — domains/ticketing/decisions/ is empty',
   },
   {
+    dir: "debt-decision-not-found",
+    rule: "R5",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md:6 decisions[0]: no decision "ADR-0002" — decisions/ holds ADR-0001',
+  },
+  {
+    dir: "domain-debt-decision-not-found",
+    rule: "R5",
+    expect:
+      'domains/ticketing/debt/0001-hold-expiry-is-checked-only-when-a-hold-is-read.md:6 decisions[0]: no decision "ticketing/ADR-0002" — domains/ticketing/decisions/ holds ADR-0001',
+  },
+  {
     dir: "superseded-by-missing-decision",
     rule: "R6",
     expect:
@@ -460,22 +514,46 @@ export const brokenBooks: BrokenBook[] = [
       'domains/ticketing/decisions/0001-〇〇.md: decision filenames are a four-digit number and a title in letters and digits — "〇〇" has none, so rename to "0001-your-title-here.md"',
   },
   {
+    dir: "debt-number-missing",
+    rule: "C1",
+    expect:
+      'debt/notes.md: debt record filenames start with a four-digit number — rename to "0001-holds-are-swept-by-hand.md"',
+  },
+  {
     dir: "decision-number-repeated",
     rule: "C2",
     expect:
       "domains/ticketing/decisions/0001-reject-a-capture-that-lands-after-the-hold-expired.md: ADR-0001 is already domains/ticketing/decisions/0001-expire-holds-after-ten-minutes.md — decision numbers are never reused; renumber this one to 0002",
   },
   {
+    dir: "debt-number-repeated",
+    rule: "C2",
+    expect:
+      "debt/0001-holds-are-swept-by-hand.md: TDR-0001 is already debt/0001-door-scanners-trust-their-own-clock.md — debt record numbers are never reused; renumber this one to 0002",
+  },
+  {
     dir: "decision-number-gap",
     rule: "C3",
     expect:
-      "domains/ticketing/decisions/0003-refund-a-late-capture-in-full.md: ADR-0002 is missing from domains/ticketing/decisions/ — decision numbers run from 0001 with no gaps, and an ADR is never deleted",
+      "domains/ticketing/decisions/0003-refund-a-late-capture-in-full.md: ADR-0002 is missing from domains/ticketing/decisions/ — decision numbers run from 0001 with no gaps, and a decision is never deleted",
   },
   {
     dir: "decision-number-below-0001",
     rule: "C3",
     expect:
       "decisions/0000-store-every-timestamp-in-utc.md: ADR-0000 is below 0001 — decision numbers run from 0001, so renumber this one to 0001",
+  },
+  {
+    dir: "debt-number-gap",
+    rule: "C3",
+    expect:
+      "debt/0003-door-scanners-trust-their-own-clock.md: TDR-0002 is missing from debt/ — debt record numbers run from 0001 with no gaps, and a debt record is never deleted",
+  },
+  {
+    dir: "domain-debt-number-gap",
+    rule: "C3",
+    expect:
+      "domains/ticketing/debt/0003-late-capture-refunds-are-reconciled-by-hand-each-morning.md: TDR-0002 is missing from domains/ticketing/debt/ — debt record numbers run from 0001 with no gaps, and a debt record is never deleted",
   },
   {
     dir: "decision-filename-does-not-match-title",
@@ -488,6 +566,18 @@ export const brokenBooks: BrokenBook[] = [
     rule: "C4",
     expect:
       'decisions/0001-store-the-seat-map-per-event.md: the title "〇〇" gives no filename — a decision filename is its number and its title in letters and digits, so rename to "0001-your-title-here.md"',
+  },
+  {
+    dir: "debt-filename-does-not-match-title",
+    rule: "C4",
+    expect:
+      'debt/0001-holds-are-swept.md: the filename does not match the title "Holds are swept by hand" — rename to "0001-holds-are-swept-by-hand.md"',
+  },
+  {
+    dir: "domain-debt-filename-does-not-match-title",
+    rule: "C4",
+    expect:
+      'domains/ticketing/debt/0001-hold-expiry-is-checked.md: the filename does not match the title "Hold expiry is checked only when a hold is read" — rename to "0001-hold-expiry-is-checked-only-when-a-hold-is-read.md"',
   },
   {
     dir: "domain-folder-name-mismatch",
@@ -530,5 +620,35 @@ export const brokenBooks: BrokenBook[] = [
     rule: "C10",
     expect:
       'decisions/0001-座席表をイベントごとに保存する.md: "販売開始時に公開されていた座席表をイベントごとに保存し-販売中は座席サービスから読み直さず-公演が終わるまで保存した写しを保持することで-販売途中の差し替えが支払い済みの座席を動かすことを防ぐ" is 282 bytes as UTF-8 — a slug holds at most 247, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; shorten it',
+  },
+  {
+    dir: "code-glob-absolute-path",
+    rule: "C11",
+    expect:
+      'domains/ticketing/index.md:10 code[0]: "/src/ticketing/**" starts at the filesystem root — a code path is relative to the repo root, so write "src/ticketing/**"',
+  },
+  {
+    dir: "code-glob-backslash-separator",
+    rule: "C11",
+    expect:
+      'domains/ticketing/index.md:10 code[0]: "src\\ticketing\\**" separates folders with "\\" — a code path uses "/", so write "src/ticketing/**"',
+  },
+  {
+    dir: "code-glob-climbs-out-of-the-repo",
+    rule: "C11",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md:7 code[0]: "../shared/**" climbs above the repo with ".." — a code path is relative to the repo root, so name the folder from the root instead',
+  },
+  {
+    dir: "code-glob-empty-segment",
+    rule: "C11",
+    expect:
+      'domains/ticketing/index.md:10 code[0]: "src//ticketing/**" has an empty path segment — remove the extra "/", so write "src/ticketing/**"',
+  },
+  {
+    dir: "code-glob-brace-unclosed",
+    rule: "C11",
+    expect:
+      'debt/0001-holds-are-swept-by-hand.md:7 code[0]: "src/{app,web/**" leaves "{" unclosed — close the alternatives with "}", as in "src/{app,web}/**"',
   },
 ];

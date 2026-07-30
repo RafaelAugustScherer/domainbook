@@ -7,6 +7,7 @@ import { parseMarkdown } from "../src/body/markdown.js";
 import type { ZodType } from "zod";
 import {
   configSchema,
+  debtSchema,
   decisionSchema,
   decisionStatusSchema,
   domainSchema,
@@ -20,6 +21,14 @@ import { bookDir, read } from "./paths.js";
 const withFrontmatter: Array<[string, ZodType]> = [
   ["roadmap.md", roadmapSchema],
   ["decisions/0001-store-every-timestamp-in-utc.md", decisionSchema],
+  [
+    "debt/0001-seat-identifiers-are-parsed-by-each-context-in-its-own-way.md",
+    debtSchema,
+  ],
+  [
+    "debt/0002-door-scanners-compare-the-door-time-against-their-own-clock.md",
+    debtSchema,
+  ],
   ["domains/access-control/index.md", domainSchema],
   ["domains/seating/index.md", domainSchema],
   ["domains/ticketing/index.md", domainSchema],
@@ -34,6 +43,14 @@ const withFrontmatter: Array<[string, ZodType]> = [
   [
     "domains/ticketing/decisions/0003-refund-a-late-capture-in-full.md",
     decisionSchema,
+  ],
+  [
+    "domains/ticketing/debt/0001-hold-expiry-is-checked-only-when-a-hold-is-read.md",
+    debtSchema,
+  ],
+  [
+    "domains/ticketing/debt/0002-late-capture-refunds-are-reconciled-by-hand-each-morning.md",
+    debtSchema,
   ],
   ["domains/ticketing/features/hold-seats-during-checkout.md", featureSchema],
 ];
@@ -186,6 +203,27 @@ describe("the valid fixture book", () => {
     expect(
       decisionStatusSchema.safeParse("superseded by ticketing/ADR-3").success
     ).toBe(false);
+  });
+
+  it("records debt in both logs, exercising every optional field", () => {
+    const records = withFrontmatter
+      .filter(([, schema]) => schema === debtSchema)
+      .map(([file]) =>
+        debtSchema.parse(parseFrontmatter(read(bookDir, file)).data)
+      );
+    expect(records).toHaveLength(4);
+    expect(new Set(records.map((one) => one.status))).toEqual(
+      new Set(["accepted", "open", "repaid"])
+    );
+    expect(new Set(records.map((one) => one.severity))).toEqual(
+      new Set(["low", "medium", "high", "critical"])
+    );
+    expect(new Set(records.map((one) => one.quadrant)).size).toBe(4);
+    expect(records.filter((one) => one.owners !== undefined)).toHaveLength(2);
+    expect(records.filter((one) => one.code !== undefined)).toHaveLength(2);
+    expect(records.filter((one) => one.decisions !== undefined)).toHaveLength(
+      3
+    );
   });
 
   it("covers every file in the book", () => {

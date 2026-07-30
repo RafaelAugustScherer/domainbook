@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseChangelog } from "../src/body/changelog.js";
+import { parseDebtBody } from "../src/body/debt.js";
 import { parseDecisionBody } from "../src/body/decision.js";
 import { checkDomainBody } from "../src/body/domain.js";
 import { parseFeatureBody } from "../src/body/feature.js";
@@ -340,6 +341,29 @@ describe("the decision body parser", () => {
     expect(parsed.issues.map(formatIssue)).toEqual([
       'decision.md:15: the MADR section "Consequences" is written with ## — write it with ###',
     ]);
+  });
+});
+
+describe("the debt body parser", () => {
+  it("takes the title from the H1 and accepts Debt, Impact, Remedy", () => {
+    const parsed = parseDebtBody(
+      "debt.md",
+      fromBook(
+        "debt/0001-seat-identifiers-are-parsed-by-each-context-in-its-own-way.md"
+      )
+    );
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.title).toBe(
+      "Seat identifiers are parsed by each context in its own way"
+    );
+  });
+
+  it("leaves an H3 inside a section alone", () => {
+    const source =
+      "# Holds are swept by hand\n\n## Debt\n\nNothing expires them.\n\n## Impact\n\nSeats sit unsellable.\n\n## Remedy\n\n### Now\n\nA nightly query.\n\n### Later\n\nA sweep on a timer.\n";
+    const parsed = parseDebtBody("debt.md", parseMarkdown(source, 1));
+    expect(parsed.issues).toEqual([]);
+    expect(parsed.title).toBe("Holds are swept by hand");
   });
 });
 

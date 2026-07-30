@@ -45,10 +45,13 @@ describe("the published entry point", () => {
   it("scaffolds a book and validates it, talking on stdout with status 0", () => {
     expect(ran("init").status).toBe(0);
     expect(ran("new", "domain", "ticketing").status).toBe(0);
+    expect(ran("new", "debt", "Seat map is read on every request").status).toBe(
+      0
+    );
     const validated = ran("validate");
     expect(validated.status).toBe(0);
     expect(validated.stdout).toBe(
-      "domainbook is a valid book — 1 domain, 0 features, 0 decisions, 0 terms\n"
+      "domainbook is a valid book — 1 domain, 0 features, 0 decisions, 0 terms, 1 debt record\n"
     );
     expect(validated.stderr).toBe("");
   });

@@ -29,3 +29,5 @@ export const decisionRef = z
   });
 
 export const people = z.array(z.string().min(1)).min(1);
+
+export const code = z.array(z.string().min(1)).min(1);

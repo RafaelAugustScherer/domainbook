@@ -1,0 +1,25 @@
+---
+status: open
+date: 2026-04-27
+severity: low
+quadrant: deliberate-prudent
+decisions: [ticketing/ADR-0002]
+---
+
+# Hold expiry is checked only when a hold is read
+
+## Debt
+
+A hold expires ten minutes after it is placed, but nothing expires it. The
+timestamp is compared when someone reads the hold, so a hold on seats nobody
+looks at again stays in the table as if it were live.
+
+## Impact
+
+The seat map shows the seats as held until the next read, which for a quiet
+event can be hours.
+
+## Remedy
+
+A sweep releases expired holds on a timer and writes the release as an event,
+so the seat map and the metric both read one answer.

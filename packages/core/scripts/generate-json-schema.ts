@@ -5,6 +5,7 @@ import * as z from "zod";
 import {
   changelogSchema,
   configSchema,
+  debtSchema,
   decisionSchema,
   domainSchema,
   featureSchema,
@@ -15,6 +16,7 @@ import {
 const schemas = {
   changelog: changelogSchema,
   config: configSchema,
+  debt: debtSchema,
   decision: decisionSchema,
   domain: domainSchema,
   feature: featureSchema,

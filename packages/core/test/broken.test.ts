@@ -8,6 +8,7 @@ import { parseGlossary } from "../src/body/glossary.js";
 import { parseMarkdown } from "../src/body/markdown.js";
 import {
   configSchema,
+  debtSchema,
   decisionSchema,
   domainSchema,
   featureSchema,
@@ -36,6 +37,13 @@ const frontmatterFixtures = [
   "decision-missing-status.md",
   "decision-bad-date.md",
   "decision-bad-status.md",
+  "debt-missing-date.md",
+  "debt-bad-date.md",
+  "debt-unknown-status.md",
+  "debt-unknown-severity.md",
+  "debt-unknown-quadrant.md",
+  "debt-unknown-key.md",
+  "debt-bad-decision-ref.md",
   "feature-unknown-status.md",
   "roadmap-unknown-milestone-status.md",
   "roadmap-milestone-name-not-text.md",
@@ -161,6 +169,69 @@ describe("broken frontmatter fixtures", () => {
       path: ["status"],
       message:
         'must be "proposed", "rejected", "accepted", "deprecated", or "superseded by ADR-NNNN" ("<domain-id>/ADR-NNNN" for a domain log)',
+    });
+  });
+
+  it("debt-missing-date points at date", () => {
+    expect(onlyIssue("debt-missing-date.md", debtSchema)).toMatchObject({
+      code: "invalid_type",
+      expected: "string",
+      path: ["date"],
+      message: "must be a date as YYYY-MM-DD",
+    });
+  });
+
+  it("debt-bad-date points at date", () => {
+    expect(onlyIssue("debt-bad-date.md", debtSchema)).toMatchObject({
+      code: "invalid_format",
+      format: "date",
+      path: ["date"],
+      message: "must be a date as YYYY-MM-DD",
+    });
+  });
+
+  it("debt-unknown-status spells out the three debt statuses", () => {
+    expect(onlyIssue("debt-unknown-status.md", debtSchema)).toMatchObject({
+      code: "invalid_value",
+      path: ["status"],
+      values: ["open", "accepted", "repaid"],
+    });
+  });
+
+  it("debt-unknown-severity points at severity", () => {
+    expect(onlyIssue("debt-unknown-severity.md", debtSchema)).toMatchObject({
+      code: "invalid_value",
+      path: ["severity"],
+      values: ["low", "medium", "high", "critical"],
+    });
+  });
+
+  it("debt-unknown-quadrant names the four quadrants", () => {
+    expect(onlyIssue("debt-unknown-quadrant.md", debtSchema)).toMatchObject({
+      code: "invalid_value",
+      path: ["quadrant"],
+      values: [
+        "deliberate-prudent",
+        "deliberate-reckless",
+        "inadvertent-prudent",
+        "inadvertent-reckless",
+      ],
+    });
+  });
+
+  it("debt-unknown-key names the key it did not expect", () => {
+    expect(onlyIssue("debt-unknown-key.md", debtSchema)).toMatchObject({
+      code: "unrecognized_keys",
+      path: [],
+      keys: ["effort"],
+    });
+  });
+
+  it("debt-bad-decision-ref points at the entry that is not a reference", () => {
+    expect(onlyIssue("debt-bad-decision-ref.md", debtSchema)).toMatchObject({
+      code: "invalid_format",
+      path: ["decisions", 0],
+      message: 'must be "ADR-NNNN" or "<domain-id>/ADR-NNNN"',
     });
   });
 
@@ -338,8 +409,10 @@ describe("the broken book set", () => {
       "B6",
       "B7",
       "B8",
+      "B9",
       "C1",
       "C10",
+      "C11",
       "C2",
       "C3",
       "C4",

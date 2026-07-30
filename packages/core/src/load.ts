@@ -3,17 +3,18 @@ import { join, resolve } from "node:path";
 import type { Issue } from "./issue.js";
 import { loadChangelog } from "./load/changelog.js";
 import { configFile, loadConfig } from "./load/config.js";
-import { loadLog } from "./load/decision.js";
 import { entries, relate, strange } from "./load/disk.js";
 import { loadDomain } from "./load/domain.js";
 import { loadGlossary } from "./load/glossary.js";
+import { loadLog } from "./load/log.js";
 import { loadRoadmap } from "./load/roadmap.js";
+import { debtLog, decisionLog } from "./log.js";
 import type { Book } from "./model.js";
 import { configSchema } from "./schemas/config.js";
 
 export { configFile } from "./load/config.js";
 
-const rootHolds = `a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, and domains/`;
+const rootHolds = `a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`;
 const domainsHold = "domains/ holds one folder per domain and nothing else";
 
 export function loadBook(root: string): { book: Book; issues: Issue[] } {
@@ -24,6 +25,8 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
     config: configSchema.parse({}),
     decisions: [],
     decisionFiles: [],
+    debt: [],
+    debtFiles: [],
     domains: [],
   };
 
@@ -43,10 +46,11 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
   }
 
   const known = ["roadmap.md", "glossary.md", "changelog.md", configFile];
+  const rootFolders = ["decisions", "debt", "domains"];
   for (const entry of entries(dir))
     if (
       entry.isDirectory()
-        ? entry.name !== "decisions" && entry.name !== "domains"
+        ? !rootFolders.includes(entry.name)
         : !known.includes(entry.name)
     )
       issues.push(strange(dir, entry, rootHolds));
@@ -67,10 +71,15 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
   book.changelog = changelog.record;
   issues.push(...changelog.issues);
 
-  const log = loadLog(join(dir, "decisions"), undefined);
+  const log = loadLog(dir, undefined, decisionLog);
   book.decisions = log.records;
   book.decisionFiles = log.files;
   issues.push(...log.issues);
+
+  const debt = loadLog(dir, undefined, debtLog);
+  book.debt = debt.records;
+  book.debtFiles = debt.files;
+  issues.push(...debt.issues);
 
   const domains = join(dir, "domains");
   for (const entry of entries(domains)) {

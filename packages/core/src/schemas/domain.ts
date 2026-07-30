@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { people, slug } from "./common.js";
+import { code, people, slug } from "./common.js";
 
 export const classificationSchema = z.strictObject({
   domain: z.enum(["core-domain", "supporting-domain", "generic"]),
@@ -55,7 +55,7 @@ export const domainSchema = z
     name: z.string().min(1),
     classification: classificationSchema,
     owners: people.optional(),
-    code: z.array(z.string().min(1)).min(1).optional(),
+    code: code.optional(),
     relationships: z.array(relationshipSchema).min(1).optional(),
   })
   .meta({ title: "domainbook domain frontmatter" });
