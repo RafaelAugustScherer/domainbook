@@ -94,7 +94,7 @@ export function run(argv: string[]): Result {
   const { positionals } = parsed;
   if (values.help === true) return { code: 0, lines: help };
 
-  const [command, second, third, fourth] = positionals;
+  const [command, second] = positionals;
   if (values.version === true) {
     if (command === undefined)
       return { code: 0, lines: [`domainbook ${installed()}`] };
@@ -119,6 +119,11 @@ export function run(argv: string[]): Result {
     return refuse(
       `"${command}" is not a domainbook command — the commands are validate, init, and new; run "domainbook --help" to see them`
     );
+  return runNew(values, positionals);
+}
+
+function runNew(values: Values, positionals: string[]): Result {
+  const [, second, third, fourth] = positionals;
   if (second === undefined)
     return refuse(
       '"domainbook new" needs what to write — a domain, a feature, or a decision'

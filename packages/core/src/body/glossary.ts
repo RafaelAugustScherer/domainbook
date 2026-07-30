@@ -12,7 +12,7 @@ import {
 
 type Bullet = { label: string; value: string; line: number };
 
-const bullet = /^\*\*(Aliases|Status|Example):\*\*\s*(.*)$/;
+const bullet = /^\*\*(Aliases|Status|Example):\*\*(.*)/;
 
 const layout =
   "a glossary is an optional H1 title and intro, then one H2 per term";

@@ -1,6 +1,14 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { canvas, parseFrontmatter, slug, termSlug } from "@domainbook/core";
+import {
+  canvas,
+  divergence,
+  overlong,
+  parseFrontmatter,
+  slug,
+  slugBytes,
+  termSlug,
+} from "@domainbook/core";
 import {
   entries,
   pad,
@@ -15,8 +23,6 @@ import { refuse, type Result } from "./result.js";
 
 const numbered = /^(\d+)-.*\.md$/;
 const statusLine = /^status:.*$/m;
-const mark = /\p{M}/u;
-const slugBytes = 247;
 
 export function newDomain(root: string, id: string): Result {
   const path = join(root, "domains", id, "index.md");
@@ -94,8 +100,8 @@ export function newDecision(
     return refuse(
       `"${title}" gives no filename — a decision filename is a four-digit number and the title in letters and digits, and this title has none; write one that has some`
     );
-  const bytes = Buffer.byteLength(name, "utf8");
-  if (bytes > slugBytes)
+  const bytes = overlong(name);
+  if (bytes !== undefined)
     return refuse(
       `"${title}" gives the filename slug "${name}", which is ${bytes} bytes as UTF-8 — a slug holds at most ${slugBytes} bytes, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; write a shorter title`
     );
@@ -117,7 +123,29 @@ export function newDecision(
     if (failed !== undefined) return refuse(failed);
     return { code: 0, lines: [`wrote ${relate(path)}`, after] };
   }
+  return supersede(
+    { root, dir, used, next, path, title, after },
+    domain,
+    supersedes
+  );
+}
 
+type Placed = {
+  root: string;
+  dir: string;
+  used: number[];
+  next: number;
+  path: string;
+  title: string;
+  after: string;
+};
+
+function supersede(
+  placed: Placed,
+  domain: string | undefined,
+  supersedes: string
+): Result {
+  const { root, dir, used, next, path, title, after } = placed;
   if (!/^\d+$/.test(supersedes))
     return refuse(
       `"--supersedes ${supersedes}" is not a decision number — pass the number of the decision this one replaces, as in "--supersedes 3"`
@@ -125,18 +153,25 @@ export function newDecision(
   const old = fileOf(dir, Number(supersedes));
   if (old === undefined)
     return refuse(
-      `no ADR-${pad(Number(supersedes))} in ${relate(dir)}/ — ${
-        used.length === 0
-          ? "that log holds no decisions yet, so there is nothing to supersede"
-          : `it holds ${used.map((one) => `ADR-${pad(one)}`).join(", ")}`
-      }`
+      `no ADR-${pad(Number(supersedes))} in ${relate(dir)}/ — ${holds(used)}`
     );
   const source = readFileSync(old, "utf8");
-  const { body } = parseFrontmatter(source);
+  let body;
+  try {
+    body = parseFrontmatter(source).body;
+  } catch {
+    return refuse(
+      `${relate(
+        old
+      )} has frontmatter that does not parse as YAML — run "${rooted(
+        "domainbook validate",
+        root
+      )}" to see what is wrong, fix it, then write the new decision again`
+    );
+  }
   const head = source.slice(0, source.length - body.length);
-  const status = `superseded by ${
-    domain === undefined ? "" : `${domain}/`
-  }ADR-${pad(next)}`;
+  const log = domain === undefined ? "" : `${domain}/`;
+  const status = `superseded by ${log}ADR-${pad(next)}`;
   if (!statusLine.test(head))
     return refuse(
       `${relate(
@@ -156,6 +191,13 @@ export function newDecision(
       after,
     ],
   };
+}
+
+function holds(used: number[]): string {
+  if (used.length === 0)
+    return "that log holds no decisions yet, so there is nothing to supersede";
+  const names = used.map((one) => `ADR-${pad(one)}`).join(", ");
+  return `it holds ${names}`;
 }
 
 function noBook(root: string): string | undefined {
@@ -181,67 +223,42 @@ function unwritable(value: string, what: string): string | undefined {
 }
 
 function notNfc(value: string, what: string): string | undefined {
-  const composed = value.normalize("NFC");
-  if (composed === value) return undefined;
-  const index = diverges(value, composed);
+  const wrong = divergence(value, "NFC");
+  if (wrong === undefined) return undefined;
   return `the ${what} "${value}" is not in Unicode NFC — at character ${
-    index + 1
-  } it holds ${points(value, index)} where NFC holds ${points(
-    composed,
-    index
-  )}; write "${composed}" instead, or this and the same text written elsewhere will not match`;
+    wrong.index + 1
+  } it holds ${wrong.held} where NFC holds ${wrong.wanted}; write "${
+    wrong.normalized
+  }" instead, or this and the same text written elsewhere will not match`;
 }
 
 function notNfkc(value: string, what: string): string | undefined {
-  const folded = value.normalize("NFKC");
-  if (folded === value) return undefined;
-  const index = diverges(value, folded);
-  return `the ${what} "${value}" folds to "${folded}" under NFKC — character ${
-    index + 1
-  } is ${points(
-    value,
-    index
-  )}, a compatibility form; write "${folded}" instead, or this and the ${what} it looks like are two different names`;
+  const wrong = divergence(value, "NFKC");
+  if (wrong === undefined) return undefined;
+  return `the ${what} "${value}" folds to "${
+    wrong.normalized
+  }" under NFKC — character ${wrong.index + 1} is ${
+    wrong.held
+  }, a compatibility form; write "${
+    wrong.normalized
+  }" instead, or this and the ${what} it looks like are two different names`;
 }
 
 function tooLong(value: string, what: string): string | undefined {
-  const bytes = Buffer.byteLength(value, "utf8");
-  if (bytes <= slugBytes) return undefined;
+  const bytes = overlong(value);
+  if (bytes === undefined) return undefined;
   return `the ${what} "${value}" is ${bytes} bytes as UTF-8 — a ${what} holds at most ${slugBytes} bytes, so the filenames it forms fit the 255 bytes ext4 and APFS give one; write a shorter one`;
-}
-
-function diverges(value: string, wanted: string): number {
-  const held = [...value];
-  const other = [...wanted];
-  let index = 0;
-  while (index < held.length && held[index] === other[index]) index += 1;
-  return index;
-}
-
-function points(value: string, index: number): string {
-  const chars = [...value];
-  const run = [chars[index] ?? ""];
-  for (let at = index + 1; at < chars.length; at += 1) {
-    if (!mark.test(chars[at] ?? "")) break;
-    run.push(chars[at] ?? "");
-  }
-  return run.map(codepoint).join(" ");
-}
-
-function codepoint(char: string): string {
-  return `U+${(char.codePointAt(0) ?? 0)
-    .toString(16)
-    .toUpperCase()
-    .padStart(4, "0")}`;
 }
 
 function noDomain(root: string, id: string): string | undefined {
   if (existsSync(join(root, "domains", id, "index.md"))) return undefined;
   const known = domains(root);
+  const others =
+    known.length === 0 ? "" : `, or name one of ${known.join(", ")}`;
   return `no domain "${id}" in ${relate(root)} — run "${rooted(
     `domainbook new domain ${id}`,
     root
-  )}" first${known.length === 0 ? "" : `, or name one of ${known.join(", ")}`}`;
+  )}" first${others}`;
 }
 
 function taken(path: string): string | undefined {
@@ -275,6 +292,7 @@ function numberOf(name: string): number {
 }
 
 function domainPage(id: string): string {
+  const sections = canvas.map((section) => `\n## ${section}\n`).join("");
   return `---
 id: ${quoted(id)}
 name: ${quoted(titled(id))}
@@ -283,7 +301,7 @@ classification: # all three are placeholders — set them before anyone reads th
   business-model: revenue-generator
   evolution: custom-built
 ---
-${canvas.map((section) => `\n## ${section}\n`).join("")}`;
+${sections}`;
 }
 
 function featurePage(id: string): string {

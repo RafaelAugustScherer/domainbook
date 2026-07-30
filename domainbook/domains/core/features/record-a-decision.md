@@ -88,6 +88,16 @@ Example: A reference where a number belongs is refused
   Then it refuses with: "--supersedes ADR-0001" is not a decision number — pass the number of the decision this one replaces, as in "--supersedes 3"
 ```
 
+## Rule: An old record the tool cannot read is refused, not crashed on
+
+```gherkin
+Example: Broken frontmatter in the old record points at validate
+  Given the ticketing log holding ADR-0001 whose frontmatter does not parse as YAML
+  When domainbook new decision "Extend holds to fifteen minutes" --domain ticketing --supersedes 1 runs
+  Then it refuses with: domainbook/domains/ticketing/decisions/0001-expire-holds-after-ten-minutes.md has frontmatter that does not parse as YAML — run "domainbook validate" to see what is wrong, fix it, then write the new decision again
+  And no new decision is written
+```
+
 ## Open Questions
 
 - Two decisions can supersede the same record one after the other, and the old

@@ -33,15 +33,12 @@ export function sortIssues(issues: Issue[]): Issue[] {
 }
 
 export function dotted(path: PropertyKey[]): string {
-  return path.reduce<string>(
-    (text, key) =>
-      typeof key === "number"
-        ? `${text}[${key}]`
-        : text === ""
-        ? String(key)
-        : `${text}.${String(key)}`,
-    ""
-  );
+  let text = "";
+  for (const key of path) {
+    if (typeof key === "number") text += `[${key}]`;
+    else text = text === "" ? String(key) : `${text}.${String(key)}`;
+  }
+  return text;
 }
 
 export function schemaIssues(

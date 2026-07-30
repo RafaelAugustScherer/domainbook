@@ -159,64 +159,38 @@ describe("the changelog parser", () => {
     ]);
   });
 
-  it("rejects an unreleased section written below a release", () => {
-    const source =
-      "## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n\n## [Unreleased]\n\n### Added\n\n- Queues.\n";
-    const issues = parseChangelog(
-      "changelog.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues.map(formatIssue)).toEqual([
+  it.each([
+    [
+      "rejects an unreleased section written below a release",
+      "## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n\n## [Unreleased]\n\n### Added\n\n- Queues.\n",
       'changelog.md:7: "[Unreleased]" comes after a release — an unreleased section comes above every release',
-    ]);
-  });
-
-  it("names a bucket that sits above every release", () => {
-    const source =
-      "# Changelog\n\n### Added\n\n- Floating.\n\n## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n";
-    const issues = parseChangelog(
-      "changelog.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues.map(formatIssue)).toEqual([
+    ],
+    [
+      "names a bucket that sits above every release",
+      "# Changelog\n\n### Added\n\n- Floating.\n\n## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n",
       'changelog.md:3: "Added" is not part of a release — a changelog is an optional H1 title and intro, then "## [Unreleased]" and one H2 per release',
-    ]);
-  });
-
-  it("rejects a second H1 written between releases", () => {
-    const source =
-      "# Changelog\n\n## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n\n# Older releases\n\n## [0.9.0] - 2026-03-01\n\n### Added\n\n- Seats.\n";
-    const issues = parseChangelog(
-      "changelog.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues.map(formatIssue)).toEqual([
+    ],
+    [
+      "rejects a second H1 written between releases",
+      "# Changelog\n\n## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n\n# Older releases\n\n## [0.9.0] - 2026-03-01\n\n### Added\n\n- Seats.\n",
       'changelog.md:9: "Older releases" is a second H1 — a changelog is an optional H1 title and intro, then "## [Unreleased]" and one H2 per release',
-    ]);
-  });
-
-  it("does not call releases out of order when a date is malformed", () => {
-    const source =
-      "## [1.2.0] - 06-30-2026\n\n### Added\n\n- Refunds.\n\n## [1.1.0] - 2026-05-04\n\n### Added\n\n- Holds.\n";
-    const issues = parseChangelog(
-      "changelog.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues.map(formatIssue)).toEqual([
+    ],
+    [
+      "does not call releases out of order when a date is malformed",
+      "## [1.2.0] - 06-30-2026\n\n### Added\n\n- Refunds.\n\n## [1.1.0] - 2026-05-04\n\n### Added\n\n- Holds.\n",
       "changelog.md:1 releases[0].date: must be a date as YYYY-MM-DD",
-    ]);
-  });
-
-  it("rejects a bucket with no bullets under it", () => {
-    const source =
-      "## [1.0.0] - 2026-04-02\n\n### Added\n\n### Fixed\n\n- A.\n";
+    ],
+    [
+      "rejects a bucket with no bullets under it",
+      "## [1.0.0] - 2026-04-02\n\n### Added\n\n### Fixed\n\n- A.\n",
+      'changelog.md:3: "Added" lists nothing — write each change as a "- " bullet, or drop the heading',
+    ],
+  ])("%s", (_name, source, expected) => {
     const issues = parseChangelog(
       "changelog.md",
       parseMarkdown(source, 1)
     ).issues;
-    expect(issues.map(formatIssue)).toEqual([
-      'changelog.md:3: "Added" lists nothing — write each change as a "- " bullet, or drop the heading',
-    ]);
+    expect(issues.map(formatIssue)).toEqual([expected]);
   });
 });
 
@@ -252,42 +226,36 @@ describe("the feature parser", () => {
     expect(source.split("\n")[(issues[0]?.line ?? 1) - 1]).toBe("```");
   });
 
-  it("rejects a gherkin block that belongs to no rule", () => {
-    const source =
-      "## Story\n\nAs a fan\n\n```gherkin\nExample: stray\n  Given a hold\n```\n\n## Rule: A hold expires\n\n## Open Questions\n\n- None.\n";
+  it.each([
+    [
+      "rejects a gherkin block that belongs to no rule",
+      "## Story\n\nAs a fan\n\n```gherkin\nExample: stray\n  Given a hold\n```\n\n## Rule: A hold expires\n\n## Open Questions\n\n- None.\n",
+      [
+        'feature.md:5: a gherkin example belongs to a rule — move this block under a "## Rule: …" heading',
+      ],
+    ],
+    [
+      "rejects a section written twice",
+      "## Story\n\nAs a fan\n\n## Story\n\nAgain\n\n## Rule: A hold expires\n\n## Rule: A hold expires\n\n## Open Questions\n\n- None.\n\n## Open Questions\n\n- None.\n",
+      [
+        'feature.md:5: the feature section "Story" appears twice — a feature is Story, then its rules, then Open Questions',
+        'feature.md:11: the feature section "Rule: A hold expires" appears twice — a feature is Story, then its rules, then Open Questions',
+        'feature.md:17: the feature section "Open Questions" appears twice — a feature is Story, then its rules, then Open Questions',
+      ],
+    ],
+    [
+      "rejects a gherkin block with no example in it",
+      "## Story\n\nAs a fan\n\n## Rule: A hold expires\n\n```gherkin\n```\n\n## Open Questions\n\n- None.\n",
+      [
+        'feature.md:7: this gherkin block documents nothing — write "Example: …" with its Given/When/Then steps, or remove the block',
+      ],
+    ],
+  ])("%s", (_name, source, expected) => {
     const issues = parseFeatureBody(
       "feature.md",
       parseMarkdown(source, 1)
     ).issues;
-    expect(issues.map(formatIssue)).toEqual([
-      'feature.md:5: a gherkin example belongs to a rule — move this block under a "## Rule: …" heading',
-    ]);
-  });
-
-  it("rejects a section written twice", () => {
-    const source =
-      "## Story\n\nAs a fan\n\n## Story\n\nAgain\n\n## Rule: A hold expires\n\n## Rule: A hold expires\n\n## Open Questions\n\n- None.\n\n## Open Questions\n\n- None.\n";
-    const issues = parseFeatureBody(
-      "feature.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues.map(formatIssue)).toEqual([
-      'feature.md:5: the feature section "Story" appears twice — a feature is Story, then its rules, then Open Questions',
-      'feature.md:11: the feature section "Rule: A hold expires" appears twice — a feature is Story, then its rules, then Open Questions',
-      'feature.md:17: the feature section "Open Questions" appears twice — a feature is Story, then its rules, then Open Questions',
-    ]);
-  });
-
-  it("rejects a gherkin block with no example in it", () => {
-    const source =
-      "## Story\n\nAs a fan\n\n## Rule: A hold expires\n\n```gherkin\n```\n\n## Open Questions\n\n- None.\n";
-    const issues = parseFeatureBody(
-      "feature.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues.map(formatIssue)).toEqual([
-      'feature.md:7: this gherkin block documents nothing — write "Example: …" with its Given/When/Then steps, or remove the block',
-    ]);
+    expect(issues.map(formatIssue)).toEqual(expected);
   });
 
   it("reads a fence tagged Gherkin the same as gherkin", () => {

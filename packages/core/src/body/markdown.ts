@@ -9,8 +9,8 @@ export type Text = Extract<Node, { kind: "text" }>;
 export type Section = { heading: Heading; nodes: Node[] };
 export type Item = { text: string; line: number };
 
-const opener = /^\s*(`{3,}|~{3,})(.*)$/;
-const title = /^(#{1,6})\s+(.*)$/;
+const opener = /^[ \t]*(`{3,}|~{3,})(.*)/;
+const title = /^(#{1,6})[ \t](.*)/;
 
 export function parseMarkdown(body: string, first: number): Node[] {
   const nodes: Node[] = [];

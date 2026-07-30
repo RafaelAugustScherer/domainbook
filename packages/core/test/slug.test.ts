@@ -73,10 +73,15 @@ describe("the slug grammar", () => {
     const ascii = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
     const alphabet = "abcdefghijklmnopqrstuvwxyz0123456789-";
     const now = new RegExp(`^${slugSource}$`, "u");
+    let seed = 1;
+    const pick = () => {
+      seed = (seed * 48271) % 2147483647;
+      return alphabet[seed % alphabet.length];
+    };
     for (let count = 0; count < 20000; count += 1) {
       let value = "";
       for (let length = 1 + (count % 12); length > 0; length -= 1)
-        value += alphabet[Math.floor(Math.random() * alphabet.length)];
+        value += pick();
       expect(now.test(value), value).toBe(ascii.test(value));
     }
   });

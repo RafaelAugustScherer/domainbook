@@ -51,17 +51,35 @@ export function checkSections(
     }
     seen.push(heading);
   }
-  for (const section of expected)
-    if (
-      section.optional !== true &&
-      !seen.some((heading) => heading.text === section.text)
-    )
-      issues.push({
-        file,
-        message: `the ${wording.kind} section "${section.text}" is missing — ${wording.missing}`,
-      });
+  issues.push(...missingSections(file, seen, expected, wording));
   if (issues.length > 0) return issues;
+  return misordered(file, seen, expected, wording);
+}
 
+function missingSections(
+  file: string,
+  seen: Heading[],
+  expected: Expected[],
+  wording: Wording
+): Issue[] {
+  return expected
+    .filter(
+      (section) =>
+        section.optional !== true &&
+        !seen.some((heading) => heading.text === section.text)
+    )
+    .map((section) => ({
+      file,
+      message: `the ${wording.kind} section "${section.text}" is missing — ${wording.missing}`,
+    }));
+}
+
+function misordered(
+  file: string,
+  seen: Heading[],
+  expected: Expected[],
+  wording: Wording
+): Issue[] {
   let above: { heading: Heading; rank: number } | undefined;
   for (const heading of seen) {
     const rank = expected.findIndex((section) => section.text === heading.text);
