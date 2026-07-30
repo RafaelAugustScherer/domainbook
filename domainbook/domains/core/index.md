@@ -9,10 +9,14 @@ owners: [RafaelAugustScherer]
 code:
   - packages/core/src/body/**
   - packages/core/src/check.ts
+  - packages/core/src/check/**
   - packages/core/src/index.ts
   - packages/core/src/issue.ts
   - packages/core/src/load.ts
+  - packages/core/src/load/**
+  - packages/core/src/log.ts
   - packages/core/src/model.ts
+  - packages/core/src/unicode.ts
   - packages/core/src/validate.ts
   - packages/core/test/*.ts
   - packages/cli/**
@@ -70,20 +74,20 @@ the CLI is where a person or an agent meets domainbook at all.
   fix (`core/ADR-0003`).
 - One broken file stays one broken file. A domain whose `index.md` cannot be read
   or does not fit the schema keeps the id its folder gives it, and its glossary,
-  changelog, features and decisions load anyway; a decision log is numbered over
-  every numbered file in it, not only the ones whose frontmatter parsed. Dropping
-  a record makes the records around it look wrong — a deleted domain breaks other
-  domains' relationships, a skipped file reads as a hole in a log — which is the
-  cascade `core/ADR-0003` exists to prevent.
+  changelog, features, decisions and debt load anyway; a log — decisions and debt
+  alike — is numbered over every numbered file in it, not only the ones whose
+  frontmatter parsed. Dropping a record makes the records around it look wrong —
+  a deleted domain breaks other domains' relationships, a skipped file reads as a
+  hole in a log — which is the cascade `core/ADR-0003` exists to prevent.
 - Nothing reaches a reader as a stack trace. A path that cannot be read, written,
   or opened comes back as an issue from the loader or a refusal from the CLI, and
   either way it names the path and what to do about it.
 - The generators write only what validates: `init`, then `new domain`, then
-  `new feature`, then `new decision`, and `validate` passes with nothing edited.
-  That is why an id or a decision title that is not in NFC, that folds under
-  NFKC, or that would give a filename over 247 bytes is refused before anything
-  is written, naming the code point at fault and the form to write instead
-  (`format/ADR-0016`).
+  `new feature`, then `new decision`, then `new debt`, and `validate` passes with
+  nothing edited. That is why an id or a decision title that is not in NFC, that
+  folds under NFKC, or that would give a filename over 247 bytes is refused
+  before anything is written, naming the code point at fault and the form to
+  write instead (`format/ADR-0016`).
 - The slug rules are computed once. `divergence`, `overlong`, and `slugBytes`
   are core exports; `validate` and the generators both read them and word their
   own messages, so the two cannot disagree about the same id (`core/ADR-0006`).

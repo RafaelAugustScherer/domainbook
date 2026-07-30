@@ -3,7 +3,7 @@ id: domainbook
 milestones:
   - { id: phase-0, name: Foundations and spec, status: done }
   - { id: phase-1, name: Core and CLI, status: done }
-  - { id: phase-1-1, name: Technical debt records, status: planned }
+  - { id: phase-1-1, name: Technical debt records, status: done }
   - { id: phase-2, name: Enforcement loop, status: planned }
   - { id: phase-3, name: MCP server, status: planned }
   - { id: phase-4, name: Website, status: planned }
@@ -33,9 +33,11 @@ commit onward.
 - **Enforcement, not hope**: agent instructions alone are steering; the guarantee comes
   from a three-layer loop (in-session agent hook → git hook → CI) with waivers recorded
   as git commit trailers, permanently auditable.
-- **Standards all the way down**: every artifact adopts an existing versioned format
-  (MADR 4.0, Bounded Context Canvas, Context Mapper vocabulary, Gherkin, Keep a
-  Changelog) so data exports field-for-field into existing tools.
+- **Standards all the way down**: an artifact adopts an existing versioned format
+  wherever one exists (MADR 4.0, Bounded Context Canvas, Context Mapper vocabulary,
+  Gherkin, Keep a Changelog) so data exports field-for-field into existing tools. Two
+  of the seven have no standard to adopt — the roadmap (`format/ADR-0009`) and debt
+  (`ADR-0013`) — and each says so in its own record rather than claiming a lineage.
 - **Free and open** (MIT), including the MCP server.
 
 domainbook draws inspiration from docs-as-code tools — notably [EventCatalog](https://www.eventcatalog.dev/),
@@ -70,7 +72,7 @@ since are in the same logs and not repeated here.
 
 ## The book format
 
-One folder per repo (default `domainbook/`). Six artifact types, each adopting an
+One folder per repo (default `domainbook/`). Seven artifact types, five adopting an
 existing standard so exports are mechanical:
 
 ```
@@ -81,6 +83,8 @@ domainbook/
 ├── changelog.md                  # book-wide changes (optional)
 ├── decisions/                    # cross-domain ADRs (MADR 4.0)
 │   └── 0001-record-title.md
+├── debt/                         # cross-domain technical debt records
+│   └── 0001-record-title.md
 └── domains/
     └── billing/
         ├── index.md              # bounded context canvas
@@ -88,8 +92,10 @@ domainbook/
         ├── changelog.md          # Keep a Changelog 1.1.0 format, date-based
         ├── features/
         │   └── refund-order.md   # story + rules + gherkin examples
-        └── decisions/
-            └── 0001-outbox.md    # domain-scoped MADR
+        ├── decisions/
+        │   └── 0001-outbox.md    # domain-scoped MADR
+        └── debt/
+            └── 0001-manual-sweep.md   # domain-scoped debt record
 ```
 
 **Domain (`index.md`)** — a Bounded Context Canvas V5 split between frontmatter and
@@ -151,6 +157,16 @@ sequences rather than prose.
 is immutable, so changing course is a new ADR that marks the old one superseded — where
 MADR's `date` means "last updated", ours means the date the decision was taken.
 
+**Debt (`debt/NNNN-*.md`)** — the decision log's twin, and the one living artifact in
+the book: a known shortcut or gap, with `status: open | accepted | repaid`, `date`,
+`severity`, and Fowler's `quadrant` in frontmatter, and Debt, Impact, Remedy as the
+body. Optional `owners`, `code:` globs, and `decisions:` trace it to what carries it.
+Derived from Michael Stal's Technical Debt Records rather than conformant to a
+maintained spec (`ADR-0013`); the exact schema and body grammar are in
+`format/ADR-0017`. Numbered like a decision log — from 0001, no gaps, never reused,
+never deleted — but edited in place rather than superseded, and `TDR-NNNN` names one
+in a message rather than in a reference an artifact can carry.
+
 **Changelog (`changelog.md`)** — Keep a Changelog 1.1.0 content format with dated sections
 and the six buckets (Added/Changed/Deprecated/Removed/Fixed/Security). Together with ADR
 chains this carries decision history; git holds the full archive, so there are no
@@ -166,7 +182,7 @@ not all agree with it: the slug accepts any script, so its pattern uses Unicode 
 escapes, which JSON Schema does not guarantee — Python's validators fail loudly on it, and
 a JavaScript consumer that compiles without the `u` flag fails silently, meaning the
 opposite (`format/ADR-0016`). The
-four artifacts with frontmatter — roadmap, domain, feature, decision — have their
+five artifacts with frontmatter — roadmap, domain, feature, decision, debt — have their
 frontmatter described that way; the glossary and changelog carry none, so their schemas
 describe the parsed body.
 
@@ -234,8 +250,10 @@ exists. So this artifact is *derived from* Stal's TDR and credited as such, narr
 to domainbook size the way MADR's frontmatter was (`format/ADR-0004`):
 
 - **Log layout**: `debt/NNNN-<slug>.md` at the book root and per domain — the decision
-  log's twin: 4-digit sequential numbers never reused, referenced as `TDR-NNNN` and
-  qualified as `<domain-id>/TDR-NNNN` across logs (the `format/ADR-0005` rule).
+  log's twin: 4-digit sequential numbers never reused, named `TDR-NNNN` in messages.
+  The qualified `<domain-id>/TDR-NNNN` form this section originally planned was not
+  built: nothing in a book can reference a debt record yet, so there is no grammar to
+  resolve (`format/ADR-0017`).
 - **Frontmatter**: required `status: open | accepted | repaid`, `date` (when the debt
   was recorded), `severity: low | medium | high | critical` (Stal's four levels), and
   `quadrant: deliberate-prudent | deliberate-reckless | inadvertent-prudent |

@@ -14,6 +14,60 @@ against them with the tool itself.
 
 ### Added
 
+- Technical debt records, the seventh artifact type. `debt/NNNN-<slug>.md` sits
+  at the book root and inside each domain, numbered the way a decision log is:
+  from 0001, no gaps, never reused, never deleted. Four required frontmatter
+  fields — `status: open | accepted | repaid`, `date`, `severity: low | medium |
+  high | critical`, and `quadrant: deliberate-prudent | deliberate-reckless |
+  inadvertent-prudent | inadvertent-reckless` — and three optional ones:
+  `owners`, `code:` globs tracing the debt to the code that carries it, and
+  `decisions:` naming the ADR whose consequences incurred it. The body is the
+  title as an H1 and three H2s: Debt, Impact, Remedy (`ADR-0013`,
+  `format/ADR-0017`). Unlike a decision, a debt record is living — edited in
+  place, its status flipped to `repaid` or `accepted`, never superseded.
+  `packages/core/schema/debt.schema.json` is generated and committed with the
+  rest, so an editor checks the frontmatter as it is typed.
+
+  One thing the format does not yet do: `TDR-0001` is how `validate` names a
+  record in a message, and nothing in a book can point at one. There is no
+  `debt:` field on any artifact and no qualified `<domain-id>/TDR-NNNN`
+  reference — writing one is a later decision, not a gap to fill in silently
+  (`format/ADR-0017`).
+- `domainbook new debt "<title>" [root] [--domain <domain-id>]` writes a debt
+  record that already validates, taking the next free number in the log it is
+  written to. It has no `--supersedes`, and passing one is refused: a debt
+  record is edited in place, so there is nothing to supersede. `severity` and
+  `quadrant` are written as placeholders with a comment on the line saying so.
+- `code:` globs are checked for syntax, on domain pages and debt records alike.
+  An absolute path, a segment climbing out of the repo with `..`, a backslash
+  separator, an empty segment, an unbalanced `{}` or `[]`, and a pattern naming
+  no path are each refused with the pattern to write instead, as in
+  `"src\ticketing\**" separates folders with "\" — a code path uses "/", so write "src/ticketing/**"`
+  (`format/ADR-0018`).
+
+  A pattern a message offers is a pattern the check accepts. The correction
+  fixes every fault in the pattern rather than the one that fired, so pasting it
+  ends the exchange: `\src\billing\**` is answered with `src/billing/**` and not
+  the `/src/billing/**` that would fail the next rule, and `/src//x/**` with
+  `src/x/**` and not `src//x/**`. The two faults no rewrite can repair — `..`
+  and an unbalanced bracket — are reported ahead of the rest and answered in
+  prose, so `..\shared\**` and `/../shared/**` both name climbing above the repo
+  rather than a separator or a leading slash.
+
+  A backslash escapes `[ ] { } * ? \`, which is the only way to name a literal
+  bracket in a path: `app/\[locale\]/**` matches a Next.js route folder, and an
+  escaped bracket does not count toward the `{}` and `[]` balance. Unescaped,
+  `app/[locale]/**` is still a character class matching one letter out of
+  `locale` — a glob, not that folder. A backslash before anything else is a
+  Windows separator, and one of those settles the whole pattern: every backslash
+  in it is then read as `/`, escapes included. That is what keeps
+  `src\ticketing\**` answering `src/ticketing/**` instead of reading its
+  trailing `\*` as an escaped star.
+
+  **This can fail a book that passed before.** A domain page's `code:` list was
+  never checked, so `- /src/billing/**` or a pasted Windows path validated and
+  then quietly matched nothing. Each bad pattern is now one issue, and the
+  message carries the corrected pattern, so the fix is a paste.
 - `domainbook --version` (short `-v`) prints `domainbook <version>` and exits 0.
   The version is read from the installed package's own `package.json` when the
   command runs, so it is the version you actually have rather than one baked in
@@ -47,13 +101,14 @@ against them with the tool itself.
   the spec and the `code:` globs split between them (`ADR-0011`). Its three
   features — validating a book, scaffolding one, recording a decision — are the
   first feature artifacts this book carries about itself.
-- Schemas for all six artifact types and the config file, authored in zod, with
+- Schemas for all seven artifact types and the config file, authored in zod, with
   JSON Schema (draft 2020-12) generated and committed under
-  `packages/core/schema`. Four artifacts carry frontmatter — roadmap, domain,
-  feature, decision — and for those, plus the config file, pointing an editor at
-  the schema means frontmatter is checked as it is typed. The glossary and the
-  changelog have no frontmatter (`format/ADR-0003`); their schemas describe the
-  parsed body, so they are for tools reading a book rather than for an editor.
+  `packages/core/schema`. Five artifacts carry frontmatter — roadmap, domain,
+  feature, decision, debt — and for those, plus the config file, pointing an
+  editor at the schema means frontmatter is checked as it is typed. The glossary
+  and the changelog have no frontmatter (`format/ADR-0003`); their schemas
+  describe the parsed body, so they are for tools reading a book rather than for
+  an editor.
 - Body conventions for domain pages, glossaries, and features: which headings a
   file must carry, and in what order. Writing an artifact by hand is now a
   question with an answer (`format/ADR-0003`).
@@ -71,6 +126,26 @@ against them with the tool itself.
 
 ### Changed
 
+- Messages that name what a book holds now name debt too. This matters only if
+  you assert them:
+  - `validate`'s success line ends with a count of debt records:
+    `domainbook is a valid book — 1 domain, 1 feature, 3 decisions, 0 terms, 2 debt records`.
+  - a book root holds `decisions/*.md`, `debt/*.md`, and `domains/`; a domain
+    folder holds `features/*.md`, `decisions/*.md`, and `debt/*.md`.
+  - the numbering gap message ends `and a decision is never deleted` where it
+    said `and an ADR is never deleted`. The two logs share one sentence now, and
+    `an TDR` is not English (`core/ADR-0007`).
+  - `domainbook new` with nothing after it, and with an artifact it does not
+    know, both name a debt record alongside a domain, a feature, and a decision.
+  - `--help` gains a `new debt` usage line, and the `new` and `--domain` lines
+    mention debt records.
+- `@domainbook/core` exports one log machinery instead of two copies:
+  `DecisionFile` is now `LogFile`, and `DecisionRecord` and the new `DebtRecord`
+  are both `LogRecord<T>`. One loader and one set of numbering and filename
+  checks serve the decision log and the debt log, so a rule about either is
+  written once — and, unavoidably, a message reworded for one is reworded for
+  both (`core/ADR-0007`). `debtSchema` and the `Debt` type join the exports.
+  Nothing is published, so the rename costs no one an import.
 - A slug is words joined by single hyphens in any script, not only in `a-z0-9`. A
   word starts with a letter or digit and carries no capitals, and a name keeps its
   own letters instead of being folded towards ASCII: "Café Order" is `café-order`,

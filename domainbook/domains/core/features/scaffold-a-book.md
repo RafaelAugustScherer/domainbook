@@ -20,12 +20,12 @@ Example: init writes a roadmap and a config, and the book is valid
   Given a repo with no book
   When domainbook init runs
   Then it writes domainbook/roadmap.md and domainbook/domainbook.config.yaml
-  And domainbook validate prints: domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms
+  And domainbook validate prints: domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 0 debt records
 
 Example: The book root is the last argument, and it defaults to domainbook
   Given domainbook init docs/book has written a book
   When domainbook new domain ticketing docs/book runs
-  Then domainbook validate docs/book prints: docs/book is a valid book — 1 domain, 0 features, 0 decisions, 0 terms
+  Then domainbook validate docs/book prints: docs/book is a valid book — 1 domain, 0 features, 0 decisions, 0 terms, 0 debt records
 ```
 
 ## Rule: Every generator writes a page that still validates
@@ -36,7 +36,7 @@ Example: A domain, a feature and a decision written one after another
   When domainbook new domain ticketing runs
   And domainbook new feature hold-seats-during-checkout --domain ticketing runs
   And domainbook new decision "Expire holds after ten minutes" --domain ticketing runs
-  Then domainbook validate prints: domainbook is a valid book — 1 domain, 1 feature, 1 decision, 0 terms
+  Then domainbook validate prints: domainbook is a valid book — 1 domain, 1 feature, 1 decision, 0 terms, 0 debt records
   And each command has printed what is left to fill in on the page it wrote
 ```
 
