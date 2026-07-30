@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { bookRoot } from "./files.js";
 import { init } from "./init.js";
-import { newDecision, newDomain, newFeature } from "./new.js";
+import { newDebt, newDecision, newDomain, newFeature } from "./new.js";
 import { refuse, type Result } from "./result.js";
 import { validate } from "./validate.js";
 
@@ -52,6 +52,11 @@ const commands = {
       'domainbook new decision "<title>" [root] [--domain <domain-id>] [--supersedes <number>]',
     options: ["domain", "supersedes"],
   },
+  debt: {
+    name: "domainbook new debt",
+    usage: 'domainbook new debt "<title>" [root] [--domain <domain-id>]',
+    options: ["domain"],
+  },
 } as const satisfies Record<string, Command>;
 
 const help = [
@@ -63,14 +68,16 @@ const help = [
   `  ${commands.domain.usage}`,
   `  ${commands.feature.usage}`,
   `  ${commands.decision.usage}`,
+  `  ${commands.debt.usage}`,
   "",
   "commands:",
   "  validate   read the book and print every issue, one per line",
   "  init       write a new book: roadmap.md and domainbook.config.yaml",
-  "  new        add a domain page, a feature, or a decision",
+  "  new        add a domain page, a feature, a decision, or a debt record",
   "",
   "options:",
-  "  --domain <domain-id>    the domain a feature or a decision belongs to",
+  "  --domain <domain-id>    the domain a feature, a decision, or a debt record",
+  "                          belongs to",
   "  --supersedes <number>   the decision this new one replaces",
   "  -h, --help              print this",
   "  -v, --version           print the version of domainbook that is installed",
@@ -126,7 +133,7 @@ function runNew(values: Values, positionals: string[]): Result {
   const [, second, third, fourth] = positionals;
   if (second === undefined)
     return refuse(
-      '"domainbook new" needs what to write — a domain, a feature, or a decision'
+      '"domainbook new" needs what to write — a domain, a feature, a decision, or a debt record'
     );
   if (second === "domain") {
     if (third === undefined)
@@ -158,8 +165,18 @@ function runNew(values: Values, positionals: string[]): Result {
       newDecision(bookRoot(fourth), third, values.domain, values.supersedes)
     );
   }
+  if (second === "debt") {
+    if (third === undefined)
+      return refuse(
+        `"domainbook new debt" needs a title — usage: ${commands.debt.usage}`
+      );
+    return (
+      stop(commands.debt, values, positionals, 4) ??
+      newDebt(bookRoot(fourth), third, values.domain)
+    );
+  }
   return refuse(
-    `"${second}" is not a domainbook artifact — "domainbook new" writes a domain, a feature, or a decision`
+    `"${second}" is not a domainbook artifact — "domainbook new" writes a domain, a feature, a decision, or a debt record`
   );
 }
 
@@ -217,7 +234,12 @@ function asked(argv: string[]): Command | undefined {
   const [first, second] = argv.filter((one) => !one.startsWith("-"));
   if (first === "validate" || first === "init") return commands[first];
   if (first !== "new") return undefined;
-  if (second === "domain" || second === "feature" || second === "decision")
+  if (
+    second === "domain" ||
+    second === "feature" ||
+    second === "decision" ||
+    second === "debt"
+  )
     return commands[second];
   return undefined;
 }

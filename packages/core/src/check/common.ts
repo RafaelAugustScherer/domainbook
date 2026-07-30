@@ -1,5 +1,5 @@
 import type { Issue } from "../issue.js";
-import type { Book } from "../model.js";
+import type { Book, FieldLines } from "../model.js";
 import { slug, slugSource } from "../schemas/common.js";
 import { divergence, overlong, slugBytes } from "../unicode.js";
 
@@ -58,14 +58,35 @@ export function findDecision(book: Book, ref: string): string | undefined {
   const files =
     domain === undefined ? book.decisionFiles : domain.decisionFiles;
   if (files.some((one) => one.number === Number(match[2]))) return undefined;
-  const dir = logDir(id);
+  const dir = logDir("decisions", id);
   if (files.length === 0) return `${dir} is empty`;
   const names = files.map((one) => `ADR-${pad(one.number)}`);
   return `${dir} holds ${listed(names)}`;
 }
 
-export function logDir(id: string | undefined): string {
-  return id === undefined ? "decisions/" : `domains/${id}/decisions/`;
+export function checkDecisionRefs(
+  book: Book,
+  source: { file: string; lines: FieldLines },
+  refs: string[]
+): Issue[] {
+  const issues: Issue[] = [];
+  for (const [index, ref] of refs.entries()) {
+    const field = `decisions[${index}]`;
+    const at = { file: source.file, line: source.lines[field], field };
+    const unnormalized = notNfc(at, ref) ?? notNfkc(at, ref);
+    if (unnormalized !== undefined) {
+      issues.push(unnormalized);
+      continue;
+    }
+    const missing = findDecision(book, ref);
+    if (missing !== undefined)
+      issues.push({ ...at, message: `no decision "${ref}" — ${missing}` });
+  }
+  return issues;
+}
+
+export function logDir(dir: string, id: string | undefined): string {
+  return id === undefined ? `${dir}/` : `domains/${id}/${dir}/`;
 }
 
 export function inBook(book: Book, file: string): string {

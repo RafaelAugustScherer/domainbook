@@ -5,6 +5,7 @@ import {
   type Book,
   checkBook,
   configSchema,
+  type DebtRecord,
   type DecisionRecord,
   type DomainRecord,
   formatIssue,
@@ -32,6 +33,8 @@ function assembled(parts: Partial<Book>): Book {
     config: configSchema.parse({}),
     decisions: [],
     decisionFiles: [],
+    debt: [],
+    debtFiles: [],
     domains: [],
     ...parts,
   };
@@ -44,6 +47,38 @@ function recorded(number: number, title: string): DecisionRecord {
     title: "",
     frontmatter: { status: "accepted", date: "2026-04-02" },
     lines: {},
+  };
+}
+
+function owed(number: number, title: string, id?: string): DebtRecord {
+  const log = id === undefined ? "book/debt" : `book/domains/${id}/debt`;
+  return {
+    file: `${log}/${String(number).padStart(4, "0")}-${termSlug(title)}.md`,
+    number,
+    title,
+    frontmatter: {
+      status: "open",
+      date: "2026-04-27",
+      severity: "low",
+      quadrant: "deliberate-prudent",
+    },
+    lines: {},
+  };
+}
+
+function globbed(pattern: string, id?: string): DebtRecord {
+  const record = owed(1, "Holds are swept by hand", id);
+  return {
+    ...record,
+    frontmatter: { ...record.frontmatter, code: [pattern] },
+  };
+}
+
+function globbedPage(pattern: string): DomainRecord {
+  const domain = related("ticketing");
+  return {
+    ...domain,
+    frontmatter: { ...domain.frontmatter!, code: [pattern] },
   };
 }
 
@@ -71,6 +106,8 @@ function related(
     features: [],
     decisions: [],
     decisionFiles: [],
+    debt: [],
+    debtFiles: [],
   };
 }
 
@@ -141,6 +178,7 @@ describe("every broken book", () => {
       "B6",
       "B7",
       "B8",
+      "B9",
       "R1",
       "R2",
       "R3",
@@ -158,6 +196,7 @@ describe("every broken book", () => {
       "C8",
       "C9",
       "C10",
+      "C11",
     ]);
   });
 });
@@ -263,6 +302,142 @@ describe("decision numbering over every file in the log", () => {
       )
     ).toEqual([
       'the filename does not match the title "座席表を保存する" — rename to "0001-座席表を保存する.md"',
+    ]);
+  });
+});
+
+describe("debt numbering over every file in the log", () => {
+  it("names a gap in the debt log as a TDR", () => {
+    expect(
+      checked(
+        assembled({
+          debtFiles: [
+            { file: "book/debt/0001-holds-are-swept-by-hand.md", number: 1 },
+            { file: "book/debt/0003-door-scanners.md", number: 3 },
+          ],
+        })
+      )
+    ).toEqual([
+      "TDR-0002 is missing from debt/ — debt record numbers run from 0001 with no gaps, and a debt record is never deleted",
+    ]);
+  });
+
+  it("claims no gap for a debt number whose file failed its schema", () => {
+    expect(
+      checked(
+        assembled({
+          debt: [owed(2, "Door scanners")],
+          debtFiles: [
+            { file: "book/debt/0001-holds-are-swept-by-hand.md", number: 1 },
+            { file: "book/debt/0002-door-scanners.md", number: 2 },
+          ],
+        })
+      )
+    ).toEqual([]);
+  });
+
+  it("asks for the filename a debt record's own title gives", () => {
+    const record = owed(1, "Holds are swept by hand");
+    expect(
+      checked(
+        assembled({
+          debt: [{ ...record, title: "Holds are swept nightly" }],
+          debtFiles: [{ file: record.file, number: 1 }],
+        })
+      )
+    ).toEqual([
+      'the filename does not match the title "Holds are swept nightly" — rename to "0001-holds-are-swept-nightly.md"',
+    ]);
+  });
+});
+
+describe("a code glob the format cannot read", () => {
+  const rejected: Array<[string, string]> = [
+    [
+      " ",
+      '" " names no path — write a path under the repo root, like "src/**"',
+    ],
+    [
+      "src/app}/**",
+      '"src/app}/**" holds a "}" that nothing opened — write "{" before it, or drop the "}"',
+    ],
+    [
+      "src/[ab/**",
+      '"src/[ab/**" leaves "[" unclosed — close the character class with "]", as in "src/[ab]*.ts"',
+    ],
+    [
+      "src/ab]/**",
+      '"src/ab]/**" holds a "]" that nothing opened — write "[" before it, or drop the "]"',
+    ],
+  ];
+
+  const rewritten: Array<[string, string]> = [
+    [
+      "\\src\\billing\\**",
+      '"\\src\\billing\\**" separates folders with "\\" — a code path uses "/", so write "src/billing/**"',
+    ],
+    [
+      "/src//billing/**",
+      '"/src//billing/**" starts at the filesystem root — a code path is relative to the repo root, so write "src/billing/**"',
+    ],
+    [
+      "src//billing//**",
+      '"src//billing//**" has an empty path segment — remove the extra "/", so write "src/billing/**"',
+    ],
+  ];
+
+  const accepted = [
+    "packages/*/src/**/*.ts",
+    "app/\\[locale\\]/**",
+    "src/\\[ab/**",
+    "src/{app,web}/**",
+  ];
+
+  it.each([...rejected, ...rewritten])(
+    "names what is wrong with %j",
+    (pattern, message) => {
+      expect(checked(assembled({ debt: [globbed(pattern)] }))).toEqual([
+        message,
+      ]);
+    }
+  );
+
+  it("offers a pattern the check itself accepts", () => {
+    for (const [pattern] of rewritten) {
+      const [message = ""] = checked(assembled({ debt: [globbed(pattern)] }));
+      const fixed = /so write "(.+)"$/u.exec(message)?.[1] ?? "";
+      expect(checked(assembled({ debt: [globbed(fixed)] }))).toEqual([]);
+    }
+  });
+
+  it.each(accepted)(
+    "reads %j on a domain page and on a debt record",
+    (pattern) => {
+      expect(
+        checked(
+          assembled({
+            debt: [globbed(pattern)],
+            domains: [globbedPage(pattern)],
+          })
+        )
+      ).toEqual([]);
+    }
+  );
+
+  it("names a bad glob on a domain's own debt record", () => {
+    expect(
+      checked(
+        assembled({
+          domains: [
+            {
+              ...related("ticketing"),
+              debt: [globbed("/src/**", "ticketing")],
+            },
+          ],
+        })
+      )
+    ).toEqual([
+      '"/src/**" starts at the filesystem root — a code path is relative to the repo root, so write "src/**"',
     ]);
   });
 });

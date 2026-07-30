@@ -2,7 +2,7 @@ import type { Issue } from "../issue.js";
 import type { Book, DomainRecord, FeatureRecord } from "../model.js";
 import {
   basename,
-  findDecision,
+  checkDecisionRefs,
   inBook,
   notNfc,
   notNfkc,
@@ -16,7 +16,11 @@ export function checkFeatures(book: Book): Issue[] {
     for (const feature of domain.features)
       issues.push(
         ...checkFeatureTerms(book, domain, feature),
-        ...checkFeatureDecisions(book, feature),
+        ...checkDecisionRefs(
+          book,
+          feature,
+          feature.frontmatter.decisions ?? []
+        ),
         ...checkFeatureId(feature)
       );
   return issues;
@@ -62,23 +66,6 @@ function noTerm(
     .map((glossary) => inBook(book, glossary.file))
     .join(" or ");
   return `no term "${term}" in ${files}`;
-}
-
-function checkFeatureDecisions(book: Book, feature: FeatureRecord): Issue[] {
-  const issues: Issue[] = [];
-  for (const [index, ref] of (feature.frontmatter.decisions ?? []).entries()) {
-    const field = `decisions[${index}]`;
-    const at = { file: feature.file, line: feature.lines[field], field };
-    const unnormalized = notNfc(at, ref) ?? notNfkc(at, ref);
-    if (unnormalized !== undefined) {
-      issues.push(unnormalized);
-      continue;
-    }
-    const missing = findDecision(book, ref);
-    if (missing !== undefined)
-      issues.push({ ...at, message: `no decision "${ref}" — ${missing}` });
-  }
-  return issues;
 }
 
 function checkFeatureId(feature: FeatureRecord): Issue[] {

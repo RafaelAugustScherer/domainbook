@@ -24,6 +24,20 @@ import { refuse, type Result } from "./result.js";
 const numbered = /^(\d+)-.*\.md$/;
 const statusLine = /^status:.*$/m;
 
+type Kind = { dir: string; one: string; finish: string };
+
+const decisionKind: Kind = {
+  dir: "decisions",
+  one: "decision",
+  finish: "fill in the sections",
+};
+
+const debtKind: Kind = {
+  dir: "debt",
+  one: "debt record",
+  finish: "set the severity and the quadrant, fill in the sections",
+};
+
 export function newDomain(root: string, id: string): Result {
   const path = join(root, "domains", id, "index.md");
   const wrong =
@@ -85,49 +99,20 @@ export function newDecision(
   domain: string | undefined,
   supersedes: string | undefined
 ): Result {
-  const wrong =
-    noBook(root) ??
-    (domain === undefined
-      ? undefined
-      : notSlug(domain, "domain id") ??
-        unwritable(domain, "domain id") ??
-        noDomain(root, domain)) ??
-    notNfc(title, "decision title") ??
-    notNfkc(title, "decision title");
-  if (wrong !== undefined) return refuse(wrong);
-  const name = termSlug(title);
-  if (name === "")
-    return refuse(
-      `"${title}" gives no filename — a decision filename is a four-digit number and the title in letters and digits, and this title has none; write one that has some`
-    );
-  const bytes = overlong(name);
-  if (bytes !== undefined)
-    return refuse(
-      `"${title}" gives the filename slug "${name}", which is ${bytes} bytes as UTF-8 — a slug holds at most ${slugBytes} bytes, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; write a shorter title`
-    );
+  const placed = place(root, title, domain, decisionKind);
+  if (typeof placed === "string") return refuse(placed);
+  if (supersedes !== undefined) return supersede(placed, domain, supersedes);
+  return wrote(placed, decisionPage(title));
+}
 
-  const dir =
-    domain === undefined
-      ? join(root, "decisions")
-      : join(root, "domains", domain, "decisions");
-  const used = numbers(dir);
-  const next = used.length === 0 ? 1 : Math.max(...used) + 1;
-  const path = join(dir, `${pad(next)}-${name}.md`);
-  const after = `next: fill in the sections, then "${rooted(
-    "domainbook validate",
-    root
-  )}"`;
-
-  if (supersedes === undefined) {
-    const failed = write(path, decisionPage(title));
-    if (failed !== undefined) return refuse(failed);
-    return { code: 0, lines: [`wrote ${relate(path)}`, after] };
-  }
-  return supersede(
-    { root, dir, used, next, path, title, after },
-    domain,
-    supersedes
-  );
+export function newDebt(
+  root: string,
+  title: string,
+  domain: string | undefined
+): Result {
+  const placed = place(root, title, domain, debtKind);
+  if (typeof placed === "string") return refuse(placed);
+  return wrote(placed, debtPage(title));
 }
 
 type Placed = {
@@ -139,6 +124,57 @@ type Placed = {
   title: string;
   after: string;
 };
+
+function place(
+  root: string,
+  title: string,
+  domain: string | undefined,
+  kind: Kind
+): Placed | string {
+  const wrong =
+    noBook(root) ??
+    (domain === undefined
+      ? undefined
+      : notSlug(domain, "domain id") ??
+        unwritable(domain, "domain id") ??
+        noDomain(root, domain)) ??
+    notNfc(title, `${kind.one} title`) ??
+    notNfkc(title, `${kind.one} title`);
+  if (wrong !== undefined) return wrong;
+  const name = termSlug(title);
+  if (name === "")
+    return `"${title}" gives no filename — a ${kind.one} filename is a four-digit number and the title in letters and digits, and this title has none; write one that has some`;
+  const bytes = overlong(name);
+  if (bytes !== undefined)
+    return `"${title}" gives the filename slug "${name}", which is ${bytes} bytes as UTF-8 — a slug holds at most ${slugBytes} bytes, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; write a shorter title`;
+  const dir =
+    domain === undefined
+      ? join(root, kind.dir)
+      : join(root, "domains", domain, kind.dir);
+  const used = numbers(dir);
+  const next = used.length === 0 ? 1 : Math.max(...used) + 1;
+  return {
+    root,
+    dir,
+    used,
+    next,
+    path: join(dir, `${pad(next)}-${name}.md`),
+    title,
+    after: `next: ${kind.finish}, then "${rooted(
+      "domainbook validate",
+      root
+    )}"`,
+  };
+}
+
+function wrote(placed: Placed, page: string): Result {
+  const failed = write(placed.path, page);
+  if (failed !== undefined) return refuse(failed);
+  return {
+    code: 0,
+    lines: [`wrote ${relate(placed.path)}`, placed.after],
+  };
+}
 
 function supersede(
   placed: Placed,
@@ -345,5 +381,23 @@ date: ${today()}
 ## Decision Outcome
 
 ### Consequences
+`;
+}
+
+function debtPage(title: string): string {
+  return `---
+status: open
+date: ${today()}
+severity: medium # severity and quadrant are placeholders — set them before anyone reads this
+quadrant: deliberate-prudent
+---
+
+# ${title}
+
+## Debt
+
+## Impact
+
+## Remedy
 `;
 }

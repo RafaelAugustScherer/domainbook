@@ -75,6 +75,28 @@ Chosen.
 - Good.
 `;
 
+const tdr = `---
+status: open
+date: 2026-04-27
+severity: low
+quadrant: deliberate-prudent
+---
+
+# Holds are swept by hand
+
+## Debt
+
+Nothing expires a hold.
+
+## Impact
+
+Seats sit unsellable overnight.
+
+## Remedy
+
+Sweep on a timer.
+`;
+
 const loaded = loadBook(bookDir);
 const ticketing = loaded.book.domains.find(
   (domain) => domain.id === "ticketing"
@@ -100,6 +122,8 @@ describe("loadBook over the golden fixture book", () => {
     ]);
     expect(loaded.book.decisions.map((one) => one.number)).toEqual([1]);
     expect(ticketing?.decisions.map((one) => one.number)).toEqual([1, 2, 3]);
+    expect(loaded.book.debt.map((one) => one.number)).toEqual([1, 2]);
+    expect(ticketing?.debt.map((one) => one.number)).toEqual([1, 2]);
     expect(ticketing?.features.map((one) => one.frontmatter.id)).toEqual([
       "hold-seats-during-checkout",
     ]);
@@ -113,6 +137,13 @@ describe("loadBook over the golden fixture book", () => {
       "Expire holds after ten minutes",
       "Reject a capture that lands after the hold expired",
       "Refund a late capture in full",
+    ]);
+  });
+
+  it("takes a debt record's title from its H1", () => {
+    expect(ticketing?.debt.map((one) => one.title)).toEqual([
+      "Hold expiry is checked only when a hold is read",
+      "Late-capture refunds are reconciled by hand each morning",
     ]);
   });
 
@@ -153,7 +184,7 @@ describe("loadBook on a tree the filesystem refuses", () => {
   it("keeps the unknown-file issue when domains is a regular file", () => {
     const root = temporary({ "roadmap.md": milestones, domains: "not here\n" });
     expect(messages(root)).toEqual([
-      `the format does not know this file — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, and domains/`,
+      `the format does not know this file — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`,
     ]);
   });
 
@@ -161,7 +192,7 @@ describe("loadBook on a tree the filesystem refuses", () => {
     const root = temporary({ "roadmap.md": milestones });
     mkdirSync(join(root, "glossary.md"));
     expect(messages(root)).toEqual([
-      `the format does not know this folder — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, and domains/`,
+      `the format does not know this folder — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`,
     ]);
   });
 
@@ -279,6 +310,39 @@ describe("loadBook over a decision log", () => {
     expect(loadBook(root).book.decisionFiles.map((one) => one.number)).toEqual([
       1,
     ]);
+  });
+});
+
+describe("loadBook over a debt log", () => {
+  it("calls the artifact a debt record in the name it asks for", () => {
+    const root = temporary({ "roadmap.md": milestones, "debt/notes.md": tdr });
+    expect(messages(root)).toEqual([
+      'debt record filenames start with a four-digit number — rename to "0001-holds-are-swept-by-hand.md"',
+    ]);
+  });
+
+  it("names the keys a debt record needs when it carries none", () => {
+    const root = temporary({
+      "roadmap.md": milestones,
+      "debt/0001-holds-are-swept-by-hand.md": tdr.split("---\n").at(-1) ?? "",
+    });
+    expect(messages(root)).toEqual([
+      'no frontmatter — a debt record needs "status", "date", "severity", and "quadrant" in a --- block at the top of the file',
+    ]);
+  });
+
+  it("counts every .md in the debt log, not only the ones that validated", () => {
+    const root = temporary({
+      "roadmap.md": milestones,
+      "debt/0001-holds-are-swept-by-hand.md": tdr.replace(
+        "severity: low",
+        "severity: enormous"
+      ),
+      "debt/0002-door-scanners.md": tdr,
+    });
+    const book = loadBook(root).book;
+    expect(book.debtFiles.map((one) => one.number)).toEqual([1, 2]);
+    expect(book.debt.map((one) => one.number)).toEqual([2]);
   });
 });
 

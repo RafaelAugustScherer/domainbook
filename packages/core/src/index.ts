@@ -9,12 +9,13 @@ export { termSlug } from "./model.js";
 export type {
   Book,
   ChangelogRecord,
-  DecisionFile,
+  DebtRecord,
   DecisionRecord,
   DomainRecord,
   FeatureRecord,
   FieldLines,
   GlossaryRecord,
+  LogFile,
   RoadmapRecord,
   TermRecord,
 } from "./model.js";
@@ -26,6 +27,8 @@ export type { Changelog, ChangelogRelease } from "./schemas/changelog.js";
 export { decisionRef, people, slug } from "./schemas/common.js";
 export { configSchema } from "./schemas/config.js";
 export type { Config } from "./schemas/config.js";
+export { debtSchema } from "./schemas/debt.js";
+export type { Debt } from "./schemas/debt.js";
 export { decisionSchema, decisionStatusSchema } from "./schemas/decision.js";
 export type { Decision, DecisionStatus } from "./schemas/decision.js";
 export {

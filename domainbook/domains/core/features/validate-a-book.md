@@ -17,15 +17,15 @@ So that I fix the book while I still know what I changed
 
 ```gherkin
 Example: A valid book reports what it holds
-  Given a book at domainbook with one domain, one feature and three decisions
+  Given a book at domainbook with one domain, one feature, three decisions and two debt records
   When domainbook validate runs
-  Then it prints: domainbook is a valid book — 1 domain, 1 feature, 3 decisions, 0 terms
+  Then it prints: domainbook is a valid book — 1 domain, 1 feature, 3 decisions, 0 terms, 2 debt records
   And it exits 0
 
 Example: A book somewhere else is read from where it was named
   Given a book written at docs/book with one domain
   When domainbook validate docs/book runs
-  Then it prints: docs/book is a valid book — 1 domain, 0 features, 0 decisions, 0 terms
+  Then it prints: docs/book is a valid book — 1 domain, 0 features, 0 decisions, 0 terms, 0 debt records
 ```
 
 ## Rule: Every issue is one line, and any issue at all exits 1

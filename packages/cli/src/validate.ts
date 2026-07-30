@@ -17,6 +17,10 @@ export function validate(root: string): Result {
     (total, domain) => total + (domain.glossary?.terms.length ?? 0),
     book.glossary?.terms.length ?? 0
   );
+  const debt = book.domains.reduce(
+    (total, domain) => total + domain.debt.length,
+    book.debt.length
+  );
   return {
     code: 0,
     lines: [
@@ -26,7 +30,7 @@ export function validate(root: string): Result {
       )}, ${counted(features, "feature")}, ${counted(
         decisions,
         "decision"
-      )}, ${counted(terms, "term")}`,
+      )}, ${counted(terms, "term")}, ${counted(debt, "debt record")}`,
     ],
   };
 }

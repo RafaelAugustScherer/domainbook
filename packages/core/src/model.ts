@@ -2,6 +2,7 @@ import type { ParsedRule } from "./body/feature.js";
 import type { Changelog } from "./schemas/changelog.js";
 import { slugSource } from "./schemas/common.js";
 import type { Config } from "./schemas/config.js";
+import type { Debt } from "./schemas/debt.js";
 import type { Decision } from "./schemas/decision.js";
 import type { Domain } from "./schemas/domain.js";
 import type { Feature } from "./schemas/feature.js";
@@ -22,16 +23,20 @@ export type RoadmapRecord = {
   lines: FieldLines;
 };
 
-export type DecisionFile = { file: string; number: number };
+export type LogFile = { file: string; number: number };
 
-export type DecisionRecord = {
+export type LogRecord<T> = {
   file: string;
   number: number;
   title: string;
   domain?: string;
-  frontmatter: Decision;
+  frontmatter: T;
   lines: FieldLines;
 };
+
+export type DecisionRecord = LogRecord<Decision>;
+
+export type DebtRecord = LogRecord<Debt>;
 
 export type FeatureRecord = {
   file: string;
@@ -51,7 +56,9 @@ export type DomainRecord = {
   changelog?: ChangelogRecord;
   features: FeatureRecord[];
   decisions: DecisionRecord[];
-  decisionFiles: DecisionFile[];
+  decisionFiles: LogFile[];
+  debt: DebtRecord[];
+  debtFiles: LogFile[];
 };
 
 export type Book = {
@@ -61,7 +68,9 @@ export type Book = {
   glossary?: GlossaryRecord;
   changelog?: ChangelogRecord;
   decisions: DecisionRecord[];
-  decisionFiles: DecisionFile[];
+  decisionFiles: LogFile[];
+  debt: DebtRecord[];
+  debtFiles: LogFile[];
   domains: DomainRecord[];
 };
 

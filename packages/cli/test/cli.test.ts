@@ -15,6 +15,7 @@ let home = "";
 let previous = "";
 
 const log = "domainbook/domains/ticketing/decisions";
+const debtLog = "domainbook/domains/ticketing/debt";
 const first = `${log}/0001-expire-holds-after-ten-minutes.md`;
 
 beforeEach(() => {
@@ -66,8 +67,75 @@ describe("what the generators write", () => {
       "--supersedes",
       "1"
     );
+    ran("new", "debt", "Seat map is read on every request");
+    ran("new", "debt", "Holds are swept by a cron", "--domain", "ticketing");
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 1 domain, 1 feature, 3 decisions, 0 terms",
+      "domainbook is a valid book — 1 domain, 1 feature, 3 decisions, 0 terms, 2 debt records",
+    ]);
+  });
+
+  it("writes a debt record that validate accepts with nothing edited", () => {
+    ran("init");
+    const record = "domainbook/debt/0001-seat-map-is-read-on-every-request.md";
+    expect(ran("new", "debt", "Seat map is read on every request")).toEqual([
+      `wrote ${record}`,
+      'next: set the severity and the quadrant, fill in the sections, then "domainbook validate"',
+    ]);
+    const written = readFileSync(record, "utf8").split("\n");
+    expect(written[0]).toBe("---");
+    expect(written[1]).toBe("status: open");
+    expect(written[2]).toMatch(/^date: \d{4}-\d{2}-\d{2}$/);
+    expect(written.slice(3)).toEqual([
+      "severity: medium # severity and quadrant are placeholders — set them before anyone reads this",
+      "quadrant: deliberate-prudent",
+      "---",
+      "",
+      "# Seat map is read on every request",
+      "",
+      "## Debt",
+      "",
+      "## Impact",
+      "",
+      "## Remedy",
+      "",
+    ]);
+    expect(ran("validate")).toEqual([
+      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 1 debt record",
+    ]);
+  });
+
+  it("numbers each debt log on its own, apart from the decisions beside it", () => {
+    book();
+    expect(
+      ran(
+        "new",
+        "debt",
+        "Holds are swept by a cron",
+        "--domain",
+        "ticketing"
+      )[0]
+    ).toBe(`wrote ${debtLog}/0001-holds-are-swept-by-a-cron.md`);
+    expect(ran("new", "debt", "Seat map is read on every request")[0]).toBe(
+      "wrote domainbook/debt/0001-seat-map-is-read-on-every-request.md"
+    );
+    expect(
+      ran(
+        "new",
+        "debt",
+        "Refunds run in the request thread",
+        "--domain",
+        "ticketing"
+      )[0]
+    ).toBe(`wrote ${debtLog}/0002-refunds-run-in-the-request-thread.md`);
+  });
+
+  it("writes a debt record whose title is outside Latin", () => {
+    ran("init");
+    expect(ran("new", "debt", "座席表を毎回読み直している")[0]).toBe(
+      "wrote domainbook/debt/0001-座席表を毎回読み直している.md"
+    );
+    expect(ran("validate")).toEqual([
+      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 1 debt record",
     ]);
   });
 
@@ -132,15 +200,16 @@ describe("what the generators write", () => {
   it("writes a book that is only the files the format knows", () => {
     ran("init");
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms",
+      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 0 debt records",
     ]);
   });
 
   it("targets a book root that is not domainbook/", () => {
     ran("init", "docs/book");
     ran("new", "domain", "ticketing", "docs/book");
+    ran("new", "debt", "Seat map is read on every request", "docs/book");
     expect(ran("validate", "docs/book")).toEqual([
-      "docs/book is a valid book — 1 domain, 0 features, 0 decisions, 0 terms",
+      "docs/book is a valid book — 1 domain, 0 features, 0 decisions, 0 terms, 1 debt record",
     ]);
   });
 
@@ -152,8 +221,9 @@ describe("what the generators write", () => {
     ran("new", "domain", "true");
     ran("new", "feature", "2026", "--domain", "9");
     ran("new", "decision", "Expire holds after ten minutes", "--domain", "9");
+    ran("new", "debt", "Holds are swept by a cron", "--domain", "9");
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 2 domains, 1 feature, 1 decision, 0 terms",
+      "domainbook is a valid book — 2 domains, 1 feature, 1 decision, 0 terms, 1 debt record",
     ]);
   });
 
@@ -167,7 +237,7 @@ describe("what the generators write", () => {
       "wrote domainbook/domains/販売/decisions/0001-座席の保留は十分で切れる.md"
     );
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 1 domain, 1 feature, 1 decision, 0 terms",
+      "domainbook is a valid book — 1 domain, 1 feature, 1 decision, 0 terms, 0 debt records",
     ]);
   });
 
@@ -354,6 +424,9 @@ describe("what the CLI says when it is misused", () => {
     ).toEqual([
       '"--superseeds" is not a domainbook option — "domainbook new decision" takes --domain, --supersedes, and --help; usage: domainbook new decision "<title>" [root] [--domain <domain-id>] [--supersedes <number>]',
     ]);
+    expect(failed("new", "debt", "Holds leak", "--severity", "high")).toEqual([
+      '"--severity" is not a domainbook option — "domainbook new debt" takes --domain and --help; usage: domainbook new debt "<title>" [root] [--domain <domain-id>]',
+    ]);
   });
 
   it("never offers an option to a command that would reject it", () => {
@@ -413,13 +486,16 @@ describe("what the CLI says when it is misused", () => {
 
   it("asks for the id or title a generator is missing", () => {
     expect(failed("new")).toEqual([
-      '"domainbook new" needs what to write — a domain, a feature, or a decision',
+      '"domainbook new" needs what to write — a domain, a feature, a decision, or a debt record',
     ]);
     expect(failed("new", "thing", "x")).toEqual([
-      '"thing" is not a domainbook artifact — "domainbook new" writes a domain, a feature, or a decision',
+      '"thing" is not a domainbook artifact — "domainbook new" writes a domain, a feature, a decision, or a debt record',
     ]);
     expect(failed("new", "decision")).toEqual([
       '"domainbook new decision" needs a title — usage: domainbook new decision "<title>" [root] [--domain <domain-id>] [--supersedes <number>]',
+    ]);
+    expect(failed("new", "debt")).toEqual([
+      '"domainbook new debt" needs a title — usage: domainbook new debt "<title>" [root] [--domain <domain-id>]',
     ]);
   });
 
@@ -428,6 +504,39 @@ describe("what the CLI says when it is misused", () => {
     expect(failed("new", "decision", "???")).toEqual([
       '"???" gives no filename — a decision filename is a four-digit number and the title in letters and digits, and this title has none; write one that has some',
     ]);
+  });
+
+  it("refuses a debt record title that gives no filename", () => {
+    ran("init");
+    expect(failed("new", "debt", "???")).toEqual([
+      '"???" gives no filename — a debt record filename is a four-digit number and the title in letters and digits, and this title has none; write one that has some',
+    ]);
+    expect(existsSync("domainbook/debt")).toBe(false);
+  });
+
+  it("lists the domains that exist when a debt record names one that does not", () => {
+    book();
+    expect(failed("new", "debt", "Holds leak", "--domain", "billing")).toEqual([
+      'no domain "billing" in domainbook — run "domainbook new domain billing" first, or name one of ticketing',
+    ]);
+  });
+
+  it("refuses --supersedes on a debt record, which is edited in place", () => {
+    book();
+    expect(
+      failed(
+        "new",
+        "debt",
+        "Holds leak",
+        "--domain",
+        "ticketing",
+        "--supersedes",
+        "1"
+      )
+    ).toEqual([
+      '"--supersedes" is not an option here — usage: domainbook new debt "<title>" [root] [--domain <domain-id>]',
+    ]);
+    expect(existsSync(debtLog)).toBe(false);
   });
 
   it("refuses to write into a root that holds no book", () => {
@@ -441,8 +550,9 @@ describe("what the CLI says when it is misused", () => {
     expect(
       failed("new", "feature", "checkout", "docs/bok", "--domain", "billing")
     ).toEqual([missing]);
+    expect(failed("new", "debt", "Holds leak", "docs/bok")).toEqual([missing]);
     expect(ran("validate", "docs/book")).toEqual([
-      "docs/book is a valid book — 0 domains, 0 features, 0 decisions, 0 terms",
+      "docs/book is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 0 debt records",
     ]);
   });
 
@@ -555,6 +665,12 @@ describe("--help", () => {
     );
     expect(lines).toContain(
       '  domainbook new decision "<title>" [root] [--domain <domain-id>] [--supersedes <number>]'
+    );
+    expect(lines).toContain(
+      '  domainbook new debt "<title>" [root] [--domain <domain-id>]'
+    );
+    expect(lines).toContain(
+      "  new        add a domain page, a feature, a decision, or a debt record"
     );
     expect(lines).toContain("  -h, --help              print this");
     expect(lines).toContain(

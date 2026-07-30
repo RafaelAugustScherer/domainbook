@@ -7,8 +7,9 @@ would like it.
 ## Artifact
 
 One file in the book of a type the format knows: roadmap, domain page, glossary,
-feature, decision, or changelog. An artifact is documentation, never a build
-output — nothing this project produces from a build is called an artifact.
+feature, decision, debt record, or changelog. An artifact is documentation, never
+a build output — nothing this project produces from a build is called an
+artifact.
 
 - **Aliases:** book file
 - **Status:** validated
@@ -40,6 +41,23 @@ body, in canvas order.
 
 - **Status:** validated
 - **Example:** Reading a domain page top to bottom gives Purpose, Domain Roles, Inbound Communication, Outbound Communication, Business Decisions, Assumptions, Verification Metrics, Open Questions.
+
+## Debt record
+
+A known shortcut or gap written down with what it costs and what repayment looks
+like — a file under `debt/`, the decision log's twin. It is the one living
+artifact in the book: edited in place, its `status` flipped to `repaid` or
+`accepted`, and never deleted, where an accepted decision is immutable
+(`ADR-0013`).
+
+Written as TDR when referring to one by number. Unlike `ADR-NNNN`, that form is
+display only: `validate` prints `TDR-0001` and names the log it sits in, no
+artifact has a field that takes a debt reference, and there is no qualified
+`<domain-id>/TDR-NNNN` grammar to write (`format/ADR-0017`).
+
+- **Aliases:** TDR, technical debt record, debt
+- **Status:** validated
+- **Example:** `domainbook new debt "Holds are swept by hand" --domain ticketing` writes `domains/ticketing/debt/0001-holds-are-swept-by-hand.md`, and a message about it reads `TDR-0001 is missing from domains/ticketing/debt/`.
 
 ## Decision
 

@@ -1,17 +1,18 @@
 import { join } from "node:path";
 import { checkDomainBody } from "../body/domain.js";
 import type { Issue } from "../issue.js";
+import { debtLog, decisionLog } from "../log.js";
 import type { DomainRecord, FieldLines } from "../model.js";
 import { type Domain, domainSchema } from "../schemas/domain.js";
 import { frontmatterOf, readArtifact } from "./artifact.js";
 import { loadChangelog } from "./changelog.js";
-import { loadLog } from "./decision.js";
 import { entries, isFile, relate, strange } from "./disk.js";
 import { loadFeatures } from "./feature.js";
 import { loadGlossary } from "./glossary.js";
+import { loadLog } from "./log.js";
 
 const domainHolds =
-  "a domain folder holds index.md, glossary.md, changelog.md, features/*.md, and decisions/*.md";
+  "a domain folder holds index.md, glossary.md, changelog.md, features/*.md, decisions/*.md, and debt/*.md";
 
 export function loadDomain(
   dir: string,
@@ -19,10 +20,11 @@ export function loadDomain(
 ): { record: DomainRecord; issues: Issue[] } {
   const issues: Issue[] = [];
   const known = ["index.md", "glossary.md", "changelog.md"];
+  const domainFolders = ["features", "decisions", "debt"];
   for (const entry of entries(dir))
     if (
       entry.isDirectory()
-        ? entry.name !== "features" && entry.name !== "decisions"
+        ? !domainFolders.includes(entry.name)
         : !known.includes(entry.name)
     )
       issues.push(strange(dir, entry, domainHolds));
@@ -30,7 +32,8 @@ export function loadDomain(
   const canvas = loadCanvas(dir, id);
   const glossary = loadGlossary(dir);
   const changelog = loadChangelog(dir);
-  const log = loadLog(join(dir, "decisions"), id);
+  const log = loadLog(dir, id, decisionLog);
+  const debt = loadLog(dir, id, debtLog);
   const features = loadFeatures(join(dir, "features"), id);
   return {
     record: {
@@ -43,6 +46,8 @@ export function loadDomain(
       features: features.records,
       decisions: log.records,
       decisionFiles: log.files,
+      debt: debt.records,
+      debtFiles: debt.files,
     },
     issues: [
       ...issues,
@@ -51,6 +56,7 @@ export function loadDomain(
       ...changelog.issues,
       ...features.issues,
       ...log.issues,
+      ...debt.issues,
     ],
   };
 }
