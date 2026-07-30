@@ -166,4 +166,7 @@ against them with the tool itself.
 - Reading a book never ends in a stack trace. A book root that turns out to be a
   file, or a folder this shell may not open, is now an issue naming that path.
   The generators answer the same way: a write that fails is a refusal naming the
-  path and what to change, not a Node error.
+  path and what to change, not a Node error. The last hole in that promise was
+  `new decision --supersedes N` over a record whose frontmatter does not parse
+  as YAML — it crashed with the parser's own stack trace; it now refuses, names
+  the file, and points at `domainbook validate` to see what to fix.

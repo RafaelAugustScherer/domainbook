@@ -40,4 +40,6 @@ export { glossarySchema, glossaryTermSchema } from "./schemas/glossary.js";
 export type { Glossary, GlossaryTerm } from "./schemas/glossary.js";
 export { milestoneSchema, roadmapSchema } from "./schemas/roadmap.js";
 export type { Milestone, Roadmap } from "./schemas/roadmap.js";
+export { divergence, overlong, slugBytes } from "./unicode.js";
+export type { Divergence } from "./unicode.js";
 export { validateBook } from "./validate.js";

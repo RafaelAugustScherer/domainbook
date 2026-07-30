@@ -31,7 +31,8 @@ export function relate(path: string): string {
 export function rooted(command: string, root: string): string {
   if (root === resolve("domainbook")) return command;
   const at = relate(root);
-  return `${command} ${/\s/.test(at) ? `'${at}'` : at}`;
+  const argument = /\s/.test(at) ? `'${at}'` : at;
+  return `${command} ${argument}`;
 }
 
 export function quoted(value: string): string {

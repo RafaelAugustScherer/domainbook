@@ -3,6 +3,7 @@ id: domainbook
 milestones:
   - { id: phase-0, name: Foundations and spec, status: done }
   - { id: phase-1, name: Core and CLI, status: done }
+  - { id: phase-1-1, name: Technical debt records, status: planned }
   - { id: phase-2, name: Enforcement loop, status: planned }
   - { id: phase-3, name: MCP server, status: planned }
   - { id: phase-4, name: Website, status: planned }
@@ -218,6 +219,49 @@ Exit: schemas published internally; domainbook's own book validates against them
 
 Exit: `domainbook validate` passes on this book and fails correctly on every broken
 fixture.
+
+### Phase 1.1 — Technical debt records
+
+The between-phases review left its "fix later" findings in a PR body — exactly the
+knowledge this tool exists to keep in the repo. Debt becomes the seventh artifact type
+so the next agent can ask "what known debt touches the code I am about to change?".
+
+No adopted standard exists to follow field for field: the ADR templates catalog lists
+no debt template, and the nearest thing to convention is Michael Stal's
+[Technical Debt Records](https://github.com/ms1963/TechnicalDebtRecords) — dormant
+since late 2024, but reproduced nearly verbatim by the one other implementation that
+exists. So this artifact is *derived from* Stal's TDR and credited as such, narrowed
+to domainbook size the way MADR's frontmatter was (`format/ADR-0004`):
+
+- **Log layout**: `debt/NNNN-<slug>.md` at the book root and per domain — the decision
+  log's twin: 4-digit sequential numbers never reused, referenced as `TDR-NNNN` and
+  qualified as `<domain-id>/TDR-NNNN` across logs (the `format/ADR-0005` rule).
+- **Frontmatter**: required `status: open | accepted | repaid`, `date` (when the debt
+  was recorded), `severity: low | medium | high | critical` (Stal's four levels), and
+  `quadrant: deliberate-prudent | deliberate-reckless | inadvertent-prudent |
+  inadvertent-reckless` ([Fowler's Technical Debt Quadrant](https://martinfowler.com/bliki/TechnicalDebtQuadrant.html)
+  — the citable answer to "how did this happen"); optional `owners`, `code:` globs
+  tracing the debt to the artifacts that carry it (the SEI traceability principle:
+  debt that traces to nothing is an opinion), and `decisions:` naming the ADR whose
+  consequences incurred it.
+- **Body**: three H2s — Debt (the shortcut or gap, concretely), Impact (what it costs
+  and when it bites), Remedy (what repayment looks like). Cost-of-delay and effort
+  stay prose inside Impact and Remedy, not fields — numbers nobody measures are false
+  precision.
+- **Lifecycle**: unlike an ADR, a debt record is living — it is edited in place, and
+  `status` flips to `repaid` (naming what repaid it) or `accepted` (a deliberate keep,
+  with the reason). Never deleted; git carries the history.
+- Deliverables: zod schema + generated JSON Schema, loader/model/validation in core
+  (numbering, reference resolution, glob syntax), `domainbook new debt "<title>"
+  [--domain <domain-id>]`, golden and broken fixtures, and this book dogfooding the
+  format — the review's leftover findings become its first TDRs.
+- Downstream, in their own phases: `check --staged` can warn when staged paths match
+  an open debt's `code:` globs (Phase 2), MCP serves debt scoped by domain or changed
+  paths (Phase 3), the site renders the register with severity badges (Phase 4),
+  `export json` carries it (Phase 6).
+
+Exit: this book records its own known debt as validated TDRs, and `domainbook new
+debt` scaffolds a record that validates as written.
 
 ### Phase 2 — Enforcement loop
 

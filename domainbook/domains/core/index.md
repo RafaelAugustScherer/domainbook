@@ -84,6 +84,9 @@ the CLI is where a person or an agent meets domainbook at all.
   NFKC, or that would give a filename over 247 bytes is refused before anything
   is written, naming the code point at fault and the form to write instead
   (`format/ADR-0016`).
+- The slug rules are computed once. `divergence`, `overlong`, and `slugBytes`
+  are core exports; `validate` and the generators both read them and word their
+  own messages, so the two cannot disagree about the same id (`core/ADR-0006`).
 - `--version` is a property of the program, not of a command. `domainbook
   --version` (short `-v`) prints `domainbook <version>` and exits 0, reading the
   version from the installed package's own `package.json` at runtime

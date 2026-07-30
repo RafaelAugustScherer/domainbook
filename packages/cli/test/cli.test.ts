@@ -290,6 +290,24 @@ describe("what the CLI says when it is misused", () => {
     ]);
   });
 
+  it("refuses to supersede a decision whose frontmatter does not parse", () => {
+    book();
+    writeFileSync(first, "---\nstatus: [broken\n---\n\n# Old\n");
+    expect(
+      failed(
+        "new",
+        "decision",
+        "Extend holds",
+        "--domain",
+        "ticketing",
+        "--supersedes",
+        "1"
+      )
+    ).toEqual([
+      `${first} has frontmatter that does not parse as YAML — run "domainbook validate" to see what is wrong, fix it, then write the new decision again`,
+    ]);
+  });
+
   it("refuses to write a book into a root that already holds one", () => {
     ran("init");
     expect(failed("init")).toEqual([
