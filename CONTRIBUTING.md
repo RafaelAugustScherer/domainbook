@@ -18,8 +18,8 @@ performance numbers; we chase the feeling that everything just works.
 - **Small files, small functions.** When a function needs a scroll to read, split it
   by what each part does and name the parts. `packages/core/src/body/` is the model:
   one artifact per file, short functions with one job each.
-- **Fewest moving parts.** Prefer the standard library over a dependency, a function
-  over a class, a value over a state machine. Every dependency must pay rent: check
+- **Fewest moving parts.** Prefer the standard library over a dependency, a value
+  over a state machine. Every dependency must pay rent: check
   its current state (maintenance, advisories, size) before adding it, and record the
   choice in a decision if it shapes the design.
 
