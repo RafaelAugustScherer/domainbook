@@ -324,11 +324,14 @@ commit is auto-stamped, and both are queryable from git log.
   dual-era default serves both current and 2026-spec clients), Streamable HTTP later.
 - Tool surface modeled on established docs-serving MCP servers: search-first, get-by-id,
   small tool count — `search_book`, `get_domain`, `get_context_map`, `explain_terms`,
-  `get_feature`, `get_decisions`, and `where_to_document` (given changed paths, returns
-  which book files need updating — ties MCP into the enforcement loop).
+  `get_feature`, `get_decisions`, `get_changelog`, and `where_to_document` (given changed
+  paths, returns which book files need updating — ties MCP into the enforcement loop).
 - Retrieval is scoped: `get_decisions` returns an index — one line per record — scoped to
   a domain or to changed paths, with superseded and rejected records left out and bodies
-  fetched by id; the whole log takes an explicit ask (`mcp/ADR-0002`).
+  fetched by id; the whole log takes an explicit ask (`mcp/ADR-0002`). `get_changelog`
+  scopes the same way and bounds by release rather than by entry count — the newest
+  release in scope plus `[Unreleased]`, with older releases reached by naming a version
+  or a date, and entries returned as written rather than summarized (`mcp/ADR-0003`).
 - Same documents exposed as MCP resources for @-mention/browse UX, with cache hints.
 - `llms.txt` / `llms-full.txt` generation (`domainbook export llms`) — an opt-in export of
   the book for tools that speak no MCP, not a default retrieval path (`mcp/ADR-0002`).
