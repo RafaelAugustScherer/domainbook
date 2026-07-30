@@ -1,0 +1,27 @@
+---
+status: accepted
+date: 2026-06-12
+decision-makers: [ada]
+---
+
+# Refund a late capture in full
+
+## Context and Problem Statement
+
+A payment provider can confirm a capture after the hold it was taken against
+has already expired and the seats have gone back on sale.
+
+## Considered Options
+
+- Refund the capture in full and tell the fan.
+- Keep the money and issue a ticket for whatever seats are left.
+
+## Decision Outcome
+
+Chosen option: "Refund the capture in full and tell the fan", because the seats
+the fan paid for are the only ones the fan agreed to buy.
+
+### Consequences
+
+- Good, because a fan is never charged for seats they did not choose.
+- Bad, because a sold-out event refunds fans who were seconds late.

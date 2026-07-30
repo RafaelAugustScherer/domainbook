@@ -1,6 +1,9 @@
 import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
+import { parseGlossary } from "../src/body/glossary.js";
+import { parseMarkdown } from "../src/body/markdown.js";
 import type { ZodType } from "zod";
 import {
   configSchema,
@@ -11,6 +14,7 @@ import {
   parseFrontmatter,
   roadmapSchema,
 } from "../src/index.js";
+import { validBooks, validBooksDir } from "./fixtures/valid-books/manifest.js";
 import { bookDir, read } from "./paths.js";
 
 const withFrontmatter: Array<[string, ZodType]> = [
@@ -36,6 +40,7 @@ const withFrontmatter: Array<[string, ZodType]> = [
 
 const bodyOnly = [
   "glossary.md",
+  "domains/seating/glossary.md",
   "domains/ticketing/glossary.md",
   "domains/ticketing/changelog.md",
 ];
@@ -102,6 +107,69 @@ describe("the valid fixture book", () => {
     ]);
   });
 
+  it("narrows a shared term in the domain that means less by it", () => {
+    const shared = termSlugs("glossary.md");
+    const ticketing = termSlugs("domains/ticketing/glossary.md");
+    expect(shared).toContain("event");
+    expect(ticketing).toContain("event");
+    expect(shared).toContain("fan");
+    expect(ticketing).not.toContain("fan");
+
+    const feature = featureSchema.parse(
+      parseFrontmatter(
+        read(
+          bookDir,
+          "domains/ticketing/features/hold-seats-during-checkout.md"
+        )
+      ).data
+    );
+    expect(feature.terms).toEqual(["hold", "seat-map", "sale", "event", "fan"]);
+  });
+
+  it("keeps the word a context retired, marked deprecated", () => {
+    const terms = parseGlossary(
+      "domains/seating/glossary.md",
+      parseMarkdown(read(bookDir, "domains/seating/glossary.md"), 1)
+    ).record.terms;
+    expect(terms.map((term) => [term.slug, term.status])).toEqual([
+      ["seat-map", "validated"],
+      ["held-back-seat", "validated"],
+      ["blocked-seat", "deprecated"],
+    ]);
+  });
+
+  it("carries every optional MADR section on one decision", () => {
+    const { body } = parseFrontmatter(
+      read(bookDir, "decisions/0001-store-every-timestamp-in-utc.md")
+    );
+    expect(headings(body, 2)).toEqual([
+      "Context and Problem Statement",
+      "Decision Drivers",
+      "Considered Options",
+      "Decision Outcome",
+      "Pros and Cons of the Options",
+      "More Information",
+    ]);
+    expect(headings(body, 3)).toEqual([
+      "Consequences",
+      "Confirmation",
+      "Store UTC everywhere, convert at the edge",
+      "Store local time with an offset column",
+      "Store local time and the venue's time zone identifier",
+    ]);
+    expect(headings(body, 4)).toEqual(["What the lookup cost"]);
+  });
+
+  it("reads a term's definition as the prose above its bullets", () => {
+    const terms = parseGlossary(
+      "domains/ticketing/glossary.md",
+      parseMarkdown(read(bookDir, "domains/ticketing/glossary.md"), 1)
+    ).record.terms;
+    expect(terms[0]?.definition).toBe(
+      "A performance with seats on sale: it has a published seat map, a hold window, and a door time. Ticketing never sells for a performance until all three exist, so a performance the box office knows about is not yet an event here."
+    );
+  });
+
   it("names the superseding decision in the domain's own log", () => {
     const superseded = decisionSchema.parse(
       parseFrontmatter(
@@ -133,3 +201,52 @@ describe("the valid fixture book", () => {
     expect(found).toEqual(covered);
   });
 });
+
+describe("the valid book set", () => {
+  it("covers every book", () => {
+    const found = readdirSync(validBooksDir, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory())
+      .map((entry) => entry.name)
+      .sort();
+    expect(found).toEqual(validBooks.map((book) => book.dir).sort());
+  });
+
+  it("lets both ends declare one relationship when they agree", () => {
+    const mirrored = join(validBooksDir, "mirrored-relationship");
+    const ticketing = domainSchema.parse(
+      parseFrontmatter(read(mirrored, "domains/ticketing/index.md")).data
+    );
+    const accessControl = domainSchema.parse(
+      parseFrontmatter(read(mirrored, "domains/access-control/index.md")).data
+    );
+    expect(ticketing.relationships).toEqual([
+      {
+        with: "access-control",
+        type: "upstream-downstream",
+        direction: "upstream",
+        patterns: ["OHS", "PL"],
+      },
+    ]);
+    expect(accessControl.relationships).toEqual([
+      {
+        with: "ticketing",
+        type: "upstream-downstream",
+        direction: "downstream",
+        patterns: ["ACL"],
+      },
+    ]);
+  });
+});
+
+function termSlugs(name: string): string[] {
+  const nodes = parseMarkdown(read(bookDir, name), 1);
+  return parseGlossary(name, nodes).record.terms.map((term) => term.slug);
+}
+
+function headings(body: string, depth: number): string[] {
+  const marker = `${"#".repeat(depth)} `;
+  return body
+    .split("\n")
+    .filter((line) => line.startsWith(marker))
+    .map((line) => line.slice(marker.length).trim());
+}

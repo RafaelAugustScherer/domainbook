@@ -44,6 +44,33 @@ comparison is what every expiry rule does.
 Reviewers check that no persisted field holds a local time. The seat map export
 carries the venue time zone so the site can convert.
 
+## Pros and Cons of the Options
+
+### Store UTC everywhere, convert at the edge
+
+- Good, because any two timestamps compare without loading the venue.
+- Neutral, because the conversion still has to be written once per surface.
+- Bad, because a raw timestamp read in a log is never the time the fan saw.
+
+### Store local time with an offset column
+
+- Good, because the stored value matches what the venue printed.
+- Neutral, because the offset is enough for display but not for arithmetic.
+- Bad, because an offset does not survive a daylight-saving change, which is
+  the bug that started this.
+
+### Store local time and the venue's time zone identifier
+
+- Good, because the venue's own calendar is reproducible from the record.
+- Neutral, because it needs a time zone database wherever times are compared.
+- Bad, because every expiry check turns into a lookup, and expiry is the most
+  frequent comparison ticketing makes.
+
+#### What the lookup cost
+
+A time zone lookup per expiry check added four milliseconds to a hold sweep that
+already runs every second, measured against the first season's load test.
+
 ## More Information
 
 Revisit if boxoffice ever sells for venues that publish schedules in local time

@@ -15,7 +15,8 @@
         },
         {
           "type": "string",
-          "pattern": "^superseded by (?:[a-z0-9]+(?:-[a-z0-9]+)*\\/)?ADR-\\d{4}$"
+          "pattern": "^superseded by (?:[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*\\/)?ADR-\\d{4}$",
+          "description": "\"superseded by ADR-NNNN\", or \"superseded by <domain-id>/ADR-NNNN\" for a domain's own log. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
         }
       ]
     },

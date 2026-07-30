@@ -13,6 +13,10 @@ relationships:
     type: customer-supplier
     direction: downstream
     patterns: [CF]
+  - with: core
+    type: customer-supplier
+    direction: downstream
+    patterns: [CF]
 ---
 
 ## Purpose
@@ -43,7 +47,7 @@ else passes.
 | ------------------ | --------------------- | ----- |
 | `ChangeBlocked`    | agent, developer, CI  | Event |
 | `WaiverRecorded`   | git history           | Event |
-| `GetDomainGlobs`   | format                | Query |
+| `GetDomainGlobs`   | core                  | Query |
 
 ## Business Decisions
 
@@ -53,9 +57,10 @@ else passes.
   committing (`enforcement/ADR-0002`).
 - A changelog entry is demanded only for user-visible behaviour changes, not for
   every commit (`enforcement/ADR-0003`).
-- The domain `code:` globs are the only map from code to documentation.
-  Enforcement asks format for the field it needs instead of keeping a second map
-  of its own — which is why format treats this context as a customer.
+- The domain `code:` globs are the only map from code to documentation. The
+  field is format's spec and the parsed value comes from core's loader;
+  enforcement keeps no second map of its own, which is why both contexts treat
+  it as a customer.
 - A block always names the concrete files that would clear it.
 
 ## Assumptions
@@ -82,10 +87,6 @@ else passes.
 
 ## Open Questions
 
-- Which domain owns `packages/cli/**`? Its commands straddle all four contexts,
-  so either the globs are split per command file or the CLI gets a context of its
-  own. The same question is coming for `@domainbook/core`, which is entirely
-  format's today and will hold this context's check logic tomorrow.
 - One commit touches two domains and updates one book. Block, or accept a
   per-domain waiver?
 - Should a domain with no `code:` globs ever block, or is an unmapped domain

@@ -3,7 +3,7 @@ id: hold-seats-during-checkout
 name: Hold seats during checkout
 status: implemented
 owners: [ada]
-terms: [hold, seat-map, sale]
+terms: [hold, seat-map, sale, event, fan]
 decisions: [ticketing/ADR-0001, ADR-0001]
 ---
 

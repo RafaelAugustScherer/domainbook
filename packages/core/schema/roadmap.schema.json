@@ -4,7 +4,8 @@
   "properties": {
     "id": {
       "type": "string",
-      "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+      "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+      "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
     },
     "milestones": {
       "minItems": 1,
@@ -14,7 +15,8 @@
         "properties": {
           "id": {
             "type": "string",
-            "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"
+            "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+            "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
           },
           "name": {
             "type": "string",

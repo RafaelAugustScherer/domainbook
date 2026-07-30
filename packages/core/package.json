@@ -20,6 +20,8 @@
     "schemas": "tsc --build && node scripts/generate-json-schema.ts"
   },
   "dependencies": {
+    "@cucumber/gherkin": "42.0.0",
+    "@cucumber/messages": "34.2.0",
     "yaml": "2.9.0",
     "zod": "4.4.3"
   },

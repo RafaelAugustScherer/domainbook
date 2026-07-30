@@ -9,12 +9,10 @@ owners: [RafaelAugustScherer]
 code:
   - packages/mcp/**
 relationships:
-  - with: format
+  - with: core
     type: upstream-downstream
     direction: downstream
     patterns: [CF]
-  - with: enforcement
-    type: shared-kernel
 ---
 
 ## Purpose
@@ -46,8 +44,8 @@ agent reading the whole repo.
 
 | Message             | Collaborator | Type  |
 | ------------------- | ------------ | ----- |
-| `LoadBook`          | format       | Query |
-| `MatchPathsToBook`  | enforcement  | Query |
+| `LoadBook`          | core         | Query |
+| `MatchPathsToBook`  | core         | Query |
 
 ## Business Decisions
 
@@ -59,9 +57,11 @@ agent reading the whole repo.
   domain or to changed paths, with superseded and rejected records left out and
   full bodies fetched by id (`mcp/ADR-0002`). A whole log is available and has to
   be asked for.
-- `where_to_document` runs enforcement's path matching, not a second copy of it.
-  The two contexts share that code, so an agent asking the MCP server and a hook
-  blocking a commit can never disagree about which files are stale.
+- `where_to_document` runs the path matching that lives in core, not a second
+  copy of it. It is the same code the commit hook runs, so an agent asking the
+  MCP server and a hook blocking a commit can never disagree about which files
+  are stale. The rule being applied is enforcement's; only the implementation is
+  shared (`ADR-0011`).
 - The same documents are exposed as resources for @-mention and browse, so a
   client that prefers browsing does not need a different answer.
 
@@ -83,7 +83,7 @@ agent reading the whole repo.
   the book grows. Two calls that return an entire decision log is not a win, and
   the call count is blind to it.
 - Disagreements between `where_to_document` and `domainbook check` on the same
-  diff. Any is a bug in the shared kernel.
+  diff. Any is a bug in core, since both call the same code.
 
 ## Open Questions
 

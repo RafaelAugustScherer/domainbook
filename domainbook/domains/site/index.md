@@ -13,6 +13,10 @@ relationships:
     type: upstream-downstream
     direction: downstream
     patterns: [CF]
+  - with: core
+    type: upstream-downstream
+    direction: downstream
+    patterns: [CF]
 ---
 
 ## Purpose
@@ -31,20 +35,23 @@ relationships already describe.
 
 | Message      | Collaborator | Type    |
 | ------------ | ------------ | ------- |
-| `BuildSite`  | CLI          | Command |
-| `ServeDev`   | CLI          | Command |
+| `BuildSite`  | core         | Command |
+| `ServeDev`   | core         | Command |
 
 ## Outbound Communication
 
 | Message      | Collaborator | Type  |
 | ------------ | ------------ | ----- |
-| `LoadBook`   | format       | Query |
-| `BuildFailed`| CLI, CI      | Event |
+| `LoadBook`   | core         | Query |
+| `BuildFailed`| core, CI     | Event |
 
 ## Business Decisions
 
 - A custom Astro app whose content collections use the shared zod schemas, so a
   build applies the same rules as `domainbook validate` (`site/ADR-0001`).
+- The book is read through core's loader, and the schemas the content
+  collections declare are format's. That is why this context depends on both,
+  and why a page can only show what the model already holds (`ADR-0011`).
 - The context map is generated from `relationships:` frontmatter as Mermaid.
   There is no hand-drawn diagram and no visual editor — a map that disagrees with
   the book cannot exist.

@@ -1,5 +1,5 @@
 import * as z from "zod";
-import { decisionRefSource, people } from "./common.js";
+import { decisionRefSource, people, unicodeFlagNote } from "./common.js";
 
 const statusMessage =
   'must be "proposed", "rejected", "accepted", "deprecated", or "superseded by ADR-NNNN" ("<domain-id>/ADR-NNNN" for a domain log)';
@@ -9,9 +9,14 @@ export const decisionStatusSchema = z.union(
     z.enum(["proposed", "rejected", "accepted", "deprecated"], {
       error: statusMessage,
     }),
-    z.string().regex(new RegExp(`^superseded by ${decisionRefSource}$`), {
-      error: statusMessage,
-    }),
+    z
+      .string()
+      .regex(new RegExp(`^superseded by ${decisionRefSource}$`, "u"), {
+        error: statusMessage,
+      })
+      .meta({
+        description: `"superseded by ADR-NNNN", or "superseded by <domain-id>/ADR-NNNN" for a domain's own log. ${unicodeFlagNote}`,
+      }),
   ],
   { error: statusMessage }
 );
