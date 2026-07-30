@@ -9,8 +9,8 @@ decision-makers: [RafaelAugustScherer]
 ## Context and Problem Statement
 
 `domainbook new domain 9` wrote `id: 9` into the page's frontmatter. `9` is a
-legal slug — lowercase letters and digits joined by single hyphens says nothing
-about starting with a letter — but unquoted in YAML it is the integer nine, so
+legal slug — a word starts with a letter or a digit — but unquoted in YAML it is
+the integer nine, so
 the domain schema saw a number where it wanted text and the next command failed.
 The generator wrote a book that did not validate, which is the one thing the
 generators are supposed to make impossible.

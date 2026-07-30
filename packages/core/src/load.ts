@@ -28,6 +28,7 @@ import {
   type GlossaryRecord,
   termSlug,
 } from "./model.js";
+import { slugSource } from "./schemas/common.js";
 import { configSchema } from "./schemas/config.js";
 import { decisionSchema } from "./schemas/decision.js";
 import { type Domain, domainSchema } from "./schemas/domain.js";
@@ -52,7 +53,7 @@ type Filed = {
   body: { title: string; issues: Issue[] };
 };
 
-const named = /^(\d{4})-([a-z0-9]+(?:-[a-z0-9]+)*)\.md$/;
+const named = new RegExp(`^(\\d{4})-(${slugSource})\\.md$`, "u");
 const numbered = /^(\d+)-(.+)\.md$/;
 
 const rootHolds = `a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, and domains/`;
@@ -366,13 +367,13 @@ function misname(one: Filed, free: number): { message: string; free: number } {
       free,
     };
   return {
-    message: `the title in a decision filename is lowercase words joined by single hyphens — rename to "${digits}-${slug}.md"`,
+    message: `the title in a decision filename is words joined by single hyphens, each starting with a letter or digit in any script and carrying no capitals — rename to "${digits}-${slug}.md"`,
     free,
   };
 }
 
 function unsluggable(text: string, number: number): string {
-  return `decision filenames are a four-digit number and a title in lowercase letters and digits — "${text}" has none, so rename to "${pad(
+  return `decision filenames are a four-digit number and a title in letters and digits — "${text}" has none, so rename to "${pad(
     number
   )}-your-title-here.md"`;
 }

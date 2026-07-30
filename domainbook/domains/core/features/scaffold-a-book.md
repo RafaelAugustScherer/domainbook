@@ -62,7 +62,12 @@ Example: A file where a book root should be
 Example: An id that is not a slug comes back as the slug it should have been
   Given a book written by domainbook init
   When domainbook new domain "Access Control" runs
-  Then it refuses with: "Access Control" is not a domain id — write lowercase words joined by single hyphens, as in "access-control"
+  Then it refuses with: "Access Control" is not a domain id — write words joined by single hyphens, where a word starts with a letter or digit in any script and carries no capitals, as in "access-control"
+
+Example: An id a second spelling would also produce is refused before it is written
+  Given a book written by domainbook init
+  When domainbook new domain "ｓｅａｔ-ｍａｐ" runs, typed in fullwidth Latin
+  Then it refuses with: the domain id "ｓｅａｔ-ｍａｐ" folds to "seat-map" under NFKC — character 1 is U+FF53, a compatibility form; write "seat-map" instead, or this and the domain id it looks like are two different names
 
 Example: A domain that does not exist is answered with the ones that do
   Given a book whose only domain is ticketing

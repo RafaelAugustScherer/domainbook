@@ -233,14 +233,38 @@ describe("loadBook over a decision log", () => {
     ]);
   });
 
+  it("suggests the title's own script in the filename it asks for", () => {
+    const root = temporary({
+      "roadmap.md": milestones,
+      "decisions/notes.md": madr.replace(
+        "# Expire holds",
+        "# 座席表を保存する"
+      ),
+    });
+    expect(messages(root)).toEqual([
+      'decision filenames start with a four-digit number — rename to "0001-座席表を保存する.md"',
+    ]);
+  });
+
   it("says a title in letters and digits when the title gives no slug", () => {
     const root = temporary({
       "roadmap.md": milestones,
-      "decisions/notes.md": madr.replace("# Expire holds", "# 座席表"),
+      "decisions/notes.md": madr.replace("# Expire holds", "# ???"),
     });
     expect(messages(root)).toEqual([
-      'decision filenames are a four-digit number and a title in lowercase letters and digits — "座席表" has none, so rename to "0001-your-title-here.md"',
+      'decision filenames are a four-digit number and a title in letters and digits — "???" has none, so rename to "0001-your-title-here.md"',
     ]);
+  });
+
+  it("keeps a decision file named in another script", () => {
+    const root = temporary({
+      "roadmap.md": milestones,
+      "decisions/0001-座席表を保存する.md": madr.replace(
+        "# Expire holds",
+        "# 座席表を保存する"
+      ),
+    });
+    expect(messages(root)).toEqual([]);
   });
 
   it("counts every .md in the log, not only the ones that validated", () => {
@@ -331,27 +355,66 @@ describe("issue formatting", () => {
   });
 });
 
+const grammar =
+  /^[\p{Ll}\p{Lo}\p{Lm}\p{Nd}][\p{Ll}\p{Lo}\p{Lm}\p{M}\p{Nd}]*(?:-[\p{Ll}\p{Lo}\p{Lm}\p{Nd}][\p{Ll}\p{Lo}\p{Lm}\p{M}\p{Nd}]*)*$/u;
+
+const slugged: Array<[string, string]> = [
+  ["Seat Map", "seat-map"],
+  ["ISTANBUL", "istanbul"],
+  ["Stay on TypeScript 6", "stay-on-typescript-6"],
+  [
+    "Read frontmatter with yaml, not gray-matter",
+    "read-frontmatter-with-yaml-not-gray-matter",
+  ],
+  [
+    "Keep `separate-ways` without a CML production",
+    "keep-separate-ways-without-a-cml-production",
+  ],
+  ["  — Seat Map!  ", "seat-map"],
+  ["Seat 🎟 Map", "seat-map"],
+  ["́Seat map", "seat-map"],
+  ["Café Order", "café-order"],
+  ["Café Order".normalize("NFD"), "café-order"],
+  ["Naïve résumé", "naïve-résumé"],
+  ["Größe", "größe"],
+  ["Emissão de bilhete", "emissão-de-bilhete"],
+  ["注文履行", "注文履行"],
+  ["コーヒー豆", "コーヒー豆"],
+  ["座席表を保存する", "座席表を保存する"],
+  ["طلب القهوة", "طلب-القهوة"],
+  ["कॉफ़ी ऑर्डर", "कॉफ़ी-ऑर्डर"],
+  ["İstanbul", "i̇stanbul"],
+];
+
 describe("termSlug", () => {
-  it("lowercases a name and joins its words with single hyphens", () => {
-    expect(termSlug("Seat Map")).toBe("seat-map");
-    expect(termSlug("Stay on TypeScript 6")).toBe("stay-on-typescript-6");
-    expect(termSlug("Read frontmatter with yaml, not gray-matter")).toBe(
-      "read-frontmatter-with-yaml-not-gray-matter"
-    );
-    expect(termSlug("Keep `separate-ways` without a CML production")).toBe(
-      "keep-separate-ways-without-a-cml-production"
-    );
+  it.each(slugged)("slugs %j as %j", (name, slug) => {
+    expect(termSlug(name)).toBe(slug);
   });
 
-  it("folds an accented letter onto the letter it is written from", () => {
-    expect(termSlug("Café Order")).toBe("cafe-order");
-    expect(termSlug("Naïve résumé")).toBe("naive-resume");
-    expect(termSlug("Größe")).toBe("gro-e");
+  it("gives every name a slug the schema's grammar accepts", () => {
+    expect(
+      slugged
+        .map(([name]) => termSlug(name))
+        .filter((one) => !grammar.test(one))
+    ).toEqual([]);
   });
 
-  it("gives no slug to a name with no letters or digits to fold to", () => {
-    expect(termSlug("日本語")).toBe("");
+  it("gives every name a slug that is already NFC", () => {
+    expect(
+      slugged
+        .map(([name]) => termSlug(name))
+        .filter((one) => one !== one.normalize("NFC"))
+    ).toEqual([]);
+  });
+
+  it("gives no slug to a name with no letter or digit in it", () => {
     expect(termSlug("???")).toBe("");
+    expect(termSlug("…")).toBe("");
+    expect(termSlug("🎟")).toBe("");
+  });
+
+  it("leaves a dotted capital I as its own slug, not the one it looks like", () => {
+    expect(termSlug("İstanbul")).not.toBe("istanbul");
   });
 });
 

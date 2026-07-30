@@ -34,7 +34,11 @@ export.
 
 Schemas are authored in zod; [JSON Schema draft 2020-12](https://json-schema.org/draft/2020-12/schema)
 files are generated from them and committed under `packages/core/schema`, so editors and
-non-JS tools consume the same spec without drift. Roadmap, domain, feature and decision pages carry their machine-readable
+non-JS tools read the same spec the CLI reads. One caveat: an id may be written in any
+script, so its pattern uses Unicode property escapes, which JSON Schema does not guarantee
+across implementations — Python's validators reject the schema, and a JavaScript consumer
+compiling the pattern without the `u` flag gets no error and the wrong meaning. Every
+pattern's `description` says so. Roadmap, domain, feature and decision pages carry their machine-readable
 part in frontmatter; the glossary and changelog carry theirs in the body, and their
 schemas describe the parsed result.
 

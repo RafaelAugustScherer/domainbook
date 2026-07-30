@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { bookRoot } from "./files.js";
 import { init } from "./init.js";
@@ -5,7 +6,12 @@ import { newDecision, newDomain, newFeature } from "./new.js";
 import { refuse, type Result } from "./result.js";
 import { validate } from "./validate.js";
 
-type Values = { help?: boolean; domain?: string; supersedes?: string };
+type Values = {
+  help?: boolean;
+  version?: boolean;
+  domain?: string;
+  supersedes?: string;
+};
 type Command = {
   name: string;
   usage: string;
@@ -14,6 +20,7 @@ type Command = {
 
 const options = {
   help: { type: "boolean", short: "h" },
+  version: { type: "boolean", short: "v" },
   domain: { type: "string" },
   supersedes: { type: "string" },
 } as const;
@@ -66,6 +73,7 @@ const help = [
   "  --domain <domain-id>    the domain a feature or a decision belongs to",
   "  --supersedes <number>   the decision this new one replaces",
   "  -h, --help              print this",
+  "  -v, --version           print the version of domainbook that is installed",
   "",
   'root defaults to "domainbook".',
 ];
@@ -87,6 +95,13 @@ export function run(argv: string[]): Result {
   if (values.help === true) return { code: 0, lines: help };
 
   const [command, second, third, fourth] = positionals;
+  if (values.version === true) {
+    if (command === undefined)
+      return { code: 0, lines: [`domainbook ${installed()}`] };
+    return refuse(
+      '"--version" is not an option here — domainbook has one version, not one per command; write "domainbook --version" on its own'
+    );
+  }
   if (command === undefined)
     return refuse(
       'domainbook needs a command — validate, init, or new; run "domainbook --help" to see them'
@@ -143,6 +158,14 @@ export function run(argv: string[]): Result {
   );
 }
 
+function installed(): string {
+  const manifest = readFileSync(
+    new URL("../package.json", import.meta.url),
+    "utf8"
+  );
+  return (JSON.parse(manifest) as { version: string }).version;
+}
+
 function stop(
   command: Command,
   values: Values,
@@ -170,13 +193,15 @@ function misused(argv: string[], thrown: unknown): string {
   if ((thrown as { code?: string }).code === "ERR_PARSE_ARGS_UNKNOWN_OPTION") {
     const command = asked(argv);
     if (command === undefined)
-      return `"${named}" is not a domainbook option — the options are --domain, --supersedes, and --help; run "domainbook --help" to see which command takes which`;
+      return `"${named}" is not a domainbook option — the options are --domain, --supersedes, --help, and --version; run "domainbook --help" to see which command takes which`;
     return `"${named}" is not a domainbook option — "${
       command.name
     }" takes ${takes(command.options)}; usage: ${command.usage}`;
   }
   if (named === "--help" || named === "-h")
-    return `"${named}" takes no value — write "${named}" on its own`;
+    return '"--help" takes no value — write "--help" on its own';
+  if (named === "--version" || named === "-v")
+    return '"--version" takes no value — write "--version" on its own';
   const value = argv[argv.lastIndexOf(named) + 1];
   if (value === undefined)
     return `"${named}" was given no value — write "${named} <value>"`;

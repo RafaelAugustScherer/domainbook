@@ -20,4 +20,9 @@ export const validBooks: ValidBook[] = [
     proves:
       'a bare "superseded by ADR-NNNN" in the book-level log names that log, so a book-level chain resolves',
   },
+  {
+    dir: "japanese-slugs",
+    proves:
+      "a book written in Japanese names its domains, terms, features, and decisions in its own language, and references resolve across them",
+  },
 ];

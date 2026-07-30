@@ -160,7 +160,11 @@ they bring.
 (`id`, `name`, `status: planned | in-progress | done`), detail per milestone in the body.
 
 Schemas are authored once in zod; JSON Schema files (draft 2020-12) are generated from
-them and committed, so editors and non-JS tools consume the same spec without drift. The
+them and committed, so editors and non-JS tools read the same spec the CLI reads. They do
+not all agree with it: the slug accepts any script, so its pattern uses Unicode property
+escapes, which JSON Schema does not guarantee — Python's validators fail loudly on it, and
+a JavaScript consumer that compiles without the `u` flag fails silently, meaning the
+opposite (`format/ADR-0016`). The
 four artifacts with frontmatter — roadmap, domain, feature, decision — have their
 frontmatter described that way; the glossary and changelog carry none, so their schemas
 describe the parsed body.

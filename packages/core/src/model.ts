@@ -1,5 +1,6 @@
 import type { ParsedRule } from "./body/feature.js";
 import type { Changelog } from "./schemas/changelog.js";
+import { slugSource } from "./schemas/common.js";
 import type { Config } from "./schemas/config.js";
 import type { Decision } from "./schemas/decision.js";
 import type { Domain } from "./schemas/domain.js";
@@ -64,11 +65,8 @@ export type Book = {
   domains: DomainRecord[];
 };
 
+const slugs = new RegExp(slugSource, "gu");
+
 export function termSlug(name: string): string {
-  return name
-    .normalize("NFKD")
-    .replace(/\p{M}+/gu, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
+  return (name.normalize("NFC").toLowerCase().match(slugs) ?? []).join("-");
 }

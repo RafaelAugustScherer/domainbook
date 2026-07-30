@@ -25,7 +25,10 @@ definition instead of each tool inventing its own.
 - Specification context: it owns the shape of every artifact; no other context
   invents a field.
 - Published language context: the generated JSON Schema files are committed, so
-  editors and non-JS tools read the same spec the CLI reads.
+  editors and non-JS tools read the same spec the CLI reads — with one limit,
+  since the slug pattern uses Unicode property escapes and a consumer whose regex
+  engine does not compile them either fails or, worse, silently means something
+  else (`format/ADR-0016`).
 
 ## Inbound Communication
 
@@ -58,6 +61,10 @@ definition instead of each tool inventing its own.
 - Frontmatter carries what a machine reads; the body carries what a person reads.
   A canvas section that a tool needs to index moves to frontmatter rather than
   being scraped out of prose.
+- A slug is words joined by single hyphens in any script, and the rules a regex
+  cannot state — NFC, NFKC-stable, at most 247 UTF-8 bytes — are checked beside
+  it. The team's own language is the point; portability of the published pattern
+  is what it cost (`format/ADR-0016`).
 
 ## Assumptions
 
@@ -85,9 +92,8 @@ definition instead of each tool inventing its own.
   three-field index it is today?
 - Does the book need a format version field so a future schema change can migrate
   older books, or is the git history enough?
-- Should a slug accept Unicode? Folding drops what it cannot reach, so a team
-  whose ubiquitous language is written in Japanese, Greek, Arabic or Hebrew can
-  define a term and then has no id to reference it by. Widening the slug to
-  letters in any script would fix that and would cost filename portability, case
-  folding that differs by locale, and a reference syntax two spellings of the
-  same name could both satisfy.
+- A slug now accepts any script (`format/ADR-0016`), and one confusable pair is
+  left open by it: `İstanbul` lowercases to `i̇stanbul`, a legal, NFC-stable,
+  NFKC-stable near-twin of `istanbul`. Catching that needs a UTS #39 confusable
+  check over every id in a book. Is that this context's job, or is a look-alike
+  id a thing a reviewer catches?

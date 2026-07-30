@@ -1,4 +1,5 @@
 import {
+  existsSync,
   mkdirSync,
   mkdtempSync,
   readFileSync,
@@ -156,6 +157,20 @@ describe("what the generators write", () => {
     ]);
   });
 
+  it("passes validate as written when the whole book is Japanese", () => {
+    ran("init");
+    ran("new", "domain", "販売");
+    ran("new", "feature", "座席予約", "--domain", "販売");
+    expect(
+      ran("new", "decision", "座席の保留は十分で切れる", "--domain", "販売")[0]
+    ).toBe(
+      "wrote domainbook/domains/販売/decisions/0001-座席の保留は十分で切れる.md"
+    );
+    expect(ran("validate")).toEqual([
+      "domainbook is a valid book — 1 domain, 1 feature, 1 decision, 0 terms",
+    ]);
+  });
+
   it("quotes only the ids and names that YAML would read as something else", () => {
     ran("init");
     ran("new", "domain", "9");
@@ -292,7 +307,14 @@ describe("what the CLI says when it is misused", () => {
   it("suggests the slug for an id that is not one", () => {
     ran("init");
     expect(failed("new", "domain", "Access Control")).toEqual([
-      '"Access Control" is not a domain id — write lowercase words joined by single hyphens, as in "access-control"',
+      '"Access Control" is not a domain id — write words joined by single hyphens, where a word starts with a letter or digit in any script and carries no capitals, as in "access-control"',
+    ]);
+  });
+
+  it("suggests a slug that is itself writable, not a fullwidth one", () => {
+    ran("init");
+    expect(failed("new", "domain", "ＳＥＡＴ")).toEqual([
+      '"ＳＥＡＴ" is not a domain id — write words joined by single hyphens, where a word starts with a letter or digit in any script and carries no capitals, as in "seat"',
     ]);
   });
 
@@ -324,7 +346,7 @@ describe("what the CLI says when it is misused", () => {
       '"--bogus" is not a domainbook option — "domainbook init" takes only --help; usage: domainbook init [root]',
     ]);
     expect(failed("--bogus")).toEqual([
-      '"--bogus" is not a domainbook option — the options are --domain, --supersedes, and --help; run "domainbook --help" to see which command takes which',
+      '"--bogus" is not a domainbook option — the options are --domain, --supersedes, --help, and --version; run "domainbook --help" to see which command takes which',
     ]);
   });
 
@@ -333,6 +355,15 @@ describe("what the CLI says when it is misused", () => {
       failed("new", "feature", "hold-seats", "--Domain", "ticketing")
     ).toEqual([
       '"--Domain" is not a domainbook option — "domainbook new feature" takes --domain and --help; usage: domainbook new feature <id> [root] --domain <domain-id>',
+    ]);
+  });
+
+  it("names the flag a user typed when they hang a value off it", () => {
+    expect(failed("--version=1")).toEqual([
+      '"--version" takes no value — write "--version" on its own',
+    ]);
+    expect(failed("--help=1")).toEqual([
+      '"--help" takes no value — write "--help" on its own',
     ]);
   });
 
@@ -377,7 +408,7 @@ describe("what the CLI says when it is misused", () => {
   it("refuses a decision title that gives no filename", () => {
     ran("init");
     expect(failed("new", "decision", "???")).toEqual([
-      '"???" gives no filename — a decision filename is a four-digit number and the title in lowercase letters and digits, and this title has none; write one that has some',
+      '"???" gives no filename — a decision filename is a four-digit number and the title in letters and digits, and this title has none; write one that has some',
     ]);
   });
 
@@ -417,13 +448,77 @@ describe("what the CLI says when it is misused", () => {
     ]);
   });
 
-  it("refuses a title the filesystem cannot hold, instead of throwing", () => {
+  it("refuses a title whose slug is over the byte cap, before writing", () => {
     ran("init");
     const words = Array.from({ length: 75 }, () => "word");
     expect(failed("new", "decision", words.join(" "))).toEqual([
-      `domainbook/decisions/0001-${words.join(
+      `"${words.join(" ")}" gives the filename slug "${words.join(
         "-"
-      )}.md cannot be written — that name is longer than this filesystem allows; use a shorter title`,
+      )}", which is 374 bytes as UTF-8 — a slug holds at most 247 bytes, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; write a shorter title`,
+    ]);
+    expect(existsSync("domainbook/decisions")).toBe(false);
+  });
+
+  it("counts the byte cap in UTF-8, not in characters", () => {
+    ran("init");
+    const short = "座".repeat(82);
+    const over = "座".repeat(83);
+    expect(ran("new", "decision", short)[0]).toBe(
+      `wrote domainbook/decisions/0001-${short}.md`
+    );
+    expect(failed("new", "decision", over)).toEqual([
+      `"${over}" gives the filename slug "${over}", which is 249 bytes as UTF-8 — a slug holds at most 247 bytes, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; write a shorter title`,
+    ]);
+  });
+
+  it("refuses an id over the byte cap, whatever the script", () => {
+    ran("init");
+    const long = "a".repeat(248);
+    expect(failed("new", "domain", long)).toEqual([
+      `the domain id "${long}" is 248 bytes as UTF-8 — a domain id holds at most 247 bytes, so the filenames it forms fit the 255 bytes ext4 and APFS give one; write a shorter one`,
+    ]);
+  });
+
+  it("refuses a fullwidth id that masquerades as its ASCII twin", () => {
+    ran("init");
+    expect(failed("new", "domain", "ｓｅａｔ-ｍａｐ")).toEqual([
+      'the domain id "ｓｅａｔ-ｍａｐ" folds to "seat-map" under NFKC — character 1 is U+FF53, a compatibility form; write "seat-map" instead, or this and the domain id it looks like are two different names',
+    ]);
+    expect(existsSync("domainbook/domains")).toBe(false);
+  });
+
+  it("refuses a fullwidth decision title, the way an IME hands one over", () => {
+    ran("init");
+    expect(failed("new", "decision", "ＳＥＡＴ Ｍａｐ")).toEqual([
+      'the decision title "ＳＥＡＴ Ｍａｐ" folds to "SEAT Map" under NFKC — character 1 is U+FF33, a compatibility form; write "SEAT Map" instead, or this and the decision title it looks like are two different names',
+    ]);
+    expect(existsSync("domainbook/decisions")).toBe(false);
+  });
+
+  it("refuses a decomposed id, naming the code points and the composed form", () => {
+    book();
+    const decomposed = "cafe\u0301-menu";
+    expect(
+      failed("new", "feature", decomposed, "--domain", "ticketing")
+    ).toEqual([
+      `the feature id "${decomposed}" is not in Unicode NFC — at character 4 it holds U+0065 U+0301 where NFC holds U+00E9; write "café-menu" instead, or this and the same text written elsewhere will not match`,
+    ]);
+  });
+
+  it("refuses a decomposed decision title the same way", () => {
+    ran("init");
+    const decomposed = "Cafe\u0301 policy";
+    expect(failed("new", "decision", decomposed)).toEqual([
+      `the decision title "${decomposed}" is not in Unicode NFC — at character 4 it holds U+0065 U+0301 where NFC holds U+00E9; write "Café policy" instead, or this and the same text written elsewhere will not match`,
+    ]);
+  });
+
+  it("refuses a fullwidth --domain before it looks for the domain", () => {
+    book();
+    expect(
+      failed("new", "feature", "hold-seats", "--domain", "ｔｉｃｋｅｔｉｎｇ")
+    ).toEqual([
+      'the domain id "ｔｉｃｋｅｔｉｎｇ" folds to "ticketing" under NFKC — character 1 is U+FF54, a compatibility form; write "ticketing" instead, or this and the domain id it looks like are two different names',
     ]);
   });
 });
@@ -443,6 +538,39 @@ describe("--help", () => {
     expect(lines).toContain(
       '  domainbook new decision "<title>" [root] [--domain <domain-id>] [--supersedes <number>]'
     );
+    expect(lines).toContain("  -h, --help              print this");
+    expect(lines).toContain(
+      "  -v, --version           print the version of domainbook that is installed"
+    );
     expect(lines.at(-1)).toBe('root defaults to "domainbook".');
   });
 });
+
+describe("--version", () => {
+  it("prints the version of the package it is running from, and exits 0", () => {
+    expect(ran("--version")).toEqual([`domainbook ${shipped()}`]);
+    expect(ran("-v")).toEqual([`domainbook ${shipped()}`]);
+  });
+
+  it("refuses a command that asks for one, and names the form that works", () => {
+    const message =
+      '"--version" is not an option here — domainbook has one version, not one per command; write "domainbook --version" on its own';
+    expect(failed("validate", "--version")).toEqual([message]);
+    expect(failed("init", "--version")).toEqual([message]);
+    expect(failed("new", "domain", "ticketing", "--version")).toEqual([
+      message,
+    ]);
+    expect(failed("new", "feature", "hold-seats", "-v")).toEqual([message]);
+    expect(failed("new", "decision", "Extend holds", "--version")).toEqual([
+      message,
+    ]);
+  });
+});
+
+function shipped(): string {
+  const manifest = readFileSync(
+    new URL("../package.json", import.meta.url),
+    "utf8"
+  );
+  return (JSON.parse(manifest) as { version: string }).version;
+}

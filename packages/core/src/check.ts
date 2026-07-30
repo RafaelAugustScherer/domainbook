@@ -4,9 +4,10 @@ import type {
   DecisionFile,
   DecisionRecord,
   DomainRecord,
+  FeatureRecord,
 } from "./model.js";
 import { termSlug } from "./model.js";
-import { slug } from "./schemas/common.js";
+import { slug, slugSource } from "./schemas/common.js";
 
 type Declared = {
   domain: DomainRecord;
@@ -18,17 +19,82 @@ type Declared = {
 
 type Log = { id?: string; records: DecisionRecord[]; files: DecisionFile[] };
 
-const reference = /^(?:([a-z0-9]+(?:-[a-z0-9]+)*)\/)?ADR-(\d{4})$/;
+type At = { file: string; line?: number; field?: string };
+
+const reference = new RegExp(`^(?:(${slugSource})/)?ADR-(\\d{4})$`, "u");
 const superseded = "superseded by ";
+const mark = /\p{M}/u;
+const slugBytes = 247;
 
 export function checkBook(book: Book): Issue[] {
   return [
     ...checkRelationships(book),
     ...checkFeatures(book),
+    ...checkTerms(book),
     ...checkLogs(book),
     ...checkDomainIds(book),
     ...checkMilestones(book),
   ];
+}
+
+function notNfc(at: At, value: string): Issue | undefined {
+  const composed = value.normalize("NFC");
+  if (composed === value) return undefined;
+  const held = [...value];
+  const wanted = [...composed];
+  let index = 0;
+  while (index < held.length && held[index] === wanted[index]) index += 1;
+  return {
+    ...at,
+    message: `"${value}" is not in Unicode NFC — at character ${
+      index + 1
+    } it holds ${points(held, index)} where NFC holds ${points(
+      wanted,
+      index
+    )}; write the NFC form, or this and the same text written elsewhere will not match`,
+  };
+}
+
+function notNfkc(at: At, value: string): Issue | undefined {
+  const folded = value.normalize("NFKC");
+  if (folded === value) return undefined;
+  const held = [...value];
+  const wanted = [...folded];
+  let index = 0;
+  while (index < held.length && held[index] === wanted[index]) index += 1;
+  return {
+    ...at,
+    message: `"${value}" folds to "${folded}" under NFKC — character ${
+      index + 1
+    } is ${points(
+      held,
+      index
+    )}, a compatibility form; write the folded form, or this and the slug it looks like are two different names`,
+  };
+}
+
+function points(chars: string[], index: number): string {
+  let end = index + 1;
+  while (end < chars.length && mark.test(chars[end] ?? "")) end += 1;
+  return chars
+    .slice(index, end)
+    .map(
+      (char) =>
+        `U+${(char.codePointAt(0) ?? 0)
+          .toString(16)
+          .toUpperCase()
+          .padStart(4, "0")}`
+    )
+    .join(" ");
+}
+
+function tooLong(at: At, value: string): Issue | undefined {
+  const bytes = Buffer.byteLength(value, "utf8");
+  if (bytes <= slugBytes) return undefined;
+  return {
+    ...at,
+    message: `"${value}" is ${bytes} bytes as UTF-8 — a slug holds at most ${slugBytes}, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; shorten it`,
+  };
 }
 
 function checkRelationships(book: Book): Issue[] {
@@ -44,6 +110,12 @@ function checkRelationships(book: Book): Issue[] {
         line: domain.lines[`relationships[${index}].with`],
         field: `relationships[${index}].with`,
       };
+      const unnormalized =
+        notNfc(at, relationship.with) ?? notNfkc(at, relationship.with);
+      if (unnormalized !== undefined) {
+        issues.push(unnormalized);
+        continue;
+      }
       if (relationship.with === domain.id) {
         issues.push({
           ...at,
@@ -136,17 +208,21 @@ function checkFeatures(book: Book): Issue[] {
         (glossary) => glossary !== undefined
       );
       for (const [index, term] of (feature.frontmatter.terms ?? []).entries()) {
+        const field = `terms[${index}]`;
+        const at = { file: feature.file, line: feature.lines[field], field };
+        const unnormalized = notNfc(at, term) ?? notNfkc(at, term);
+        if (unnormalized !== undefined) {
+          issues.push(unnormalized);
+          continue;
+        }
         if (
           glossaries.some((glossary) =>
             glossary.terms.some((one) => one.slug === term)
           )
         )
           continue;
-        const field = `terms[${index}]`;
         issues.push({
-          file: feature.file,
-          line: feature.lines[field],
-          field,
+          ...at,
           message:
             glossaries.length === 0
               ? `no term "${term}" — neither ${domain.id} nor this book has a glossary.md`
@@ -158,29 +234,59 @@ function checkFeatures(book: Book): Issue[] {
       for (const [index, ref] of (
         feature.frontmatter.decisions ?? []
       ).entries()) {
-        const missing = findDecision(book, ref);
         const field = `decisions[${index}]`;
+        const at = { file: feature.file, line: feature.lines[field], field };
+        const unnormalized = notNfc(at, ref) ?? notNfkc(at, ref);
+        if (unnormalized !== undefined) {
+          issues.push(unnormalized);
+          continue;
+        }
+        const missing = findDecision(book, ref);
         if (missing !== undefined)
-          issues.push({
-            file: feature.file,
-            line: feature.lines[field],
-            field,
-            message: `no decision "${ref}" — ${missing}`,
-          });
+          issues.push({ ...at, message: `no decision "${ref}" — ${missing}` });
       }
-      const name = basename(feature.file).replace(/\.md$/, "");
-      if (feature.frontmatter.id !== name)
-        issues.push({
-          file: feature.file,
-          line: feature.lines["id"],
-          field: "id",
-          message: `"${
-            feature.frontmatter.id
-          }" does not match the filename "${name}" — rename the file to "${
-            feature.frontmatter.id
-          }.md"${orSetId(name)}`,
-        });
+      issues.push(...checkFeatureId(feature));
     }
+  return issues;
+}
+
+function checkFeatureId(feature: FeatureRecord): Issue[] {
+  const filename = basename(feature.file);
+  const onDisk = { file: feature.file };
+  const unnamed = notNfc(onDisk, filename) ?? notNfkc(onDisk, filename);
+  const at = { file: feature.file, line: feature.lines["id"], field: "id" };
+  const id = feature.frontmatter.id;
+  const wrong = notNfc(at, id) ?? notNfkc(at, id) ?? tooLong(at, id);
+  const issues = [unnamed, wrong].filter((issue) => issue !== undefined);
+  const name = filename.replace(/\.md$/, "");
+  if (issues.length > 0 || id === name) return issues;
+  return [
+    {
+      ...at,
+      message: `"${id}" does not match the filename "${name}" — rename the file to "${id}.md"${orSetId(
+        name
+      )}`,
+    },
+  ];
+}
+
+function checkTerms(book: Book): Issue[] {
+  const issues: Issue[] = [];
+  const glossaries = [
+    book.glossary,
+    ...book.domains.map((domain) => domain.glossary),
+  ];
+  for (const glossary of glossaries) {
+    if (glossary === undefined) continue;
+    for (const term of glossary.terms) {
+      const at = { file: glossary.file, line: term.line };
+      const wrong =
+        notNfc(at, term.name) ??
+        notNfkc(at, term.slug) ??
+        tooLong(at, term.slug);
+      if (wrong !== undefined) issues.push(wrong);
+    }
+  }
   return issues;
 }
 
@@ -253,21 +359,36 @@ function checkNumbers(book: Book, log: Log): Issue[] {
 function checkTitles(log: Log): Issue[] {
   const issues: Issue[] = [];
   for (const decision of log.records) {
-    if (decision.title === "") continue;
+    const at = { file: decision.file };
+    const filename = basename(decision.file);
+    if (decision.title === "") {
+      const unnamed = notNfc(at, filename) ?? notNfkc(at, filename);
+      if (unnamed !== undefined) issues.push(unnamed);
+      continue;
+    }
     const slugged = termSlug(decision.title);
     if (slugged === "") {
       issues.push({
-        file: decision.file,
+        ...at,
         message: `the title "${
           decision.title
-        }" gives no filename — a decision filename is its number and its title in lowercase letters and digits, so rename to "${pad(
+        }" gives no filename — a decision filename is its number and its title in letters and digits, so rename to "${pad(
           decision.number
         )}-your-title-here.md"`,
       });
       continue;
     }
+    const unwritable =
+      notNfkc(at, slugged) ??
+      tooLong(at, slugged) ??
+      notNfc(at, filename) ??
+      notNfkc(at, filename);
+    if (unwritable !== undefined) {
+      issues.push(unwritable);
+      continue;
+    }
     const wanted = `${pad(decision.number)}-${slugged}.md`;
-    if (basename(decision.file) !== wanted)
+    if (filename !== wanted)
       issues.push({
         file: decision.file,
         message: `the filename does not match the title "${decision.title}" — rename to "${wanted}"`,
@@ -287,6 +408,11 @@ function checkSupersedes(book: Book, log: Log): Issue[] {
       line: decision.lines["status"],
       field: "status",
     };
+    const unnormalized = notNfc(at, ref) ?? notNfkc(at, ref);
+    if (unnormalized !== undefined) {
+      issues.push(unnormalized);
+      continue;
+    }
     if (log.id !== undefined && !ref.includes("/")) {
       issues.push({
         ...at,
@@ -310,13 +436,18 @@ function checkSupersedes(book: Book, log: Log): Issue[] {
 
 function checkDomainIds(book: Book): Issue[] {
   return book.domains.flatMap((domain) => {
+    const folder = domain.file.slice(0, domain.file.lastIndexOf("/"));
+    const onDisk = { file: folder };
+    const unnamed = notNfc(onDisk, domain.id) ?? notNfkc(onDisk, domain.id);
     const id = domain.frontmatter?.id;
-    if (id === undefined || id === domain.id) return [];
+    if (id === undefined) return unnamed === undefined ? [] : [unnamed];
+    const at = { file: domain.file, line: domain.lines["id"], field: "id" };
+    const wrong = notNfc(at, id) ?? notNfkc(at, id) ?? tooLong(at, id);
+    const issues = [unnamed, wrong].filter((issue) => issue !== undefined);
+    if (issues.length > 0 || id === domain.id) return issues;
     return [
       {
-        file: domain.file,
-        line: domain.lines["id"],
-        field: "id",
+        ...at,
         message: `"${id}" does not match the folder "${
           domain.id
         }" — rename the folder to "${id}"${orSetId(domain.id)}`,
@@ -333,18 +464,29 @@ function checkMilestones(book: Book): Issue[] {
   const roadmap = book.roadmap;
   if (roadmap === undefined) return [];
   const issues: Issue[] = [];
+  const head = { file: roadmap.file, line: roadmap.lines["id"], field: "id" };
+  const id = roadmap.frontmatter.id;
+  const named = notNfc(head, id) ?? notNfkc(head, id) ?? tooLong(head, id);
+  if (named !== undefined) issues.push(named);
   const seen = new Map<string, number>();
   for (const [index, milestone] of roadmap.frontmatter.milestones.entries()) {
+    const field = `milestones[${index}].id`;
+    const at = { file: roadmap.file, line: roadmap.lines[field], field };
+    const wrong =
+      notNfc(at, milestone.id) ??
+      notNfkc(at, milestone.id) ??
+      tooLong(at, milestone.id);
+    if (wrong !== undefined) {
+      issues.push(wrong);
+      continue;
+    }
     const first = seen.get(milestone.id);
     if (first === undefined) {
       seen.set(milestone.id, index);
       continue;
     }
-    const field = `milestones[${index}].id`;
     issues.push({
-      file: roadmap.file,
-      line: roadmap.lines[field],
-      field,
+      ...at,
       message: `"${milestone.id}" is already milestones[${first}].id — milestone ids are unique`,
     });
   }

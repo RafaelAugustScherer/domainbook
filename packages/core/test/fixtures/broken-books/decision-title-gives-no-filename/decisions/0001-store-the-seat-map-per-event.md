@@ -4,7 +4,7 @@ date: 2026-03-05
 decision-makers: [ada, yuki]
 ---
 
-# 座席表をイベントごとに保存する
+# 〇〇
 
 ## Context and Problem Statement
 

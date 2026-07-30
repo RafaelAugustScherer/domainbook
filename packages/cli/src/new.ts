@@ -15,10 +15,16 @@ import { refuse, type Result } from "./result.js";
 
 const numbered = /^(\d+)-.*\.md$/;
 const statusLine = /^status:.*$/m;
+const mark = /\p{M}/u;
+const slugBytes = 247;
 
 export function newDomain(root: string, id: string): Result {
   const path = join(root, "domains", id, "index.md");
-  const wrong = noBook(root) ?? notSlug(id, "domain id") ?? taken(path);
+  const wrong =
+    noBook(root) ??
+    notSlug(id, "domain id") ??
+    unwritable(id, "domain id") ??
+    taken(path);
   if (wrong !== undefined) return refuse(wrong);
   const failed = write(path, domainPage(id));
   if (failed !== undefined) return refuse(failed);
@@ -47,7 +53,9 @@ export function newFeature(
   const wrong =
     noBook(root) ??
     notSlug(id, "feature id") ??
+    unwritable(id, "feature id") ??
     notSlug(domain, "domain id") ??
+    unwritable(domain, "domain id") ??
     noDomain(root, domain) ??
     taken(path);
   if (wrong !== undefined) return refuse(wrong);
@@ -75,12 +83,21 @@ export function newDecision(
     noBook(root) ??
     (domain === undefined
       ? undefined
-      : notSlug(domain, "domain id") ?? noDomain(root, domain));
+      : notSlug(domain, "domain id") ??
+        unwritable(domain, "domain id") ??
+        noDomain(root, domain)) ??
+    notNfc(title, "decision title") ??
+    notNfkc(title, "decision title");
   if (wrong !== undefined) return refuse(wrong);
   const name = termSlug(title);
   if (name === "")
     return refuse(
-      `"${title}" gives no filename — a decision filename is a four-digit number and the title in lowercase letters and digits, and this title has none; write one that has some`
+      `"${title}" gives no filename — a decision filename is a four-digit number and the title in letters and digits, and this title has none; write one that has some`
+    );
+  const bytes = Buffer.byteLength(name, "utf8");
+  if (bytes > slugBytes)
+    return refuse(
+      `"${title}" gives the filename slug "${name}", which is ${bytes} bytes as UTF-8 — a slug holds at most ${slugBytes} bytes, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; write a shorter title`
     );
 
   const dir =
@@ -153,10 +170,69 @@ function noBook(root: string): string | undefined {
 
 function notSlug(id: string, what: string): string | undefined {
   if (slug.safeParse(id).success) return undefined;
-  const fixed = termSlug(id);
-  return `"${id}" is not a ${what} — write lowercase words joined by single hyphens${
+  const fixed = termSlug(id.normalize("NFKC"));
+  return `"${id}" is not a ${what} — write words joined by single hyphens, where a word starts with a letter or digit in any script and carries no capitals${
     fixed === "" ? "" : `, as in "${fixed}"`
   }`;
+}
+
+function unwritable(value: string, what: string): string | undefined {
+  return notNfc(value, what) ?? notNfkc(value, what) ?? tooLong(value, what);
+}
+
+function notNfc(value: string, what: string): string | undefined {
+  const composed = value.normalize("NFC");
+  if (composed === value) return undefined;
+  const index = diverges(value, composed);
+  return `the ${what} "${value}" is not in Unicode NFC — at character ${
+    index + 1
+  } it holds ${points(value, index)} where NFC holds ${points(
+    composed,
+    index
+  )}; write "${composed}" instead, or this and the same text written elsewhere will not match`;
+}
+
+function notNfkc(value: string, what: string): string | undefined {
+  const folded = value.normalize("NFKC");
+  if (folded === value) return undefined;
+  const index = diverges(value, folded);
+  return `the ${what} "${value}" folds to "${folded}" under NFKC — character ${
+    index + 1
+  } is ${points(
+    value,
+    index
+  )}, a compatibility form; write "${folded}" instead, or this and the ${what} it looks like are two different names`;
+}
+
+function tooLong(value: string, what: string): string | undefined {
+  const bytes = Buffer.byteLength(value, "utf8");
+  if (bytes <= slugBytes) return undefined;
+  return `the ${what} "${value}" is ${bytes} bytes as UTF-8 — a ${what} holds at most ${slugBytes} bytes, so the filenames it forms fit the 255 bytes ext4 and APFS give one; write a shorter one`;
+}
+
+function diverges(value: string, wanted: string): number {
+  const held = [...value];
+  const other = [...wanted];
+  let index = 0;
+  while (index < held.length && held[index] === other[index]) index += 1;
+  return index;
+}
+
+function points(value: string, index: number): string {
+  const chars = [...value];
+  const run = [chars[index] ?? ""];
+  for (let at = index + 1; at < chars.length; at += 1) {
+    if (!mark.test(chars[at] ?? "")) break;
+    run.push(chars[at] ?? "");
+  }
+  return run.map(codepoint).join(" ");
+}
+
+function codepoint(char: string): string {
+  return `U+${(char.codePointAt(0) ?? 0)
+    .toString(16)
+    .toUpperCase()
+    .padStart(4, "0")}`;
 }
 
 function noDomain(root: string, id: string): string | undefined {

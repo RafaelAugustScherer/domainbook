@@ -1,21 +1,20 @@
 # Ticketing glossary
 
-The ubiquitous language of the ticketing context, in the words the box office
-staff use.
+The ubiquitous language of the ticketing context, down to the marks the seat
+map prints.
 
-## 座席表
+## ○
 
-The arrangement of seats a venue offers for an event, read from seating and
-never edited here.
+A seat on sale for this event, with nothing held against it.
 
 - **Status:** validated
-- **Example:** Two events in the same venue on one day read the same seat map.
+- **Example:** A row of eight ○ is eight seats a fan can pick right now.
 
-## 座席図
+## ●
 
-The plan a fan is shown at the door, which leaves out the seats the promoter
-closed and the rows the crew took.
+A seat that is sold, held, or held back by the promoter. The map does not say
+which of the three.
 
 - **Status:** draft
-- **Example:** A venue map of 900 seats prints as 850 when the front rows are
-  held back.
+- **Example:** The front two rows print as ● all evening when the crew takes
+  them.

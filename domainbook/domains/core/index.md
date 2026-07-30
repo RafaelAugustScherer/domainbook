@@ -80,6 +80,17 @@ the CLI is where a person or an agent meets domainbook at all.
   either way it names the path and what to do about it.
 - The generators write only what validates: `init`, then `new domain`, then
   `new feature`, then `new decision`, and `validate` passes with nothing edited.
+  That is why an id or a decision title that is not in NFC, that folds under
+  NFKC, or that would give a filename over 247 bytes is refused before anything
+  is written, naming the code point at fault and the form to write instead
+  (`format/ADR-0016`).
+- `--version` is a property of the program, not of a command. `domainbook
+  --version` (short `-v`) prints `domainbook <version>` and exits 0, reading the
+  version from the installed package's own `package.json` at runtime
+  (`core/ADR-0001`); `<command> --version` is refused, because domainbook has one
+  version and not one per command. `--help` stays global and still answers after
+  a command — the asymmetry is deliberate: help is a property of whatever is
+  being asked about, a version is a property of the program.
 - `new` writes into a book or writes nothing. A root with no `roadmap.md` is not
   a book, so it is refused rather than filled with a second half-book that the
   next command then rejects.
@@ -118,12 +129,6 @@ the CLI is where a person or an agent meets domainbook at all.
   contexts' dependencies. Should manifests be mapped at all, and to whom?
 - Every issue fails the run today. Is a warning level worth the ambiguity of a
   book that is valid with reservations?
-- There is no `--version`. `domainbook --version` is answered with the option
-  list, and `--help` does not offer it either, so a stranger cannot find the
-  version at all — the one question every CLI is expected to answer. It was left
-  out of Phase 1 deliberately, because nothing is published yet and a version
-  string with no release behind it says nothing. What should it print once there
-  is a release: the CLI's version, `@domainbook/core`'s, or the format's?
 - `init` names the book after the folder that *contains* the book root, which is
   right for the default `domainbook/` sitting at a repo root and wrong as soon as
   the root moves: `init .` puts the book in the repo folder itself, so the id

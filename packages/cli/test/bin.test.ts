@@ -30,6 +30,18 @@ function ran(...argv: string[]) {
 }
 
 describe("the published entry point", () => {
+  it("reads its own version out of the package it was installed from", () => {
+    const manifest = readFileSync(
+      new URL("../package.json", import.meta.url),
+      "utf8"
+    );
+    const { version } = JSON.parse(manifest) as { version: string };
+    const printed = ran("--version");
+    expect(printed.status).toBe(0);
+    expect(printed.stdout).toBe(`domainbook ${version}\n`);
+    expect(printed.stderr).toBe("");
+  });
+
   it("scaffolds a book and validates it, talking on stdout with status 0", () => {
     expect(ran("init").status).toBe(0);
     expect(ran("new", "domain", "ticketing").status).toBe(0);

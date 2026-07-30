@@ -65,6 +65,11 @@ code.
   only a test keeps them together.
 - Bad, because `parseArgs` reports its own errors in its own words, so every one
   of them has to be caught and re-worded to sound like the rest of the tool.
+- Neutral, because `--version` reads the version out of the installed package's
+  own `package.json` at runtime rather than from a constant. Carrying no
+  framework means carrying no bundler either, so there is no build step in which
+  a version could be injected, and the manifest npm installed beside the code is
+  the one thing guaranteed to say what the user actually has.
 - Bad, because this cost is paid again by every command Phases 2 to 6 add —
   `check`, `hooks install`, `export`, `mcp`, `dev`, `build`. If the dispatch
   stops reading straight through, that is the signal to revisit this, and

@@ -51,7 +51,7 @@ export function parseGlossary(
       line: section.heading.line,
       message:
         clash.slug === ""
-          ? `"${clash.name}" and "${section.heading.text}" both give an empty term slug — a term is linked by its name in lowercase letters and digits, and neither name has any`
+          ? `"${clash.name}" and "${section.heading.text}" both give an empty term slug — a term is linked by its name in letters and digits, and neither name has any`
           : `"${clash.name}" and "${section.heading.text}" are both the term "${clash.slug}" — a glossary defines each term once`,
     });
   }

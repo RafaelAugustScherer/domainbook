@@ -14,6 +14,12 @@ against them with the tool itself.
 
 ### Added
 
+- `domainbook --version` (short `-v`) prints `domainbook <version>` and exits 0.
+  The version is read from the installed package's own `package.json` when the
+  command runs, so it is the version you actually have rather than one baked in
+  at build time. It is a property of the program: `domainbook validate --version`
+  and every other `<command> --version` is refused. `--help` is unchanged and
+  still answers after a command.
 - `@domainbook/core` reads a book into a typed model and says what is wrong with
   it, in three layers: schema conformance, referential integrity (domain ids,
   term references, decision references, supersede targets), and convention
@@ -65,15 +71,40 @@ against them with the tool itself.
 
 ### Changed
 
-- A slug folds accents instead of dropping them. A name is normalized to NFKD and
-  its combining marks removed before anything outside `a-z0-9` becomes a hyphen,
-  so "Café Order" is `cafe-order` where it used to be `caf-order`, and "Naïve
-  résumé" is `naive-resume`. If your book already references a term by the older
-  spelling, that reference now points at nothing and `validate` will say so. A
-  name in a script the folding cannot reach — Japanese, Greek, Arabic, Hebrew —
-  still slugs to nothing, and the tool now says the name gives no filename rather
-  than telling you it is not prose. Whether the slug should accept Unicode at all
-  is an open question on the format context's page.
+- A slug is words joined by single hyphens in any script, not only in `a-z0-9`. A
+  word starts with a letter or digit and carries no capitals, and a name keeps its
+  own letters instead of being folded towards ASCII: "Café Order" is `café-order`,
+  "Naïve résumé" is `naïve-résumé`, and 日本語 is `日本語` where all three used to
+  be an approximation or nothing at all. Every id that was legal before is still
+  legal and still means the same thing (`format/ADR-0016`).
+
+  **One thing breaks.** A term whose name carries an accent used to slug to the
+  unaccented spelling, so a feature written as `terms: [cafe-order]` against a
+  glossary heading `## Café Order` resolved. It no longer does: the term is now
+  `café-order`, and `validate` reports the reference as pointing at nothing until
+  you change it. Nothing else in a book has to move.
+
+  Three rules come with it, all checked by `validate` and all refused by
+  `new domain|feature|decision` before it writes: a slug is in Unicode NFC and is
+  never silently rewritten, because the id is also a filename and macOS and Linux
+  disagree about whether two normalizations are one file; a slug equals its own
+  NFKC form, so fullwidth `ｓｅａｔ-ｍａｐ` — a default IME mode for Japanese input —
+  cannot sit beside `seat-map` as a second id; and a slug is at most 247 bytes as
+  UTF-8, counted in bytes and not characters, so that `NNNN-<slug>.md` fits the
+  255 bytes ext4 and APFS give a filename.
+- The published JSON Schema is no longer portable to every regex engine, and this
+  is worth reading before you point a tool at it. The slug pattern now uses
+  Unicode property escapes (`\p{Ll}` and its kind), which JSON Schema does not
+  guarantee. Python's `jsonschema` rejects the schema outright and raises a bare
+  `re.error` at validation time rather than a `ValidationError`; `fastjsonschema`
+  will not compile it. Ajv is fine by default, but a consumer with
+  `unicodeRegExp: false` — or anyone writing `new RegExp(pattern)` by hand —
+  compiles it with no error and gets the opposite meaning, accepting the literal
+  text `p{Ll}` and rejecting 注文履行. Every `description` on a pattern now ends
+  with a sentence naming the `u` flag, and that sentence is the only warning a
+  consumer gets (`format/ADR-0016`). Separately, and not new: `format: "date"`
+  also throws under a bare Ajv, which ships no format implementations in core —
+  `ajv-formats` is Ajv's own answer to that.
 - Generated frontmatter quotes any scalar a YAML parser could read as something
   other than text, so `new domain 9` writes `id: "9"` and the book it wrote still
   validates. `9`, `no`, `true` and their kind are legal ids; unquoted they were
@@ -111,6 +142,11 @@ against them with the tool itself.
 
 ### Fixed
 
+- Two terms that differ only by an accent are two terms. "Café Order" and "Cafe
+  Order" both slugged to `cafe-order`, so a glossary defining both was rejected
+  as defining one term twice, and a feature referencing either got whichever came
+  first. They are now `café-order` and `cafe-order` and neither can be mistaken
+  for the other.
 - A book with CRLF line endings is read the same as one with LF. The scanner
   split on `\n` alone, so every heading kept a trailing `\r`, nothing was
   recognised as a heading, and the whole book came back broken. That is the

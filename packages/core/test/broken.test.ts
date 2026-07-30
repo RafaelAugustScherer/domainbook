@@ -91,7 +91,8 @@ describe("broken frontmatter fixtures", () => {
     expect(onlyIssue("domain-bad-id.md", domainSchema)).toMatchObject({
       code: "invalid_format",
       path: ["id"],
-      message: "must be lowercase words joined by single hyphens",
+      message:
+        "must be words joined by single hyphens — a word starts with a letter or digit in any script, and carries no capitals",
     });
   });
 
@@ -338,12 +339,15 @@ describe("the broken book set", () => {
       "B7",
       "B8",
       "C1",
+      "C10",
       "C2",
       "C3",
       "C4",
       "C5",
       "C6",
       "C7",
+      "C8",
+      "C9",
       "L2",
       "L3",
       "L4",

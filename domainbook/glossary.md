@@ -136,17 +136,19 @@ this book is a claim the project has to keep true about itself.
 
 ## Slug
 
-A lowercase identifier made of words joined by single hyphens. Every id in the
-book is a slug, and a glossary term is referenced by the slug of its name.
+An identifier made of words joined by single hyphens, where a word starts with a
+letter or digit in any script and carries no capitals. Every id in the book is a
+slug, and a glossary term is referenced by the slug of its name.
 
-Slugging folds a name to NFKD and drops the combining marks, so an accented
-letter becomes the letter underneath it. Everything that is then not `a-z0-9`
-becomes a hyphen. A name written in a script that leaves nothing behind — most
-of the world's, outside Latin — slugs to the empty string, and the tool says so
-rather than pretending the name was badly written.
+Slugging keeps the name's own letters. A name is normalized to NFC and lowercased,
+and every run of slug characters in it becomes a word, so an accented letter stays
+accented and a name written in any script keeps its script (`format/ADR-0016`).
+Three rules the grammar cannot state hold as well: a slug is in NFC, a slug equals
+its own NFKC form, and a slug is at most 247 bytes as UTF-8 so that
+`NNNN-<slug>.md` fits a 255-byte filename.
 
 - **Status:** validated
-- **Example:** The term "Seat Map" is referenced as `seat-map`, "Café Order" as `cafe-order`, and "Naïve résumé" as `naive-resume`; "日本語" slugs to nothing at all.
+- **Example:** The term "Seat Map" is referenced as `seat-map`, "Café Order" as `café-order`, "Naïve résumé" as `naïve-résumé`, and "日本語" as `日本語`.
 
 ## Trailer
 

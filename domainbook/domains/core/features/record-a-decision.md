@@ -24,23 +24,23 @@ Example: Each log counts from 0001 on its own
   And a decision written next with --domain ticketing becomes ADR-0003 in that log
 ```
 
-## Rule: The filename is the number and the title folded to lowercase letters and digits
+## Rule: The filename is the number and the title in the title's own letters
 
 ```gherkin
-Example: Accents fold to the letters underneath them
+Example: An accented letter keeps its accent
   Given a book written by domainbook init
   When domainbook new decision "Café Order handling" runs
-  Then it writes domainbook/decisions/0001-cafe-order-handling.md
+  Then it writes domainbook/decisions/0001-café-order-handling.md
+
+Example: A title outside Latin gives a filename in its own script
+  Given a book written by domainbook init
+  When domainbook new decision "日本語" runs
+  Then it writes domainbook/decisions/0001-日本語.md
 
 Example: A title that gives no filename is refused
   Given a book written by domainbook init
   When domainbook new decision "???" runs
-  Then it refuses with: "???" gives no filename — a decision filename is a four-digit number and the title in lowercase letters and digits, and this title has none; write one that has some
-
-Example: A title in a script the folding cannot reach is refused the same way
-  Given a book written by domainbook init
-  When domainbook new decision "日本語" runs
-  Then it refuses with: "日本語" gives no filename — a decision filename is a four-digit number and the title in lowercase letters and digits, and this title has none; write one that has some
+  Then it refuses with: "???" gives no filename — a decision filename is a four-digit number and the title in letters and digits, and this title has none; write one that has some
 ```
 
 ## Rule: --supersedes changes the old record's status line and nothing else

@@ -124,6 +124,24 @@ export const brokenBooks: BrokenBook[] = [
       'domains/ticketing/index.md:12 relationships[0].direction: must be "upstream" or "downstream" — "customer-supplier" and "upstream-downstream" need a direction, and "partnership", "shared-kernel", and "separate-ways" take none',
   },
   {
+    dir: "domain-id-has-a-capital",
+    rule: "S1",
+    expect:
+      "domains/Ticketing/index.md:2 id: must be words joined by single hyphens — a word starts with a letter or digit in any script, and carries no capitals",
+  },
+  {
+    dir: "feature-term-starts-with-a-mark",
+    rule: "S1",
+    expect:
+      "domains/बुकिंग/features/सीट-रोकना.md:6 terms[0]: must be words joined by single hyphens — a word starts with a letter or digit in any script, and carries no capitals",
+  },
+  {
+    dir: "milestone-id-numeral-not-a-digit",
+    rule: "S1",
+    expect:
+      "roadmap.md:5 milestones[1].id: must be words joined by single hyphens — a word starts with a letter or digit in any script, and carries no capitals",
+  },
+  {
     dir: "canvas-section-missing",
     rule: "B1",
     expect:
@@ -205,7 +223,7 @@ export const brokenBooks: BrokenBook[] = [
     dir: "glossary-terms-both-empty-slug",
     rule: "B3",
     expect:
-      'domains/ticketing/glossary.md:14: "座席表" and "座席図" both give an empty term slug — a term is linked by its name in lowercase letters and digits, and neither name has any',
+      'domains/ticketing/glossary.md:13: "○" and "●" both give an empty term slug — a term is linked by its name in letters and digits, and neither name has any',
   },
   {
     dir: "feature-sections-out-of-order",
@@ -430,16 +448,16 @@ export const brokenBooks: BrokenBook[] = [
       'domains/ticketing/decisions/notes.md: decision filenames start with a four-digit number — rename to "0002-reject-a-capture-that-lands-after-the-hold-expired.md"',
   },
   {
-    dir: "decision-filename-not-lowercase",
+    dir: "decision-filename-has-capitals",
     rule: "C1",
     expect:
-      'domains/ticketing/decisions/0001-Expire-Holds.md: the title in a decision filename is lowercase words joined by single hyphens — rename to "0001-expire-holds.md"',
+      'domains/ticketing/decisions/0001-Expire-Holds.md: the title in a decision filename is words joined by single hyphens, each starting with a letter or digit in any script and carrying no capitals — rename to "0001-expire-holds.md"',
   },
   {
     dir: "decision-filename-gives-no-title",
     rule: "C1",
     expect:
-      'domains/ticketing/decisions/0001-座席表.md: decision filenames are a four-digit number and a title in lowercase letters and digits — "座席表" has none, so rename to "0001-your-title-here.md"',
+      'domains/ticketing/decisions/0001-〇〇.md: decision filenames are a four-digit number and a title in letters and digits — "〇〇" has none, so rename to "0001-your-title-here.md"',
   },
   {
     dir: "decision-number-repeated",
@@ -469,7 +487,7 @@ export const brokenBooks: BrokenBook[] = [
     dir: "decision-title-gives-no-filename",
     rule: "C4",
     expect:
-      'decisions/0001-store-the-seat-map-per-event.md: the title "座席表をイベントごとに保存する" gives no filename — a decision filename is its number and its title in lowercase letters and digits, so rename to "0001-your-title-here.md"',
+      'decisions/0001-store-the-seat-map-per-event.md: the title "〇〇" gives no filename — a decision filename is its number and its title in letters and digits, so rename to "0001-your-title-here.md"',
   },
   {
     dir: "domain-folder-name-mismatch",
@@ -494,5 +512,23 @@ export const brokenBooks: BrokenBook[] = [
     rule: "C7",
     expect:
       'roadmap.md:6 milestones[2].id: "season-passes" is already milestones[1].id — milestone ids are unique',
+  },
+  {
+    dir: "glossary-term-not-nfc",
+    rule: "C8",
+    expect:
+      'domains/bilheteria/glossary.md:5: "Pré-venda" is not in Unicode NFC — at character 3 it holds U+0065 U+0301 where NFC holds U+00E9; write the NFC form, or this and the same text written elsewhere will not match',
+  },
+  {
+    dir: "feature-term-in-halfwidth-katakana",
+    rule: "C9",
+    expect:
+      'domains/販売/features/メンバー先行で座席を確保する.md:6 terms[0]: "ﾒﾝﾊﾞｰ先行" folds to "メンバー先行" under NFKC — character 1 is U+FF92, a compatibility form; write the folded form, or this and the slug it looks like are two different names',
+  },
+  {
+    dir: "decision-title-too-long-for-a-filename",
+    rule: "C10",
+    expect:
+      'decisions/0001-座席表をイベントごとに保存する.md: "販売開始時に公開されていた座席表をイベントごとに保存し-販売中は座席サービスから読み直さず-公演が終わるまで保存した写しを保持することで-販売途中の差し替えが支払い済みの座席を動かすことを防ぐ" is 282 bytes as UTF-8 — a slug holds at most 247, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; shorten it',
   },
 ];
