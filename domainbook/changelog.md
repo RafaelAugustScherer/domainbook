@@ -132,13 +132,15 @@ against them with the tool itself.
 - Frontmatter is read with `yaml`, not `gray-matter` as the roadmap previously
   named. YAML dates arrive as strings, so a `date:` field is checked as an ISO
   date rather than as a JavaScript `Date` (`format/ADR-0011`).
-- The supported Node floor is `>=24.18.0`, up from `>=24.0.0`. Node 24.17.0
-  carried the June 2026 security fixes, and the floor now moves to the newest
-  patch of the line it sits on whenever a security release lands there
-  (`ADR-0008`). The line itself still moves only when the previous one goes
-  end-of-life, not each time a new major reaches LTS (`ADR-0002`). This repo also
-  sets `engine-strict`, so an older Node fails `npm install` here rather than
-  warning about it.
+- The supported Node floor is `>=24.18.1`, up from `>=24.0.0`. The floor moves to
+  the newest patch of the line it sits on whenever a security release lands there
+  (`ADR-0008`), and two have: 24.17.0 carried the June 2026 fixes, and 24.18.1
+  carries the batch published on 2026-07-29, three of whose CVEs on the 24 line
+  are rated high — two in HTTP/2 handling, one over-granting filesystem access
+  through the permission model. The line itself still moves only when the previous
+  one goes end-of-life, not each time a new major reaches LTS (`ADR-0002`). This
+  repo also sets `engine-strict`, so an older Node fails `npm install` here rather
+  than warning about it.
 
 ### Fixed
 
