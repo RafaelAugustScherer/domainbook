@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: deprecated
 date: 2026-07-29
 decision-makers: [RafaelAugustScherer]
 ---
@@ -84,3 +84,10 @@ The slug tests in core and the CLI's misuse tests feed off-form ids — decompos
 NFC cases, fullwidth NFKC folds, over-247-byte names — through `validate` and
 through `new` respectively, so both callers are exercised against the same rule
 set they now share.
+
+## More Information
+
+The choice stands: the slug rules still live in one module and both callers
+still read them from there. What is retired is the record. `ADR-0014` set the
+bar, and this is internal structure the next refactor could undo without
+costing anyone anything — the code is its own record.

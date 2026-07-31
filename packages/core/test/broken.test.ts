@@ -37,6 +37,7 @@ const frontmatterFixtures = [
   "decision-missing-status.md",
   "decision-bad-date.md",
   "decision-bad-status.md",
+  "decision-bad-authored-by.md",
   "debt-missing-date.md",
   "debt-bad-date.md",
   "debt-unknown-status.md",
@@ -169,6 +170,16 @@ describe("broken frontmatter fixtures", () => {
       path: ["status"],
       message:
         'must be "proposed", "rejected", "accepted", "deprecated", or "superseded by ADR-NNNN" ("<domain-id>/ADR-NNNN" for a domain log)',
+    });
+  });
+
+  it("decision-bad-authored-by names the only value it takes", () => {
+    expect(
+      onlyIssue("decision-bad-authored-by.md", decisionSchema)
+    ).toMatchObject({
+      path: ["authored-by"],
+      message:
+        'must be "agent" — the field marks a decision no person weighed, and is left out otherwise',
     });
   });
 

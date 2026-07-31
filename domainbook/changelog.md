@@ -13,6 +13,25 @@ the decision it references, not here (`ADR-0006`).
 
 ## [Unreleased]
 
+### Added
+
+- A bar for what earns a decision record: a choice a user can observe is
+  behaviour and belongs in a feature file's scenarios; what is left earns a
+  record only if reversing it would cost something. Written in `CONTRIBUTING.md`
+  and checked at review, like the other working rules (`ADR-0014`).
+- `authored-by: agent` on a decision, marking one an agent took without the
+  people in `decision-makers` weighing it. Optional, absent by default, and
+  `decision-makers` still names the people accountable (`format/ADR-0019`).
+
+### Changed
+
+- Four decision records are retired under the new bar and now read `deprecated`:
+  `core/ADR-0005`, `core/ADR-0006`, `core/ADR-0007`, and `format/ADR-0012`. The
+  choices they describe still hold and the code is unchanged — it is the records
+  that are retired, which is a sense `deprecated` does not carry in MADR. What
+  was observable in two of them is now scenarios in `scaffold-a-book` and
+  `validate-a-book` (`ADR-0014`).
+
 ## [0.3.0] - 2026-07-30
 
 ### Added

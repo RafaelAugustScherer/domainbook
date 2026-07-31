@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: deprecated
 date: 2026-07-29
 decision-makers: [RafaelAugustScherer]
 ---
@@ -88,3 +88,11 @@ noisier to pay for the handful that need it.
 The CLI tests run `new domain` with an ambiguous id and then `validate` over the
 result, so the generator and the checker have to agree about it rather than each
 being tested against its own idea of the file.
+
+## More Information
+
+The choice stands: the generators still quote a scalar a YAML parser could read
+as something other than text, and the code in `packages/core/src` is unchanged.
+What is retired is the record. `ADR-0014` set the bar — a choice a user can
+observe is behaviour, and its home is a feature file. This one is observable in
+what `new` writes, and it is now a rule of `scaffold-a-book`.

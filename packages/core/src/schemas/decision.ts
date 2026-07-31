@@ -25,6 +25,12 @@ export const decisionSchema = z
   .strictObject({
     status: decisionStatusSchema,
     date: z.iso.date({ error: "must be a date as YYYY-MM-DD" }),
+    "authored-by": z
+      .literal("agent", {
+        error:
+          'must be "agent" — the field marks a decision no person weighed, and is left out otherwise',
+      })
+      .optional(),
     "decision-makers": people.optional(),
     consulted: people.optional(),
     informed: people.optional(),

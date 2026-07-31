@@ -9,6 +9,23 @@ release it shipped in.
 
 ## [Unreleased]
 
+### Added
+
+- `authored-by` on a decision. The only value is `agent`, and the field is left
+  out unless an agent decided without the people in `decision-makers` weighing
+  the choice. `decision-makers` keeps its meaning — the people accountable —
+  because accountability does not move when an agent chooses
+  (`format/ADR-0019`).
+- `decision.schema.json` carries `authored-by` as a `const`, so an editor rejects
+  any other value as it is typed.
+
+### Changed
+
+- `format/ADR-0012` is retired under the bar in `ADR-0014` and reads
+  `deprecated`. Nothing about frontmatter parsing changed: an empty block still
+  gives `{}` and a missing one still gives `undefined`. The behaviour is now four
+  scenarios in `validate-a-book`.
+
 ## [0.3.0] - 2026-07-30
 
 ### Added

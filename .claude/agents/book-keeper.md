@@ -19,6 +19,15 @@ and feature scenarios.
   body Context → Considered Options → Decision Outcome → Consequences. Next free 4-digit
   number; numbers never reused. Accepted ADRs are immutable — changing course means a
   new ADR and marking the old one `superseded by ADR-NNNN`.
+- **Not every choice earns an ADR** (`ADR-0014`). If a user can observe it — in what
+  `validate` prints, in what `new` writes — it is behaviour: write it as scenarios in
+  the feature file. What is left earns a record only if reversing it would cost
+  something: a dependency, a package boundary, a format commitment, an enforcement rule,
+  a published contract. Internal structure a refactor can undo is not a decision.
+- **Say when you decided alone** (`format/ADR-0019`): set `authored-by: agent` on a
+  decision the people in `decision-makers` did not weigh. Leave it out when they asked
+  for the work and you chose inside what they asked for; `decision-makers` names the
+  people accountable either way.
 - **Changelogs** follow Keep a Changelog 1.1: dated sections, buckets
   Added/Changed/Deprecated/Removed/Fixed/Security. Write for a reader deciding whether
   the change affects them.

@@ -65,6 +65,22 @@ performance numbers; we chase the feeling that everything just works.
 - Failures are ordinary output: print the issues, exit non-zero, no stack traces
   for expected problems.
 
+## What earns a decision
+
+- **If a user can observe it, it is behaviour.** A choice visible in what
+  `validate` prints or what `new` writes belongs in a feature file's scenarios,
+  not in the decision log. Writing it in both places means the two will disagree
+  eventually.
+- **What is left earns a record only if reversing it would cost something** — a
+  dependency, a package boundary, a format commitment, an enforcement rule, a
+  published contract. Internal structure that a refactor can undo is not a
+  decision; the code is its own record. See `ADR-0014`.
+- **Mark a decision you took alone.** An agent that decides without the people in
+  `decision-makers` weighing the choice sets `authored-by: agent` in the
+  frontmatter. Leave it out when they asked for the work and you chose inside
+  what they asked for. `decision-makers` still names the people, who are
+  accountable either way. See `format/ADR-0019`.
+
 ## Checks
 
 Everything CI runs, you can run locally:

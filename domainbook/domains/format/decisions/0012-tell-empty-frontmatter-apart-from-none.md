@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: deprecated
 date: 2026-07-29
 decision-makers: [RafaelAugustScherer]
 ---
@@ -68,3 +68,11 @@ with one is read like any other file.
 without a blank line, a byte order mark with and without frontmatter, CRLF, and
 a `---` further down the body — so a regression fails as the specific case it
 broke.
+
+## More Information
+
+The choice stands: an empty frontmatter block still parses to `{}` and a file
+with no block still parses to `undefined`. What is retired is the record.
+`ADR-0014` set the bar — a choice a user can observe is behaviour, and its home
+is a feature file. This one is observable in what `validate` prints, and it is
+now a rule of `validate-a-book`.
