@@ -21,7 +21,7 @@ release it shipped in.
 
 ### Changed
 
-- `format/ADR-0012` is retired under the bar in `ADR-0014` and reads
+- `format/ADR-0012` is retired under the bar in `CONTRIBUTING.md` and reads
   `deprecated`. Nothing about frontmatter parsing changed: an empty block still
   gives `{}` and a missing one still gives `undefined`. The behaviour is now four
   scenarios in `validate-a-book`.

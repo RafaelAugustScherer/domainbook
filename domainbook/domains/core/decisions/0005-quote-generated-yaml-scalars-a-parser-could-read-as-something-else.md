@@ -93,6 +93,7 @@ being tested against its own idea of the file.
 
 The choice stands: the generators still quote a scalar a YAML parser could read
 as something other than text, and the code in `packages/core/src` is unchanged.
-What is retired is the record. `ADR-0014` set the bar — a choice a user can
-observe is behaviour, and its home is a feature file. This one is observable in
-what `new` writes, and it is now a rule of `scaffold-a-book`.
+What is retired is the record. The bar is in `CONTRIBUTING.md` under "What
+earns a decision" — a choice a user can observe is behaviour, and its home is a
+feature file. This one is observable in what `new` writes, and it is now a rule
+of `scaffold-a-book`.

@@ -119,6 +119,6 @@ places each log is written are held to it.
 ## More Information
 
 The choice stands: one descriptor still serves both logs, and `log.ts` is
-unchanged. What is retired is the record. `ADR-0014` set the bar, and this is
-internal structure the next refactor could undo without costing anyone anything
-— the code is its own record.
+unchanged. What is retired is the record. The bar is in `CONTRIBUTING.md` under
+"What earns a decision", and this is internal structure the next refactor could
+undo without costing anyone anything — the code is its own record.

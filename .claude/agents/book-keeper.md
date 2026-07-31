@@ -19,7 +19,7 @@ and feature scenarios.
   body Context → Considered Options → Decision Outcome → Consequences. Next free 4-digit
   number; numbers never reused. Accepted ADRs are immutable — changing course means a
   new ADR and marking the old one `superseded by ADR-NNNN`.
-- **Not every choice earns an ADR** (`ADR-0014`). If a user can observe it — in what
+- **Not every choice earns an ADR** (`CONTRIBUTING.md`). If a user can observe it — in what
   `validate` prints, in what `new` writes — it is behaviour: write it as scenarios in
   the feature file. What is left earns a record only if reversing it would cost
   something: a dependency, a package boundary, a format commitment, an enforcement rule,

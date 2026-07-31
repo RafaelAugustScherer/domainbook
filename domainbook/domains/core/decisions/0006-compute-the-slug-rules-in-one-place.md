@@ -88,6 +88,7 @@ set they now share.
 ## More Information
 
 The choice stands: the slug rules still live in one module and both callers
-still read them from there. What is retired is the record. `ADR-0014` set the
-bar, and this is internal structure the next refactor could undo without
-costing anyone anything — the code is its own record.
+still read them from there. What is retired is the record. The bar is in
+`CONTRIBUTING.md` under "What earns a decision", and this is internal structure
+the next refactor could undo without costing anyone anything — the code is its
+own record.

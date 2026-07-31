@@ -11,9 +11,10 @@ Versions match the book-wide changelog.
 
 ### Changed
 
-- `core/ADR-0005` and `core/ADR-0007` are retired under the bar in `ADR-0014` and
-  read `deprecated`. No code changed: generated scalars a YAML parser could
-  misread are still quoted, and one descriptor still serves both logs. The
+- `core/ADR-0005` and `core/ADR-0007` are retired under the bar in
+  `CONTRIBUTING.md` and read `deprecated`. No code changed: generated scalars a
+  YAML parser could misread are still quoted, and one descriptor still serves
+  both logs. The
   quoting is now three scenarios in `scaffold-a-book`; the shared log machinery
   is internal structure and has no scenario, because nothing about it is visible
   from outside.

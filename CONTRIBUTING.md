@@ -74,7 +74,12 @@ performance numbers; we chase the feeling that everything just works.
 - **What is left earns a record only if reversing it would cost something** — a
   dependency, a package boundary, a format commitment, an enforcement rule, a
   published contract. Internal structure that a refactor can undo is not a
-  decision; the code is its own record. See `ADR-0014`.
+  decision; the code is its own record.
+- **A decision is about the software, not about how we work.** How a phase is
+  run, what earns a record, which lint rules are on — that is working practice,
+  and it belongs in this file, which can be rewritten, rather than in a log of
+  immutable records. This bar is itself an example: it steers what agents write
+  and changes nothing about what domainbook does, so it lives here.
 - **Mark a decision you took alone.** An agent that decides without the people in
   `decision-makers` weighing the choice sets `authored-by: agent` in the
   frontmatter. Leave it out when they asked for the work and you chose inside

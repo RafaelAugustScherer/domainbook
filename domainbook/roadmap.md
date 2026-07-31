@@ -156,13 +156,16 @@ sequences rather than prose. One key is ours rather than MADR's: the optional
 `authored-by: agent`, set when an agent took the decision without the people in
 `decision-makers` weighing it, so a record cannot claim a person who never read it
 (`format/ADR-0019`).
-4-digit sequential numbers, never reused. Two rules are domainbook's alone. An accepted
-ADR is immutable, so changing course is a new ADR that marks the old one superseded —
-where MADR's `date` means "last updated", ours means the date the decision was taken.
-And not every choice earns a record: one a user can observe is behaviour and belongs in a
-feature file's scenarios, and what is left earns a decision only if reversing it would
-cost something (`ADR-0014`). Records retired under that bar read `deprecated` in a sense
-MADR does not have — the choice stands, the record does not.
+4-digit sequential numbers, never reused. One rule is domainbook's alone: an accepted ADR
+is immutable, so changing course is a new ADR that marks the old one superseded — where
+MADR's `date` means "last updated", ours means the date the decision was taken.
+
+A decision records a choice about the software, not about how the people and agents
+building it work. Working practice — what earns a record, how a phase is run, which lint
+rules are on — belongs in `CONTRIBUTING.md`, which is living and can be rewritten, rather
+than in a log of immutable records. A record retired for failing that bar reads
+`deprecated` in a sense MADR does not have: the choice stands, the record does not, and
+the changelog carries the dated act.
 
 **Debt (`debt/NNNN-*.md`)** — the decision log's twin, and the one living artifact in
 the book: a known shortcut or gap, with `status: open | accepted | repaid`, `date`,
@@ -370,7 +373,8 @@ features touch it?" via MCP; `where_to_document` returns correct files for a dif
   timeline. Pagefind full-text search.
 - The decision log's status badge has a problem to solve rather than a value to render:
   `deprecated` means both "this decision no longer applies" and "this record was retired
-  under `ADR-0014` while the choice it describes still holds". The frontmatter cannot
+  for failing the bar in `CONTRIBUTING.md` while the choice it describes still holds".
+  The frontmatter cannot
   tell them apart, so the page has to — by reading More Information, or by the badge
   saying less than the word does.
 - Read for the person who opens it twice a year, not the one who lives in it: what
@@ -389,8 +393,9 @@ Exit: the site builds from any valid book; this book published as the live demo.
   narrowed schema, `format/ADR-0004`), propose domains/glossary/features/decisions,
   interview the user to confirm boundaries and terms, write the book, run `validate`.
 - **Maintenance skills**: "document this change" (used when the Stop hook blocks),
-  "record a decision", "groom the glossary". "Record a decision" is where `ADR-0014` and
-  `format/ADR-0019` are actually applied: it refuses a choice that belongs in a
+  "record a decision", "groom the glossary". "Record a decision" is where the bar in
+  `CONTRIBUTING.md` and `format/ADR-0019` are actually applied: it refuses a choice that
+  belongs in a
   feature file's scenarios, and it asks whether the person was in on the call before it
   decides whether to write `authored-by: agent`. A skill that writes a record without
   asking is the thing both of those decisions exist to stop.

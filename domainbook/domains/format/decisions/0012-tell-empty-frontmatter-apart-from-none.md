@@ -72,7 +72,7 @@ broke.
 ## More Information
 
 The choice stands: an empty frontmatter block still parses to `{}` and a file
-with no block still parses to `undefined`. What is retired is the record.
-`ADR-0014` set the bar — a choice a user can observe is behaviour, and its home
-is a feature file. This one is observable in what `validate` prints, and it is
-now a rule of `validate-a-book`.
+with no block still parses to `undefined`. What is retired is the record. The
+bar is in `CONTRIBUTING.md` under "What earns a decision" — a choice a user can
+observe is behaviour, and its home is a feature file. This one is observable in
+what `validate` prints, and it is now a rule of `validate-a-book`.
