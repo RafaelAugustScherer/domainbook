@@ -47,6 +47,27 @@ walkthrough is only the runnable form of them.
 Once it has been run and accepted, the feature files move to
 `status: implemented`.
 
+## Ask the question, don't park it
+
+A choice that is mine to make gets **asked, with the options laid out, at the
+moment it comes up** — not noted at the end of the turn, not carried into the
+next one, not left as a "worth deciding later". Options mean real alternatives
+with their trade-offs, so the answer is one reply rather than a conversation.
+
+A choice you can make yourself, make. State it in a sentence and move on. The
+test is whether a different answer would change what you build: if it would, ask
+before building; if it wouldn't, decide and say what you decided.
+
+**Do not end a turn with an open item that could have been a question.** A
+trailing "still open: X" puts the work of noticing and re-raising X on me, and it
+leaves the task looking finished when it isn't. If X matters, it is a question in
+the same turn it appeared. If it doesn't matter enough to ask, it doesn't matter
+enough to mention.
+
+This is not the same as reporting scope you deliberately left out — that is the
+next section, and it is about work already decided, not about decisions still
+waiting.
+
 ## Say what you did not do
 
 At the end of a phase, name what was left out and why, in the PR and in the
