@@ -65,6 +65,27 @@ performance numbers; we chase the feeling that everything just works.
 - Failures are ordinary output: print the issues, exit non-zero, no stack traces
   for expected problems.
 
+## What earns a decision
+
+- **If a user can observe it, it is behaviour.** A choice visible in what
+  `validate` prints or what `new` writes belongs in a feature file's scenarios,
+  not in the decision log. Writing it in both places means the two will disagree
+  eventually.
+- **What is left earns a record only if reversing it would cost something** — a
+  dependency, a package boundary, a format commitment, an enforcement rule, a
+  published contract. Internal structure that a refactor can undo is not a
+  decision; the code is its own record.
+- **A decision is about the software, not about how we work.** How a phase is
+  run, what earns a record, which lint rules are on — that is working practice,
+  and it belongs in this file, which can be rewritten, rather than in a log of
+  immutable records. This bar is itself an example: it steers what agents write
+  and changes nothing about what domainbook does, so it lives here.
+- **Mark a decision you took alone.** An agent that decides without the people in
+  `decision-makers` weighing the choice sets `authored-by: agent` in the
+  frontmatter. Leave it out when they asked for the work and you chose inside
+  what they asked for. `decision-makers` still names the people, who are
+  accountable either way. See `format/ADR-0019`.
+
 ## Checks
 
 Everything CI runs, you can run locally:
@@ -75,7 +96,25 @@ npm test              # vitest
 npm run lint          # eslint: typescript-eslint + sonarjs recommended
 npm run duplication   # jscpd copy/paste gate
 npm run schemas       # regenerate committed JSON Schema; CI fails on drift
+npm audit --audit-level=high --package-lock-only   # CI fails on high or critical
 ```
+
+**A red audit job may have nothing to do with your PR.** `npm audit` asks the
+registry what it knows right now, so the check is not a function of the commit: a
+build that passed can fail on a rerun with nothing changed behind it. npm offers
+no allowlist and no "as of" date, so the only ways through are to fix the tree or
+to wait for the advisory to be withdrawn. Read the advisory before assuming you
+broke something.
+
+**The duplication gate is scoped to `packages` and TypeScript** — `.jscpd.json`
+ignores `node_modules`, `dist`, generated `schema` output, and `test/fixtures`,
+and a clone has to reach five lines and fifty tokens to count. Fixtures are meant
+to look like each other; a whole-repo gate would need an ignore list that grows
+with every fixture.
+
+**A gate is only trusted if it starts clean.** Both the lint and duplication
+gates were adopted with their existing violations fixed first, not grandfathered.
+Every failure after that gets argued with rather than waved through.
 
 The lint config lives in `eslint.config.mjs`. It runs the recommended sets of
 `typescript-eslint` and `eslint-plugin-sonarjs` — the sonarjs rules exist to catch

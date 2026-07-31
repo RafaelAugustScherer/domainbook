@@ -155,6 +155,19 @@ describe("the valid fixture book", () => {
     ]);
   });
 
+  it("keeps the people accountable for a decision an agent took alone", () => {
+    const decision = decisionSchema.parse(
+      parseFrontmatter(
+        read(
+          bookDir,
+          "domains/ticketing/decisions/0003-refund-a-late-capture-in-full.md"
+        )
+      ).data
+    );
+    expect(decision["authored-by"]).toBe("agent");
+    expect(decision["decision-makers"]).toEqual(["ada", "kwame"]);
+  });
+
   it("carries every optional MADR section on one decision", () => {
     const { body } = parseFrontmatter(
       read(bookDir, "decisions/0001-store-every-timestamp-in-utc.md")

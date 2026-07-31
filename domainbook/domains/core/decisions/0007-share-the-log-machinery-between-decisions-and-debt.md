@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: deprecated
 date: 2026-07-30
 decision-makers: [RafaelAugustScherer]
 ---
@@ -115,3 +115,10 @@ suite still green. `domain-debt-number-gap`,
 are what closes that, and they are what makes the claim above true rather than
 true of one carrier. One machine serving two logs is only worth its cost if both
 places each log is written are held to it.
+
+## More Information
+
+The choice stands: one descriptor still serves both logs, and `log.ts` is
+unchanged. What is retired is the record. The bar is in `CONTRIBUTING.md` under
+"What earns a decision", and this is internal structure the next refactor could
+undo without costing anyone anything — the code is its own record.

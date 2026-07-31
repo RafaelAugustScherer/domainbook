@@ -152,10 +152,20 @@ leaves all five keys optional and the status set open: `status` and `date` are r
 status is one of `proposed | rejected | accepted | deprecated | superseded by ADR-NNNN`
 — with the reference qualified as `<domain-id>/ADR-NNNN` when it points into a domain's
 own log (`format/ADR-0005`) — and `decision-makers`/`consulted`/`informed` are YAML
-sequences rather than prose.
+sequences rather than prose. One key is ours rather than MADR's: the optional
+`authored-by: agent`, set when an agent took the decision without the people in
+`decision-makers` weighing it, so a record cannot claim a person who never read it
+(`format/ADR-0019`).
 4-digit sequential numbers, never reused. One rule is domainbook's alone: an accepted ADR
 is immutable, so changing course is a new ADR that marks the old one superseded — where
 MADR's `date` means "last updated", ours means the date the decision was taken.
+
+A decision records a choice about the software, not about how the people and agents
+building it work. Working practice — what earns a record, how a phase is run, which lint
+rules are on — belongs in `CONTRIBUTING.md`, which is living and can be rewritten, rather
+than in a log of immutable records. A record retired for failing that bar reads
+`deprecated` in a sense MADR does not have: the choice stands, the record does not, and
+the changelog carries the dated act.
 
 **Debt (`debt/NNNN-*.md`)** — the decision log's twin, and the one living artifact in
 the book: a known shortcut or gap, with `status: open | accepted | repaid`, `date`,
@@ -298,6 +308,11 @@ The differentiator, shipped before anything visual. Three layers plus a durable 
    mapped code changed + owning domain's book unchanged + no waiver trailer → exit 1
    with an actionable message naming the stale files. Installed as a `commit-msg` hook
    (`domainbook hooks install`; lefthook config offered for repos that use it).
+   A commit touching several domains must update each of their books, or carry one
+   record at the book root — a cross-cutting decision or changelog entry — which clears
+   all of them, because that is where a change spanning contexts belongs. Staged paths
+   matching no domain's globs pass silently and are not reported: a path nothing maps is
+   a path nothing claims, and mapping is a deliberate act.
 3. **Claude Code plugin**: a `Stop` hook running the same check over the session's
    accumulated changes — blocks completion with the actionable reason so the agent fixes
    docs *while it still has context*. Guards: honor `stop_hook_active`, cap retries,
@@ -311,7 +326,9 @@ The differentiator, shipped before anything visual. Three layers plus a durable 
 5. **Instruction layer** (steering, not enforcement): generated `AGENTS.md` section with
    the rule + exact waiver syntax; `CLAUDE.md` containing `@AGENTS.md`; optional Gemini
    settings snippet; Claude Code `.claude/rules/` path-scoped rules generated from
-   `code:` globs.
+   `code:` globs. It also tells an agent to look the domain's terms up before it writes
+   code, rather than carrying the glossary inline: terms are pulled, not pushed, so the
+   instructions never go stale against a glossary that moved (Phase 3).
 
 Exit: in a sample repo — a commit touching mapped code without a book change and without
 a trailer fails locally and in CI; a Claude Code session gets blocked at Stop, updates
@@ -332,6 +349,10 @@ commit is auto-stamped, and both are queryable from git log.
   scopes the same way and bounds by release rather than by entry count — the newest
   release in scope plus `[Unreleased]`, with older releases reached by naming a version
   or a date, and entries returned as written rather than summarized (`mcp/ADR-0003`).
+- `explain_terms` is the one an agent is told to reach for first, by the instruction
+  layer Phase 2 generates. Retrieval stays pull — nothing pushes the glossary into a
+  session — so the tool has to be cheap to call and obvious to find, and the instructions
+  have to name it rather than describe it.
 - Same documents exposed as MCP resources for @-mention/browse UX, with cache hints.
 - `llms.txt` / `llms-full.txt` generation (`domainbook export llms`) — an opt-in export of
   the book for tools that speak no MCP, not a default retrieval path (`mcp/ADR-0002`).
@@ -348,7 +369,17 @@ features touch it?" via MCP; `where_to_document` returns correct files for a dif
 - Views: overview; domain pages rendering the canvas; context map derived from
   `relationships:` frontmatter as Mermaid (no hand-drawn diagrams, no visual editor);
   searchable glossary; feature browser with highlighted Gherkin; decision log with
-  status badges and supersede chains; changelog timeline. Pagefind full-text search.
+  status badges and supersede chains; debt register with severity badges; changelog
+  timeline. Pagefind full-text search.
+- The decision log's status badge has a problem to solve rather than a value to render:
+  `deprecated` means both "this decision no longer applies" and "this record was retired
+  for failing the bar in `CONTRIBUTING.md` while the choice it describes still holds".
+  The frontmatter cannot
+  tell them apart, so the page has to — by reading More Information, or by the badge
+  saying less than the word does.
+- Read for the person who opens it twice a year, not the one who lives in it: what
+  matters is that every decision and every current rule of the business is there when
+  someone finally goes looking.
 - `domainbook dev` / `domainbook build` → static-first output, deployable to GitHub
   Pages.
 
@@ -362,7 +393,12 @@ Exit: the site builds from any valid book; this book published as the live demo.
   narrowed schema, `format/ADR-0004`), propose domains/glossary/features/decisions,
   interview the user to confirm boundaries and terms, write the book, run `validate`.
 - **Maintenance skills**: "document this change" (used when the Stop hook blocks),
-  "record a decision", "groom the glossary".
+  "record a decision", "groom the glossary". "Record a decision" is where the bar in
+  `CONTRIBUTING.md` and `format/ADR-0019` are actually applied: it refuses a choice that
+  belongs in a
+  feature file's scenarios, and it asks whether the person was in on the call before it
+  decides whether to write `authored-by: agent`. A skill that writes a record without
+  asking is the thing both of those decisions exist to stop.
 
 Exit: an existing real-world repo goes from zero to a validated book through the
 interview flow.

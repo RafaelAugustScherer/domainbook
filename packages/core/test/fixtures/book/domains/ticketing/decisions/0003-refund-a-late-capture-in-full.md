@@ -1,6 +1,7 @@
 ---
 status: accepted
 date: 2026-06-30
+authored-by: agent
 decision-makers: [ada, kwame]
 consulted: [rosa]
 ---

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: deprecated
 date: 2026-07-29
 decision-makers: [RafaelAugustScherer]
 ---
@@ -99,3 +99,10 @@ pins the compiler these plugins cap; the pin and the caps now hold each other.
 The prose this gate backs is `CONTRIBUTING.md` at the repo root — uppercase
 because it is a repo-root ecosystem file, not a book artifact
 (`format/ADR-0003`).
+
+The choice stands: `CONTRIBUTING.md` and the three recommended eslint sets are
+unchanged, and lint is still a required CI step. What is retired is the record
+— and it is the record whose whole subject was working practice, so it is the
+clearest case of the line the roadmap now draws. The document it created is
+where all of this lives, including the rule that a gate is adopted clean rather
+than grandfathered.

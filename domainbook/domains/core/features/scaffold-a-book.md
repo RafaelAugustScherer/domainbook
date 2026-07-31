@@ -40,6 +40,27 @@ Example: A domain, a feature and a decision written one after another
   And each command has printed what is left to fill in on the page it wrote
 ```
 
+## Rule: A generated value a YAML parser could read as something else is quoted
+
+```gherkin
+Example: An id that reads as a boolean keeps its quotes
+  Given a book written by domainbook init
+  When domainbook new domain no runs
+  Then domainbook/domains/no/index.md reads: id: "no"
+  And the next line reads: name: "No"
+
+Example: An id that starts with a digit keeps its quotes
+  Given a book written by domainbook init
+  When domainbook new domain 9 runs
+  Then domainbook/domains/9/index.md reads: id: "9"
+
+Example: An ordinary id is written bare
+  Given a book written by domainbook init
+  When domainbook new domain ticketing runs
+  Then domainbook/domains/ticketing/index.md reads: id: ticketing
+  And domainbook validate prints: domainbook is a valid book — 1 domain, 0 features, 0 decisions, 0 terms, 0 debt records
+```
+
 ## Rule: init refuses a root that is not an empty folder
 
 ```gherkin

@@ -58,6 +58,32 @@ Example: Frontmatter that declares nothing is reported once, not once per key
   And the line says: frontmatter is empty — a decision needs "status" and "date" between the --- fences
 ```
 
+## Rule: An empty frontmatter block is a different mistake from no frontmatter
+
+```gherkin
+Example: A fence that declares nothing names the fences it sits between
+  Given a domain page whose frontmatter block holds only blank lines
+  When domainbook validate runs
+  Then the line is at line 1
+  And it says: frontmatter is empty — a domain page needs "id", "name", and "classification" between the --- fences
+
+Example: A page with no fence at all is told to write one
+  Given a domain page that opens straight into its Purpose
+  When domainbook validate runs
+  Then the line says: no frontmatter — a domain page needs "id", "name", and "classification" in a --- block at the top of the file
+
+Example: An artifact that carries no frontmatter is told to delete the block
+  Given a glossary that opens with a --- block
+  When domainbook validate runs
+  Then the line is at line 1
+  And it says: a glossary carries no frontmatter — delete the --- block; a term is an H2 heading with its definition below it
+
+Example: A glossary with no block at all is not an issue
+  Given a glossary that opens with its first term
+  When domainbook validate runs
+  Then no line is about the glossary
+```
+
 ## Rule: A contradiction between two pages is filed on the first page that declares it
 
 ```gherkin
