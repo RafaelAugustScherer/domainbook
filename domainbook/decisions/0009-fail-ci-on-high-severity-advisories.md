@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: deprecated
 date: 2026-07-29
 decision-makers: [RafaelAugustScherer]
 ---
@@ -75,3 +75,12 @@ nobody touched is the expected failure mode of this gate, not a fault in it.
 
 `ADR-0008` sets the runtime floor, which this check cannot see. `ADR-0010` is the
 other gate added to the same workflow and fails for an unrelated kind of reason.
+
+The choice stands: CI still fails on a high or critical advisory, and the
+workflow step is unchanged. What is retired is the record. A gate on this
+repo's own pipeline is working practice, not a choice about the software
+domainbook ships, and the roadmap now keeps practice out of the log. The step
+and the thing worth knowing about it — that `npm audit` reports what the
+registry knows at the moment it runs, so a red job may have nothing to do with
+the commit — are in `CONTRIBUTING.md` under Checks, which can be rewritten when
+the tree outgrows it.

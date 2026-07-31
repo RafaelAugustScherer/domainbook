@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: deprecated
 date: 2026-07-29
 decision-makers: [RafaelAugustScherer]
 ---
@@ -91,3 +91,8 @@ TypeScript files. Copying one existing schema file to a second name takes it to
 
 `ADR-0009` is the other gate on the same workflow. What this one ignores is the
 golden fixture set, which Phase 0 of the roadmap describes.
+
+The choice stands: `.jscpd.json` is unchanged and the gate still runs over
+`packages` and TypeScript only. What is retired is the record. Which paths a
+copy-paste gate reads is working practice, not a choice about the software, and
+the scope and its reason now sit in `CONTRIBUTING.md` under Checks.

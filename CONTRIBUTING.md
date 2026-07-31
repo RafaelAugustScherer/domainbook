@@ -96,7 +96,25 @@ npm test              # vitest
 npm run lint          # eslint: typescript-eslint + sonarjs recommended
 npm run duplication   # jscpd copy/paste gate
 npm run schemas       # regenerate committed JSON Schema; CI fails on drift
+npm audit --audit-level=high --package-lock-only   # CI fails on high or critical
 ```
+
+**A red audit job may have nothing to do with your PR.** `npm audit` asks the
+registry what it knows right now, so the check is not a function of the commit: a
+build that passed can fail on a rerun with nothing changed behind it. npm offers
+no allowlist and no "as of" date, so the only ways through are to fix the tree or
+to wait for the advisory to be withdrawn. Read the advisory before assuming you
+broke something.
+
+**The duplication gate is scoped to `packages` and TypeScript** — `.jscpd.json`
+ignores `node_modules`, `dist`, generated `schema` output, and `test/fixtures`,
+and a clone has to reach five lines and fifty tokens to count. Fixtures are meant
+to look like each other; a whole-repo gate would need an ignore list that grows
+with every fixture.
+
+**A gate is only trusted if it starts clean.** Both the lint and duplication
+gates were adopted with their existing violations fixed first, not grandfathered.
+Every failure after that gets argued with rather than waved through.
 
 The lint config lives in `eslint.config.mjs`. It runs the recommended sets of
 `typescript-eslint` and `eslint-plugin-sonarjs` — the sonarjs rules exist to catch

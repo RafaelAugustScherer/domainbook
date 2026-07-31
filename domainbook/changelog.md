@@ -21,19 +21,30 @@ the decision it references, not here (`ADR-0006`).
 
 ### Changed
 
-- Four decision records are retired and now read `deprecated`: `core/ADR-0005`,
-  `core/ADR-0006`, `core/ADR-0007`, and `format/ADR-0012`. The choices they
-  describe still hold and the code is unchanged — it is the records that are
-  retired, which is a sense `deprecated` does not carry in MADR. What was
-  observable in two of them is now scenarios in `scaffold-a-book` and
-  `validate-a-book`.
-
-  The bar they failed lives in `CONTRIBUTING.md` under "What earns a decision":
-  a choice a user can observe is behaviour and belongs in a feature file, and
-  what is left earns a record only if reversing it would cost something. It is a
-  working rule rather than a decision about the software, so it is written where
-  the working rules are and not in this log; this entry is the dated record of
-  what it retired.
+- Seven decision records are retired and now read `deprecated`. In every case the
+  choice still holds, the code is unchanged, and it is the record that is retired
+  — a sense `deprecated` does not carry in MADR, and one only this entry and the
+  record's own More Information can explain.
+- Four of them failed a bar on what earns a record at all: `core/ADR-0005`,
+  `core/ADR-0006`, `core/ADR-0007`, and `format/ADR-0012`. A choice a user can
+  observe is behaviour and belongs in a feature file; what is left earns a record
+  only if reversing it would cost something. What was observable in two of them
+  is now scenarios in `scaffold-a-book` and `validate-a-book`. The bar itself is
+  in `CONTRIBUTING.md` under "What earns a decision" — it is a working rule
+  rather than a decision about the software, so it is written where the working
+  rules are and not in this log.
+- The other three are about how this repo is developed rather than about the
+  software, and a decision log is for the software: `ADR-0009` (fail CI on
+  high-severity advisories), `ADR-0010` (scope the duplication gate) and
+  `ADR-0012` (write the working rules down and lint for them). Every gate they
+  describe is still in force and no workflow changed. What was only in them is
+  now in `CONTRIBUTING.md` under Checks: the audit step, the duplication gate's
+  scope, the rule that a gate is adopted clean rather than grandfathered, and the
+  warning that `npm audit` reads the registry at the moment it runs, so a red job
+  may have nothing to do with the commit.
+- Records elsewhere in the book still cite the seven, and those citations are
+  left as they are. The records exist and can still be read; an accepted record
+  is not edited to chase a status change (`format/ADR-0013`).
 
 ## [0.3.0] - 2026-07-30
 
