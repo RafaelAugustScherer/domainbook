@@ -4,8 +4,8 @@ milestones:
   - { id: phase-0, name: Foundations and spec, status: done }
   - { id: phase-1, name: Core and CLI, status: done }
   - { id: phase-1-1, name: Technical debt records, status: done }
-  - { id: phase-2, name: Enforcement loop, status: in-progress }
-  - { id: phase-3, name: MCP server, status: planned }
+  - { id: phase-2, name: Enforcement loop, status: done }
+  - { id: phase-3, name: MCP server, status: done }
   - { id: phase-4, name: Website, status: planned }
   - { id: phase-5, name: Migration and agent authoring, status: planned }
   - { id: phase-6, name: Exports and interop, status: planned }
@@ -203,7 +203,7 @@ npm workspaces monorepo, changesets for releases:
 | Package | Contents |
 |---|---|
 | `@domainbook/core` | zod schemas (JSON Schema generated at build), loader (`yaml` frontmatter + markdown body), model graph, reference resolution, validation, staged-diff check logic |
-| `domainbook` (CLI) | `init`, `new`, `validate`, `check`, `hooks install`, `export`, `mcp`, `dev`/`build` (delegates to site) |
+| `domainbook` (CLI) | `init`, `new`, `validate`, `check`, `hooks install`, `instructions`, `export`, `serve mcp`, `serve web` (delegates to site) |
 | `@domainbook/mcp` | MCP server on `@modelcontextprotocol/server` v2 |
 | `@domainbook/site` | Custom Astro app (content collections share the zod schemas) |
 | `integrations/` | Repo directory, not a published package: Claude Code plugin (hooks + skills), AGENTS.md/CLAUDE.md/Gemini templates, GitHub Action, lefthook snippet |
@@ -360,8 +360,6 @@ commit is auto-stamped, and both are queryable from git log.
   session — so the tool has to be cheap to call and obvious to find, and the instructions
   have to name it rather than describe it.
 - Same documents exposed as MCP resources for @-mention/browse UX, with cache hints.
-- `llms.txt` / `llms-full.txt` generation (`domainbook export llms`) — an opt-in export of
-  the book for tools that speak no MCP, not a default retrieval path (`mcp/ADR-0002`).
 - `init` writes `.mcp.json` (Claude Code project scope) + config snippets for Cursor,
   VS Code, Codex, and Gemini CLI.
 

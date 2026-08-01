@@ -1,6 +1,6 @@
 import { existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
-import type { Issue } from "./issue.js";
+import { formatIssue, type Issue } from "./issue.js";
 import { loadChangelog } from "./load/changelog.js";
 import { configFile, loadConfig } from "./load/config.js";
 import { entries, relate, strange } from "./load/disk.js";
@@ -16,6 +16,13 @@ export { configFile } from "./load/config.js";
 
 const rootHolds = `a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`;
 const domainsHold = "domains/ holds one folder per domain and nothing else";
+
+export function missingBook(root: string): string | undefined {
+  const dir = resolve(root);
+  if (existsSync(dir) && statSync(dir).isDirectory()) return undefined;
+  const [issue] = loadBook(dir).issues;
+  return issue === undefined ? undefined : formatIssue(issue);
+}
 
 export function loadBook(root: string): { book: Book; issues: Issue[] } {
   const dir = resolve(root);

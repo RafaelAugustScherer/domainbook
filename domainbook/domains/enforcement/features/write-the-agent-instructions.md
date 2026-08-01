@@ -110,14 +110,32 @@ Example: A domain that went away takes its rule file with it
   And a rule file a person wrote is left alone
 ```
 
-## Rule: The instructions point at the book rather than copying it
+## Rule: The instructions name the tool that answers, rather than copying what it would say
 
 ```gherkin
 Example: Terms are pulled, not pasted
   Given a book whose ticketing glossary defines hold and seat map
   When domainbook instructions runs
   Then AGENTS.md does not hold the definition of hold or seat map
-  And AGENTS.md tells the agent to look the domain's terms up in domainbook/domains/ticketing/glossary.md before writing code
+  And AGENTS.md tells the agent to call explain_terms with the words it is about to use
+  And AGENTS.md names where_to_document for the paths it is about to change
+
+Example: The rule file for a context names the tool too
+  Given a book whose ticketing domain claims src/ticketing/**
+  When domainbook instructions runs
+  Then .claude/rules/domainbook-ticketing.md tells the agent to call explain_terms
+  And it says this context's own words win over the book's
+
+Example: A glossary that is there is offered as the way to read it without MCP
+  Given a book whose ticketing glossary defines hold and seat map
+  When domainbook instructions runs
+  Then AGENTS.md names domainbook/domains/ticketing/glossary.md as where the words are without MCP
+
+Example: A context with no glossary is never pointed at one
+  Given a book whose ticketing domain claims src/ticketing/** and keeps no glossary
+  When domainbook instructions runs
+  Then no line names domainbook/domains/ticketing/glossary.md
+  And .claude/rules/domainbook-ticketing.md still tells the agent to call explain_terms
 
 Example: A glossary that moves on does not leave the instructions wrong
   Given a repo where domainbook instructions has run

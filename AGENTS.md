@@ -1,0 +1,25 @@
+<!-- domainbook:start -->
+
+## Documentation lives in this repo
+
+The book under `domainbook/` documents this codebase, and a commit hook checks it. The rule: changing code a domain claims means updating that domain's book in the same commit, or waiving it with a "Skip-Docs: <reason>" trailer.
+
+| Code | Book |
+| --- | --- |
+| `packages/core/src/body/**`, `packages/core/src/change.ts`, `packages/core/src/check.ts`, `packages/core/src/check/**`, `packages/core/src/index.ts`, `packages/core/src/issue.ts`, `packages/core/src/load.ts`, `packages/core/src/load/**`, `packages/core/src/log.ts`, `packages/core/src/map.ts`, `packages/core/src/model.ts`, `packages/core/src/read.ts`, `packages/core/src/ref.ts`, `packages/core/src/unicode.ts`, `packages/core/src/validate.ts`, `packages/core/test/*.ts`, `packages/cli/**` | `domainbook/domains/core/` |
+| `integrations/**` | `domainbook/domains/enforcement/` |
+| `packages/core/src/schemas/**`, `packages/core/src/frontmatter.ts`, `packages/core/schema/**`, `packages/core/scripts/**`, `packages/core/test/fixtures/**` | `domainbook/domains/format/` |
+| `packages/mcp/**` | `domainbook/domains/mcp/` |
+| `packages/site/**` | `domainbook/domains/site/` |
+
+Any file under a domain's folder clears the check for that domain — the canvas, the glossary, the changelog, a feature, a decision, or a debt record. A change across several domains updates each of their books, or carries one record at the book root: a decision under `domainbook/decisions/` or an entry in `domainbook/changelog.md`.
+
+Before you name anything, look the word up and use the one this book already has. The book answers over MCP: call `explain_terms` with the words you are about to use, and `where_to_document` with the paths you are changing. `domainbook serve mcp` starts the server if your client is not connected to it.
+
+To waive a commit, end the commit message with a trailer saying what makes the change safe to leave undocumented:
+
+```
+Skip-Docs: renamed a private helper, no behaviour or vocabulary changed
+```
+
+<!-- domainbook:end -->

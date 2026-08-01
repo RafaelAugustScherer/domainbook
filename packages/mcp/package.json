@@ -1,0 +1,30 @@
+{
+  "name": "@domainbook/mcp",
+  "version": "0.0.0",
+  "description": "Serve a domainbook book over MCP",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.18.1"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@domainbook/core": "0.0.0",
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.4.3"
+  },
+  "devDependencies": {
+    "@modelcontextprotocol/client": "^2.0.0",
+    "@types/node": "^24.9.2",
+    "vitest": "4.1.10"
+  }
+}

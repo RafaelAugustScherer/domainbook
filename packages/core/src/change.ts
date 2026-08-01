@@ -1,5 +1,6 @@
 import { matchesGlob } from "node:path";
-import type { Book, DebtRecord } from "./model.js";
+import type { Book } from "./model.js";
+import { tdrRef } from "./ref.js";
 
 export type StaleDomain = { id: string; paths: string[] };
 
@@ -42,17 +43,12 @@ function openDebt(book: Book, code: string[]): DebtNote[] {
   return records
     .filter((record) => record.frontmatter.status === "open")
     .map((record) => ({
-      ref: debtRef(record),
+      ref: tdrRef(record),
       file: record.file,
       paths: matching(record.frontmatter.code, code),
     }))
     .filter((note) => note.paths.length > 0)
     .sort((one, other) => (one.ref < other.ref ? -1 : 1));
-}
-
-function debtRef(record: DebtRecord): string {
-  const ref = `TDR-${String(record.number).padStart(4, "0")}`;
-  return record.domain === undefined ? ref : `${record.domain}/${ref}`;
 }
 
 function matching(globs: string[] | undefined, paths: string[]): string[] {

@@ -119,7 +119,10 @@ Example: A path the shell cannot write to is named rather than thrown
 
 ## Open Questions
 
-- init writes a roadmap and a config and nothing else. Should it also write a
-  glossary and a changelog, or is an empty artifact worse than a missing one?
 - The generated domain page carries placeholder classification axes. Should
   validate say anything about a page that still holds them?
+
+`new domain` writing only a canvas is no longer an open question — it is
+`core/TDR-0005`, with the answer and what it costs. Whether `init` should
+scaffold a glossary and a changelog at the book root is the same question one
+level up, and the record's remedy does not settle it.

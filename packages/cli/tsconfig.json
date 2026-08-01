@@ -6,5 +6,12 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": ["src"],
-  "references": [{ "path": "../core" }]
+  "references": [
+    {
+      "path": "../core"
+    },
+    {
+      "path": "../mcp"
+    }
+  ]
 }

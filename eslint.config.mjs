@@ -5,7 +5,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  globalIgnores(["**/dist/", "graphify-out/", "**/test/fixtures/"]),
+  globalIgnores(["**/dist/", "graphify-out/", "notes/", "**/test/fixtures/"]),
   {
     files: ["**/*.{js,mjs,ts}"],
     extends: [

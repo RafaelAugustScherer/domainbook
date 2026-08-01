@@ -1,7 +1,8 @@
 import { existsSync, statSync } from "node:fs";
-import { basename, dirname, join } from "node:path";
+import { basename, dirname, join, resolve } from "node:path";
 import { configFile, termSlug } from "@domainbook/core";
 import { entries, quoted, relate, rooted, write } from "./files.js";
+import { mcpFile, planServer } from "./mcp.js";
 import { refuse, type Result } from "./result.js";
 
 const config = `enforcement:
@@ -26,18 +27,27 @@ export function init(root: string): Result {
   const roadmap = join(root, "roadmap.md");
   const failed =
     write(roadmap, page(termSlug(basename(dirname(root))) || "book")) ??
-    write(join(root, configFile), config);
+    write(join(root, configFile), config) ??
+    server(at);
   if (failed !== undefined) return refuse(failed);
   return {
     code: 0,
     lines: [
-      `wrote ${relate(roadmap)} and ${relate(join(root, configFile))}`,
+      `wrote ${relate(roadmap)}, ${relate(
+        join(root, configFile)
+      )} and ${mcpFile}`,
       `next: name the milestone in roadmap.md, then "${rooted(
         "domainbook new domain <id>",
         root
       )}" for your first bounded context`,
     ],
   };
+}
+
+function server(at: string): string | undefined {
+  const planned = planServer(at);
+  if ("refusal" in planned) return planned.refusal;
+  return write(resolve(mcpFile), planned.text);
 }
 
 function page(id: string): string {
