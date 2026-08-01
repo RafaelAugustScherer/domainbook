@@ -1,7 +1,7 @@
 ---
 id: waive-a-change
 name: Waive a change
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [waiver, trailer, book]
 decisions: [enforcement/ADR-0002]

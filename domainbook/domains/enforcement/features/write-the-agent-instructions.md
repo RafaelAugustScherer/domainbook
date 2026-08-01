@@ -1,7 +1,7 @@
 ---
 id: write-the-agent-instructions
 name: Write the agent instructions
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [instruction-layer, enforcement-loop, ubiquitous-language, waiver]
 decisions: [ADR-0005, enforcement/ADR-0001]

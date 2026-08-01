@@ -1,7 +1,7 @@
 export { canvas } from "./body/domain.js";
 export type { ParsedRule } from "./body/feature.js";
 export { checkChange } from "./change.js";
-export type { Change, DebtNote, StaleDomain } from "./change.js";
+export type { Change } from "./change.js";
 export { checkBook } from "./check.js";
 export { parseFrontmatter } from "./frontmatter.js";
 export { formatIssue, sortIssues } from "./issue.js";

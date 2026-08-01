@@ -1,7 +1,7 @@
 ---
 id: install-the-git-hook
 name: Install the git hook
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [enforcement-loop, book-root, waiver]
 decisions: [enforcement/ADR-0001]

@@ -1,7 +1,7 @@
 ---
 id: check-a-branch-in-ci
 name: Check a branch in CI
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [enforcement-loop, waiver, book]
 decisions: [enforcement/ADR-0001, enforcement/ADR-0002]

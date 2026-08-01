@@ -1,7 +1,7 @@
 ---
 id: check-a-staged-change
 name: Check a staged change
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [waiver, book-root, debt-record, domain]
 decisions: [enforcement/ADR-0001, enforcement/ADR-0003, format/ADR-0018]

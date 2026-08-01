@@ -1,7 +1,7 @@
 ---
 id: block-an-agent-at-stop
 name: Block an agent at stop
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [enforcement-loop, waiver, instruction-layer]
 decisions: [enforcement/ADR-0001, ADR-0005]

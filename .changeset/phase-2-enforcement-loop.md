@@ -53,6 +53,5 @@ removed. `--check` says whether they are current, writes nothing, and exits 1 if
 not. The Gemini CLI settings block is printed for a person to paste and never
 written.
 
-`@domainbook/core` exports `checkChange`, `Change`, `StaleDomain`, and
-`DebtNote`. It matches paths with `node:path`'s `matchesGlob`, so nothing new is
-depended on.
+`@domainbook/core` exports `checkChange` and `Change`. It matches paths with
+`node:path`'s `matchesGlob`, so nothing new is depended on.
