@@ -6,6 +6,7 @@ const hook = ".git/hooks/commit-msg";
 
 const block = [
   "# domainbook:start",
+  'PATH="$PWD/node_modules/.bin:$PATH"',
   'domainbook check --staged --message-file "$1" || exit 1',
   "# domainbook:end",
 ].join("\n");

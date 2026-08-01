@@ -14,7 +14,7 @@ export default defineConfig(
       sonarjs.configs.recommended,
     ],
     languageOptions: {
-      globals: { Buffer: "readonly", process: "readonly" },
+      globals: { Buffer: "readonly", process: "readonly", URL: "readonly" },
     },
     rules: {
       "sonarjs/no-os-command-from-path": "off",

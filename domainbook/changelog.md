@@ -32,8 +32,9 @@ the decision it references, not here (`ADR-0006`).
   check into the repo's `commit-msg` hook between `# domainbook:start` and
   `# domainbook:end`, adding to a hook that is already there rather than
   replacing it, and hands the snippet back instead when lefthook owns
-  `.git/hooks`. Uninstall removes the block and leaves every other line where it
-  was.
+  `.git/hooks`. The block puts `node_modules/.bin` on its own `PATH` first, so a
+  domainbook installed as a dependency is enough and nothing has to be installed
+  globally. Uninstall removes the block and leaves every other line where it was.
 - `domainbook instructions`, which writes the rule into `AGENTS.md`, a `CLAUDE.md`
   that imports it, and one `.claude/rules/domainbook-<domain>.md` per domain that
   claims code, scoped to that domain's globs. `--check` says whether they are

@@ -85,9 +85,14 @@ function install(
   run: string,
   lines: string[]
 ): Result {
-  const text = [...trimmed(before), "", start, `${run} || exit 1`, end].join(
-    "\n"
-  );
+  const text = [
+    ...trimmed(before),
+    "",
+    start,
+    'PATH="$PWD/node_modules/.bin:$PATH"',
+    `${run} || exit 1`,
+    end,
+  ].join("\n");
   const refusal = write(file, `${text}\n`);
   if (refusal !== undefined) return refuse(refusal);
   chmodSync(file, 0o755);
