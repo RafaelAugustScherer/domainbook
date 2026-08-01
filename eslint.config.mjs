@@ -13,5 +13,11 @@ export default defineConfig(
       tseslint.configs.recommended,
       sonarjs.configs.recommended,
     ],
+    languageOptions: {
+      globals: { Buffer: "readonly", process: "readonly", URL: "readonly" },
+    },
+    rules: {
+      "sonarjs/no-os-command-from-path": "off",
+    },
   }
 );

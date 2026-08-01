@@ -28,9 +28,10 @@ differentiator — it must be strict without being hateful. Read `domainbook/roa
 - `PostToolUse` (Edit|Write matcher) cannot block and must stay silent: it only
   accumulates touched paths into a state file for the Stop-time check. No per-edit
   nagging — that is the documented failure mode of this pattern.
-- `PreToolUse` Bash matcher denies `git commit --no-verify`, commands that unset agent
-  environment markers, and the human-only `SKIP_DOCS=1` escape — each with a message
-  pointing to the agent waiver instead.
+- `PreToolUse` Bash matcher denies the human-only `SKIP_DOCS=1` escape and commands
+  that unset agent environment markers — each with a message pointing to the agent
+  waiver instead. `--no-verify` is deliberately not guarded: it skips the hook rather
+  than impersonating a person, and CI is what answers it.
 - Waiver = git commit trailer (`Skip-Docs: <reason>`, key configurable). Parse with
   `git interpret-trailers` / `git log --format='%(trailers:...)'`, never with regex over
   the whole message. Tiered by actor: the `commit-msg` hook detects agent shells via the
@@ -42,9 +43,9 @@ differentiator — it must be strict without being hateful. Read `domainbook/roa
   always`. A waiver must always be available — the pressure valve is what prevents junk
   doc edits and blanket bypasses.
 - The CI Action is the authority: client-side hooks are bypassable by design; CI
-  re-checks every commit in the PR range server-side. Optionally treat commits carrying
-  an AI `Co-Authored-By:` trailer as agent-authored and require a non-empty reason for
-  them server-side.
+  re-checks the PR range server-side, judged as one change rather than commit by
+  commit. It applies the same actor rules the hook does and no others — reading an AI
+  `Co-Authored-By:` trailer as agent authorship is rejected, not deferred.
 - Instruction files are steering, not enforcement. Never rely on them for a guarantee.
 
 ## Rules
@@ -55,7 +56,7 @@ differentiator — it must be strict without being hateful. Read `domainbook/roa
 - Advisory mode (`warn`) must remain configurable.
 - Test the loop end-to-end in a fixture repo: blocked commit, agent waiver with reason,
   human `SKIP_DOCS=1` auto-stamp, blocked Stop → doc update → clean Stop, and CI
-  catching a `--no-verify` bypass.
+  catching a commit that never met the hook.
 
 ## Style
 

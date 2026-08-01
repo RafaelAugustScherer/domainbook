@@ -1,0 +1,23 @@
+name: domainbook
+description: Validate the book, and refuse a change that leaves a domain's book behind
+
+inputs:
+  root:
+    description: The book root, relative to the repository
+    required: false
+    default: domainbook
+  version:
+    description: The version of the domainbook CLI to run
+    required: false
+    default: latest
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      env:
+        DOMAINBOOK_ROOT: ${{ inputs.root }}
+        DOMAINBOOK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+        DOMAINBOOK_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
+        DOMAINBOOK_CLI: npx -y domainbook@${{ inputs.version }}
+      run: ${{ github.action_path }}/run.sh

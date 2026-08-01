@@ -191,8 +191,10 @@ term by term.
 ## Waiver
 
 A recorded, deliberate decision to change mapped code without updating the book.
-A waiver is not a bypass: it is the audited alternative to updating the book, and
-it stays in history either way.
+A waiver is not a silent skip: it is the audited alternative to updating the
+book, and it stays in history either way. What varies is how much it explains —
+an agent's carries its reason, a person's may carry only the fact that one was
+taken.
 
 - **Status:** validated
-- **Example:** `Skip-Docs: renamed a private helper, no behaviour or vocabulary changed` is a waiver; `git commit --no-verify` is not one.
+- **Example:** `Skip-Docs: renamed a private helper, no behaviour or vocabulary changed` is a waiver, and so is the stamped `Skip-Docs: human bypass`; a commit that leaves no trailer at all is neither.

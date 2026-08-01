@@ -4,7 +4,7 @@ milestones:
   - { id: phase-0, name: Foundations and spec, status: done }
   - { id: phase-1, name: Core and CLI, status: done }
   - { id: phase-1-1, name: Technical debt records, status: done }
-  - { id: phase-2, name: Enforcement loop, status: planned }
+  - { id: phase-2, name: Enforcement loop, status: in-progress }
   - { id: phase-3, name: MCP server, status: planned }
   - { id: phase-4, name: Website, status: planned }
   - { id: phase-5, name: Migration and agent authoring, status: planned }
@@ -301,7 +301,7 @@ The differentiator, shipped before anything visual. Three layers plus a durable 
    forever. The requirement is tiered by actor: agent shells (detected via the
    environment markers agent CLIs export, e.g. `CLAUDECODE=1`) must supply a non-empty
    reason; a human at a terminal may waive without prose via `SKIP_DOCS=1 git commit …`,
-   which the hook converts into an auto-stamped `Skip-Docs: waived interactively`
+   which the hook converts into an auto-stamped `Skip-Docs: human bypass`
    trailer — CI stays deterministic and the audit trail complete either way.
    Config: `enforcement.require_reason: agents | always`.
 2. **`domainbook check --staged`**: staged paths matched against domain `code:` globs;
@@ -317,12 +317,18 @@ The differentiator, shipped before anything visual. Three layers plus a durable 
    accumulated changes — blocks completion with the actionable reason so the agent fixes
    docs *while it still has context*. Guards: honor `stop_hook_active`, cap retries,
    always name concrete files. A silent `PostToolUse` hook only accumulates touched
-   paths — no per-edit nagging. A `PreToolUse` guard denies `git commit --no-verify`,
-   commands that unset agent markers, and the human-only `SKIP_DOCS=1` escape.
+   paths — no per-edit nagging. A `PreToolUse` guard denies the human-only
+   `SKIP_DOCS=1` escape and commands that unset agent markers — the two ways an agent
+   could take a person's waiver tier. `--no-verify` is not guarded: it skips the hook
+   rather than impersonating anyone, and CI is the layer that answers it.
 4. **CI backstop**: GitHub Action — `domainbook validate` + re-run the paths/trailer
-   check over the PR's commit range. Server-side, non-bypassable authority. Optionally
-   treats commits carrying an AI `Co-Authored-By:` trailer as agent-authored and
-   requires a non-empty waiver reason for them.
+   check over the PR's commit range, judged as one change rather than commit by
+   commit, so a book update may arrive in a later commit than the code it documents
+   and CI is never stricter than the hook that let a commit through. Server-side,
+   non-bypassable authority. It applies the same actor rules the hook does and no
+   others: reading an AI `Co-Authored-By:` trailer as agent authorship was considered
+   and rejected, because it holds a person who pairs with an agent to the agent's bar
+   on the strength of a line the agent added.
 5. **Instruction layer** (steering, not enforcement): generated `AGENTS.md` section with
    the rule + exact waiver syntax; `CLAUDE.md` containing `@AGENTS.md`; optional Gemini
    settings snippet; Claude Code `.claude/rules/` path-scoped rules generated from

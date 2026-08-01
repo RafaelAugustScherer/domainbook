@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v7
         with:
           node-version-file: '.nvmrc'
@@ -23,6 +25,13 @@ jobs:
           npm run schemas
           git add -A -- packages/core/schema
           git diff --cached --exit-code -- packages/core/schema
+      - name: The book is not left behind
+        if: github.event_name == 'pull_request'
+        env:
+          DOMAINBOOK_BASE: ${{ github.event.pull_request.base.sha }}
+          DOMAINBOOK_HEAD: ${{ github.event.pull_request.head.sha }}
+          DOMAINBOOK_CLI: node packages/cli/dist/bin.js
+        run: ./integrations/action/run.sh
       - name: No high or critical vulnerabilities
         run: npm audit --audit-level=high --package-lock-only
       - name: No duplicated code above threshold

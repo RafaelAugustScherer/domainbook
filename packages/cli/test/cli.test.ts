@@ -301,13 +301,13 @@ describe("validate", () => {
 describe("what the CLI says when it is misused", () => {
   it("names an unknown command and lists the real ones", () => {
     expect(failed("chekc")).toEqual([
-      '"chekc" is not a domainbook command — the commands are validate, init, and new; run "domainbook --help" to see them',
+      '"chekc" is not a domainbook command — the commands are validate, init, check, hooks, instructions, and new; run "domainbook --help" to see them',
     ]);
   });
 
   it("asks for a command when it is given none", () => {
     expect(failed()).toEqual([
-      'domainbook needs a command — validate, init, or new; run "domainbook --help" to see them',
+      'domainbook needs a command — validate, init, check, hooks, instructions, or new; run "domainbook --help" to see them',
     ]);
   });
 
@@ -437,7 +437,7 @@ describe("what the CLI says when it is misused", () => {
       '"--bogus" is not a domainbook option — "domainbook init" takes only --help; usage: domainbook init [root]',
     ]);
     expect(failed("--bogus")).toEqual([
-      '"--bogus" is not a domainbook option — the options are --domain, --supersedes, --help, and --version; run "domainbook --help" to see which command takes which',
+      '"--bogus" is not a domainbook option — the options are --domain, --supersedes, --staged, --message-file, --range, --session, --check, --version, and --help; run "domainbook --help" to see which command takes which',
     ]);
   });
 
@@ -670,7 +670,7 @@ describe("--help", () => {
       '  domainbook new debt "<title>" [root] [--domain <domain-id>]'
     );
     expect(lines).toContain(
-      "  new        add a domain page, a feature, a decision, or a debt record"
+      "  new            add a domain page, a feature, a decision, or a debt record"
     );
     expect(lines).toContain("  -h, --help              print this");
     expect(lines).toContain(

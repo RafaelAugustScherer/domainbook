@@ -116,6 +116,12 @@ with every fixture.
 gates were adopted with their existing violations fixed first, not grandfathered.
 Every failure after that gets argued with rather than waved through.
 
+**One sonarjs rule is off: `no-os-command-from-path`.** domainbook shells out to
+`git`, and its hooks shell out to `domainbook`, both by name — resolving them
+from `PATH` is the design, not an oversight, and a hook that hard-coded
+`/usr/bin/git` would break on half the machines it runs on. The rule is off in
+`eslint.config.mjs` rather than disabled at each of the four call sites.
+
 The lint config lives in `eslint.config.mjs`. It runs the recommended sets of
 `typescript-eslint` and `eslint-plugin-sonarjs` — the sonarjs rules exist to catch
 exactly the complexity this document argues against (deep nesting, high cognitive
@@ -129,5 +135,14 @@ complexity, duplicated branches). Fix the code rather than disabling a rule; a
 - A change in behavior, format, or a decision updates the book under
   `domainbook/` in the same PR (changelog entry, ADR, or glossary edit as fits),
   or carries an explicit waiver.
+- **`npm install` and `npm ci` install the commit hook** through `prepare`,
+  which runs `scripts/prepare.mjs`. It builds first if `dist` is missing, and it
+  skips itself when `CI` is set or there is no git repo — a hook install has no
+  business failing your install or a CI run. This uses `prepare` rather than
+  `postinstall` on purpose: `postinstall` is the one that would also fire for
+  anyone who merely depends on domainbook, and writing a git hook into someone
+  else's repo as a side effect of installing a package is not ours to do. Their
+  hook is theirs to install (`enforcement/ADR-0001`, and the scenario in
+  `install-the-git-hook.md`).
 - Tests accompany the change: unit tests next to the package
   (`packages/*/test`), fixtures under `test/fixtures`.

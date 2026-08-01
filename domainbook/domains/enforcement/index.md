@@ -87,10 +87,4 @@ else passes.
 
 ## Open Questions
 
-- One commit touches two domains and updates one book. Block, or accept a
-  per-domain waiver?
-- Should a domain with no `code:` globs ever block, or is an unmapped domain
-  simply outside the loop?
-- The CI backstop can treat an AI `Co-Authored-By:` trailer as agent authorship.
-  Does that heuristic belong on by default, given a human who pairs with an agent
-  gets held to the agent's bar?
+None.

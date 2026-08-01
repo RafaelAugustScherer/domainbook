@@ -1,28 +1,61 @@
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
+import { check, type Source } from "./check.js";
 import { bookRoot } from "./files.js";
+import { hooksInstall, hooksUninstall } from "./hooks.js";
 import { init } from "./init.js";
+import { instructions } from "./instructions.js";
 import { newDebt, newDecision, newDomain, newFeature } from "./new.js";
 import { refuse, type Result } from "./result.js";
 import { validate } from "./validate.js";
+
+type Named =
+  | "domain"
+  | "supersedes"
+  | "staged"
+  | "message-file"
+  | "range"
+  | "session"
+  | "check";
 
 type Values = {
   help?: boolean;
   version?: boolean;
   domain?: string;
   supersedes?: string;
+  staged?: boolean;
+  "message-file"?: string;
+  range?: string;
+  session?: string;
+  check?: boolean;
 };
+
 type Command = {
   name: string;
   usage: string;
-  options: readonly ("domain" | "supersedes")[];
+  options: readonly Named[];
 };
+
+const named: readonly Named[] = [
+  "domain",
+  "supersedes",
+  "staged",
+  "message-file",
+  "range",
+  "session",
+  "check",
+];
 
 const options = {
   help: { type: "boolean", short: "h" },
   version: { type: "boolean", short: "v" },
   domain: { type: "string" },
   supersedes: { type: "string" },
+  staged: { type: "boolean" },
+  "message-file": { type: "string" },
+  range: { type: "string" },
+  session: { type: "string" },
+  check: { type: "boolean" },
 } as const;
 
 const commands = {
@@ -35,6 +68,27 @@ const commands = {
     name: "domainbook init",
     usage: "domainbook init [root]",
     options: [],
+  },
+  check: {
+    name: "domainbook check",
+    usage:
+      "domainbook check (--staged [--message-file <path>] | --range <base>..<head> | --session <path>) [root]",
+    options: ["staged", "message-file", "range", "session"],
+  },
+  install: {
+    name: "domainbook hooks install",
+    usage: "domainbook hooks install [root]",
+    options: [],
+  },
+  uninstall: {
+    name: "domainbook hooks uninstall",
+    usage: "domainbook hooks uninstall",
+    options: [],
+  },
+  instructions: {
+    name: "domainbook instructions",
+    usage: "domainbook instructions [--check] [root]",
+    options: ["check"],
   },
   domain: {
     name: "domainbook new domain",
@@ -65,17 +119,31 @@ const help = [
   "usage:",
   `  ${commands.validate.usage}`,
   `  ${commands.init.usage}`,
+  `  ${commands.check.usage}`,
+  `  ${commands.install.usage}`,
+  `  ${commands.uninstall.usage}`,
+  `  ${commands.instructions.usage}`,
   `  ${commands.domain.usage}`,
   `  ${commands.feature.usage}`,
   `  ${commands.decision.usage}`,
   `  ${commands.debt.usage}`,
   "",
   "commands:",
-  "  validate   read the book and print every issue, one per line",
-  "  init       write a new book: roadmap.md and domainbook.config.yaml",
-  "  new        add a domain page, a feature, a decision, or a debt record",
+  "  validate       read the book and print every issue, one per line",
+  "  init           write a new book: roadmap.md and domainbook.config.yaml",
+  "  check          refuse a change that leaves a domain's book behind",
+  "  hooks          install or remove the commit-msg hook that runs the check",
+  "  instructions   write the rule into AGENTS.md, CLAUDE.md, and .claude/rules/",
+  "  new            add a domain page, a feature, a decision, or a debt record",
   "",
   "options:",
+  "  --staged                what git has staged, for a commit about to happen",
+  "  --message-file <path>   the commit message to read a waiver from, and to",
+  "                          stamp one into",
+  "  --range <base>..<head>  every commit a branch adds, judged as one change",
+  "  --session <path>        a file of paths an agent session touched",
+  "  --check                 say whether the generated files are current, and",
+  "                          write nothing",
   "  --domain <domain-id>    the domain a feature, a decision, or a debt record",
   "                          belongs to",
   "  --supersedes <number>   the decision this new one replaces",
@@ -111,7 +179,7 @@ export function run(argv: string[]): Result {
   }
   if (command === undefined)
     return refuse(
-      'domainbook needs a command — validate, init, or new; run "domainbook --help" to see them'
+      'domainbook needs a command — validate, init, check, hooks, instructions, or new; run "domainbook --help" to see them'
     );
   if (command === "validate")
     return (
@@ -122,11 +190,65 @@ export function run(argv: string[]): Result {
     return (
       stop(commands.init, values, positionals, 2) ?? init(bookRoot(second))
     );
+  if (command === "check")
+    return (
+      stop(commands.check, values, positionals, 2) ?? runCheck(values, second)
+    );
+  if (command === "instructions")
+    return (
+      stop(commands.instructions, values, positionals, 2) ??
+      instructions(bookRoot(second), values.check === true)
+    );
+  if (command === "hooks") return runHooks(values, positionals);
   if (command !== "new")
     return refuse(
-      `"${command}" is not a domainbook command — the commands are validate, init, and new; run "domainbook --help" to see them`
+      `"${command}" is not a domainbook command — the commands are validate, init, check, hooks, instructions, and new; run "domainbook --help" to see them`
     );
   return runNew(values, positionals);
+}
+
+function runCheck(values: Values, root: string | undefined): Result {
+  const chosen = (["staged", "range", "session"] as const).filter(
+    (one) => values[one] !== undefined
+  );
+  if (chosen.length === 0)
+    return refuse(
+      `"domainbook check" needs to know what to read — usage: ${commands.check.usage}`
+    );
+  if (chosen.length > 1)
+    return refuse(
+      `"--${chosen[0]}" and "--${chosen[1]}" read different changes — pass one of them; usage: ${commands.check.usage}`
+    );
+  if (values["message-file"] !== undefined && values.staged !== true)
+    return refuse(
+      `"--message-file" is a commit message to read a waiver from, so it goes with "--staged" — usage: ${commands.check.usage}`
+    );
+  return check(bookRoot(root), sourceOf(values));
+}
+
+function sourceOf(values: Values): Source {
+  if (values.range !== undefined) return { kind: "range", range: values.range };
+  if (values.session !== undefined)
+    return { kind: "session", file: values.session };
+  return { kind: "staged", messageFile: values["message-file"] };
+}
+
+function runHooks(values: Values, positionals: string[]): Result {
+  const [, second, third] = positionals;
+  if (second === "install")
+    return (
+      stop(commands.install, values, positionals, 3) ??
+      hooksInstall(bookRoot(third))
+    );
+  if (second === "uninstall")
+    return stop(commands.uninstall, values, positionals, 2) ?? hooksUninstall();
+  if (second === undefined)
+    return refuse(
+      '"domainbook hooks" needs to know which — install to put the check in front of every commit, uninstall to take it back out'
+    );
+  return refuse(
+    `"${second}" is not something "domainbook hooks" does — it installs the commit-msg hook, or uninstalls it`
+  );
 }
 
 function runNew(values: Values, positionals: string[]): Result {
@@ -194,8 +316,8 @@ function stop(
   positionals: string[],
   keep: number
 ): Result | undefined {
-  const stray = (["domain", "supersedes"] as const).find(
-    (name) => values[name] !== undefined && !command.options.includes(name)
+  const stray = named.find(
+    (one) => values[one] !== undefined && !command.options.includes(one)
   );
   if (stray !== undefined)
     return refuse(
@@ -209,30 +331,43 @@ function stop(
 
 function misused(argv: string[], thrown: unknown): string {
   const message = thrown instanceof Error ? thrown.message : String(thrown);
-  const named = /--?[a-zA-Z][\w-]*/.exec(message)?.[0];
-  if (named === undefined)
+  const found = /--?[a-zA-Z][\w-]*/.exec(message)?.[0];
+  if (found === undefined)
     return `${message} — run "domainbook --help" to see every command and option`;
   if ((thrown as { code?: string }).code === "ERR_PARSE_ARGS_UNKNOWN_OPTION") {
     const command = asked(argv);
     if (command === undefined)
-      return `"${named}" is not a domainbook option — the options are --domain, --supersedes, --help, and --version; run "domainbook --help" to see which command takes which`;
-    return `"${named}" is not a domainbook option — "${
+      return `"${found}" is not a domainbook option — the options are ${takes([
+        ...named,
+        "version",
+      ])}; run "domainbook --help" to see which command takes which`;
+    return `"${found}" is not a domainbook option — "${
       command.name
     }" takes ${takes(command.options)}; usage: ${command.usage}`;
   }
-  if (named === "--help" || named === "-h")
+  if (found === "--help" || found === "-h")
     return '"--help" takes no value — write "--help" on its own';
-  if (named === "--version" || named === "-v")
+  if (found === "--version" || found === "-v")
     return '"--version" takes no value — write "--version" on its own';
-  const value = argv[argv.lastIndexOf(named) + 1];
+  const value = argv[argv.lastIndexOf(found) + 1];
   if (value === undefined)
-    return `"${named}" was given no value — write "${named} <value>"`;
-  return `"${named} ${value}" reads as two options — write "${named}=${value}" to pass a value that starts with a dash`;
+    return `"${found}" was given no value — write "${found} <value>"`;
+  return `"${found} ${value}" reads as two options — write "${found}=${value}" to pass a value that starts with a dash`;
 }
 
 function asked(argv: string[]): Command | undefined {
   const [first, second] = argv.filter((one) => !one.startsWith("-"));
-  if (first === "validate" || first === "init") return commands[first];
+  if (
+    first === "validate" ||
+    first === "init" ||
+    first === "check" ||
+    first === "instructions"
+  )
+    return commands[first];
+  if (first === "hooks")
+    return second === "install" || second === "uninstall"
+      ? commands[second]
+      : undefined;
   if (first !== "new") return undefined;
   if (
     second === "domain" ||
