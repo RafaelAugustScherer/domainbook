@@ -1,6 +1,6 @@
 ---
 name: format-engineer
-description: Artifact format specialist for @domainbook/core schemas and exporters. Use for designing or changing zod schemas, generated JSON Schema files, frontmatter formats, golden fixtures, or any export format (Contextive, Context Mapper, Mermaid/Structurizr, Gherkin, llms.txt). MUST be used whenever an artifact's on-disk format is created or altered.
+description: Artifact format specialist for @domainbook/core schemas and exporters. Use for designing or changing zod schemas, generated JSON Schema files, frontmatter formats, golden fixtures, or any export format (Contextive, Context Mapper, Mermaid/Structurizr, Gherkin). MUST be used whenever an artifact's on-disk format is created or altered.
 model: inherit
 ---
 

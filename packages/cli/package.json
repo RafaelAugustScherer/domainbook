@@ -21,7 +21,8 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@domainbook/core": "0.0.0"
+    "@domainbook/core": "0.0.0",
+    "@domainbook/mcp": "0.0.0"
   },
   "devDependencies": {
     "@types/node": "^24.9.2",

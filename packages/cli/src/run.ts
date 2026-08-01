@@ -7,6 +7,7 @@ import { init } from "./init.js";
 import { instructions } from "./instructions.js";
 import { newDebt, newDecision, newDomain, newFeature } from "./new.js";
 import { refuse, type Result } from "./result.js";
+import { serve } from "./serve.js";
 import { validate } from "./validate.js";
 
 type Named =
@@ -90,6 +91,11 @@ const commands = {
     usage: "domainbook instructions [--check] [root]",
     options: ["check"],
   },
+  serve: {
+    name: "domainbook serve",
+    usage: "domainbook serve [mcp|web] [root]",
+    options: [],
+  },
   domain: {
     name: "domainbook new domain",
     usage: "domainbook new domain <id> [root]",
@@ -123,6 +129,7 @@ const help = [
   `  ${commands.install.usage}`,
   `  ${commands.uninstall.usage}`,
   `  ${commands.instructions.usage}`,
+  `  ${commands.serve.usage}`,
   `  ${commands.domain.usage}`,
   `  ${commands.feature.usage}`,
   `  ${commands.decision.usage}`,
@@ -134,6 +141,7 @@ const help = [
   "  check          refuse a change that leaves a domain's book behind",
   "  hooks          install or remove the commit-msg hook that runs the check",
   "  instructions   write the rule into AGENTS.md, CLAUDE.md, and .claude/rules/",
+  "  serve          answer questions about the book over MCP, on stdio",
   "  new            add a domain page, a feature, a decision, or a debt record",
   "",
   "options:",
@@ -179,7 +187,7 @@ export function run(argv: string[]): Result {
   }
   if (command === undefined)
     return refuse(
-      'domainbook needs a command — validate, init, check, hooks, instructions, or new; run "domainbook --help" to see them'
+      'domainbook needs a command — validate, init, check, hooks, instructions, serve, or new; run "domainbook --help" to see them'
     );
   if (command === "validate")
     return (
@@ -199,10 +207,11 @@ export function run(argv: string[]): Result {
       stop(commands.instructions, values, positionals, 2) ??
       instructions(bookRoot(second), values.check === true)
     );
+  if (command === "serve") return runServe(values, positionals);
   if (command === "hooks") return runHooks(values, positionals);
   if (command !== "new")
     return refuse(
-      `"${command}" is not a domainbook command — the commands are validate, init, check, hooks, instructions, and new; run "domainbook --help" to see them`
+      `"${command}" is not a domainbook command — the commands are validate, init, check, hooks, instructions, serve, and new; run "domainbook --help" to see them`
     );
   return runNew(values, positionals);
 }
@@ -231,6 +240,15 @@ function sourceOf(values: Values): Source {
   if (values.session !== undefined)
     return { kind: "session", file: values.session };
   return { kind: "staged", messageFile: values["message-file"] };
+}
+
+function runServe(values: Values, positionals: string[]): Result {
+  const [, second, third] = positionals;
+  const targeted = second === "mcp" || second === "web";
+  return (
+    stop(commands.serve, values, positionals, targeted ? 3 : 2) ??
+    (targeted ? serve(second, bookRoot(third)) : serve("mcp", bookRoot(second)))
+  );
 }
 
 function runHooks(values: Values, positionals: string[]): Result {
@@ -361,7 +379,8 @@ function asked(argv: string[]): Command | undefined {
     first === "validate" ||
     first === "init" ||
     first === "check" ||
-    first === "instructions"
+    first === "instructions" ||
+    first === "serve"
   )
     return commands[first];
   if (first === "hooks")

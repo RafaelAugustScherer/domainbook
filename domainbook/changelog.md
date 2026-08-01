@@ -15,6 +15,47 @@ the decision it references, not here (`ADR-0006`).
 
 ### Added
 
+- `@domainbook/mcp`, which serves the book to an agent's own client over MCP.
+  `domainbook serve mcp [root]` speaks the protocol on stdio and nothing else
+  reaches stdout. Eight tools, every one of them read-only: `search_book`,
+  `explain_terms`, `get_domain`, `get_context_map`, `get_feature`,
+  `get_decisions`, `get_changelog`, and `where_to_document`. Built on
+  `@modelcontextprotocol/server` 2.0.0, pinned (`mcp/ADR-0001`).
+- Retrieval is scoped rather than whole. `get_decisions` answers with an index —
+  one line per record, carrying the author's own opening sentence from Decision
+  Outcome — scoped to a domain or to the paths you are changing; bodies come
+  back only for ids you name, and a whole log takes an explicit `all`
+  (`mcp/ADR-0002`). `get_changelog` scopes the same way and bounds by release:
+  the newest in scope plus `[Unreleased]`, with older ones reached by naming a
+  version or a date (`mcp/ADR-0003`). A path-scoped answer holds the owning
+  contexts' logs and not the book's own: a root record binds every context,
+  which is what makes it noise for the few paths in front of a caller. A path
+  that names a folder scopes by that folder, so `packages/mcp` answers for
+  everything under it rather than matching nothing. Superseded and rejected
+  decisions are out of every default answer — index, search and resources alike
+  — and still readable when named.
+- `where_to_document` answers which book files a change belongs in, from the
+  same `checkChange` the commit hook runs, so the two cannot disagree. It takes
+  repo-root-relative paths and says so when given anything else, and it names
+  open debt over those paths without changing the answer.
+- The book is exposed as MCP resources, addressed `domainbook://<path inside the
+  book>` whatever the root is called, carrying each file's last modified time
+  and a cache hint of five seconds, private. The hint is short on purpose: the
+  agent reading this book is usually the agent editing it.
+- `domainbook serve [mcp|web] [root]`. `mcp` is the only target there is; `web`
+  is named and refused until the site phase.
+- `init` and `domainbook instructions` write `.mcp.json` for Claude Code,
+  merging into a file that already exists rather than replacing it, and print
+  the block to paste for Cursor, VS Code, Codex and Gemini CLI — including that
+  VS Code nests its server under `servers` where every other client uses
+  `mcpServers`. `instructions --check` says when `.mcp.json` points somewhere
+  the book no longer is.
+- Core grew what retrieval needs: `sectionsOf` and `sectionNamed` read an
+  artifact's H2 sections back off disk, `opening` takes a first sentence,
+  `contextMap` turns relationship declarations into edges deduped across
+  mirrored halves, `adrRef`/`tdrRef`/`findDecision`/`live` name and resolve a
+  record, and `missingBook` moved here from the CLI so both
+  packages give one answer to "there is no book here".
 - The enforcement loop. `domainbook check` refuses a change that touches code a
   domain's `code:` globs claim while that domain's folder under the book stays
   untouched, and names the stale files. It reads a change three ways — `--staged`
@@ -58,6 +99,23 @@ the decision it references, not here (`ADR-0006`).
 
 ### Changed
 
+- The instruction layer names the tool instead of pointing at a file. `AGENTS.md`
+  and each `.claude/rules/domainbook-<domain>.md` now tell an agent to call
+  `explain_terms` with the words it is about to use and `where_to_document` with
+  the paths it is about to change, and a domain's `glossary.md` is offered only
+  as the way to read the words without MCP — and only when that file exists.
+  Before this, every domain that claimed code got the line "look the domain's
+  terms up in `<book>/domains/<id>/glossary.md`" whether or not there was one;
+  in this repo that was five domains and five files that do not exist. This is
+  what the roadmap meant by terms being pulled rather than pushed
+  (`mcp/ADR-0002`).
+- The CLI's dependencies are now `@domainbook/core` and `@domainbook/mcp`. The
+  server is imported only when `serve` runs, so no other command pays for it at
+  startup — but installing `domainbook` installs it (`core/ADR-0008`). This
+  narrows `core/ADR-0001`, whose Confirmation says the CLI depends on core
+  alone; that record stands as written and this one corrects it.
+- `llms.txt` and `llms-full.txt` generation is off the roadmap. It was a Phase 3
+  bullet and never built.
 - This repo's own pull requests now run the check. `.github/workflows/ci.yml`
   calls the action over the pull request's range, so the rule `CONTRIBUTING.md`
   states — a change in behaviour, format, or a decision updates the book in the

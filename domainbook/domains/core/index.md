@@ -16,7 +16,10 @@ code:
   - packages/core/src/load.ts
   - packages/core/src/load/**
   - packages/core/src/log.ts
+  - packages/core/src/map.ts
   - packages/core/src/model.ts
+  - packages/core/src/read.ts
+  - packages/core/src/ref.ts
   - packages/core/src/unicode.ts
   - packages/core/src/validate.ts
   - packages/core/test/*.ts

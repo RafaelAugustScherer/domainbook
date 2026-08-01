@@ -53,7 +53,18 @@ describe("what instructions writes", () => {
     expect(existsSync(".gemini/settings.json")).toBe(false);
   });
 
-  it("points at the glossary rather than copying what it defines", () => {
+  it("names the tool that answers rather than copying what it would say", () => {
+    wrote(
+      "domainbook/domains/ticketing/glossary.md",
+      "# Glossary\n\n## Hold\n\nA seat kept out of sale.\n\n- **Status:** validated\n"
+    );
+    ran("instructions");
+    expect(held("AGENTS.md")).toContain("call `explain_terms`");
+    expect(held("AGENTS.md")).toContain("`where_to_document`");
+    expect(held("AGENTS.md")).not.toContain("A seat kept out of sale");
+  });
+
+  it("offers a glossary that is there as the way to read it without MCP", () => {
     wrote(
       "domainbook/domains/ticketing/glossary.md",
       "# Glossary\n\n## Hold\n\nA seat kept out of sale.\n\n- **Status:** validated\n"
@@ -62,7 +73,16 @@ describe("what instructions writes", () => {
     expect(held("AGENTS.md")).toContain(
       "`domainbook/domains/ticketing/glossary.md`"
     );
-    expect(held("AGENTS.md")).not.toContain("A seat kept out of sale");
+    expect(held(rule)).toContain(
+      "Without MCP, its words are in `domainbook/domains/ticketing/glossary.md`"
+    );
+  });
+
+  it("never points at a glossary the domain does not keep", () => {
+    ran("instructions");
+    expect(held("AGENTS.md")).not.toContain("glossary.md");
+    expect(held(rule)).not.toContain("glossary.md");
+    expect(held(rule)).toContain("call `explain_terms`");
   });
 
   it("gives a domain that claims nothing no rule file", () => {
@@ -123,7 +143,7 @@ describe("what --check says", () => {
   it("says the generated files are current, and writes nothing", () => {
     ran("instructions");
     expect(ran("instructions", "--check")).toEqual([
-      "AGENTS.md, CLAUDE.md and 1 rule file are up to date",
+      "AGENTS.md, CLAUDE.md, 1 rule file and .mcp.json are up to date",
     ]);
   });
 

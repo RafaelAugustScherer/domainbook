@@ -6,8 +6,12 @@ export { checkBook } from "./check.js";
 export { parseFrontmatter } from "./frontmatter.js";
 export { formatIssue, sortIssues } from "./issue.js";
 export type { Issue } from "./issue.js";
-export { configFile, loadBook } from "./load.js";
+export { configFile, loadBook, missingBook } from "./load.js";
+export { contextMap } from "./map.js";
+export type { ContextMap, Edge } from "./map.js";
 export { termSlug } from "./model.js";
+export { opening, sectionNamed, sectionsOf } from "./read.js";
+export { adrRef, findDecision, live, tdrRef } from "./ref.js";
 export type {
   Book,
   ChangelogRecord,

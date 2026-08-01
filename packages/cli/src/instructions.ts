@@ -2,6 +2,14 @@ import { existsSync, readFileSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 import { loadBook, type Book, type DomainRecord } from "@domainbook/core";
 import { entries, missingBook, relate, write } from "./files.js";
+import {
+  mcpFile,
+  type Planned,
+  planServer,
+  rootOf,
+  same,
+  snippets,
+} from "./mcp.js";
 import { refuse, type Result } from "./result.js";
 
 type Generated = { file: string; text: string };
@@ -31,7 +39,11 @@ export function instructions(root: string, only: boolean): Result {
   const { book } = loadBook(root);
   const planned = plan(book, at);
   const departed = strays(planned);
-  return only ? audit(planned, departed) : apply(planned, departed);
+  const server = planServer(at);
+  if ("refusal" in server) return refuse(server.refusal);
+  return only
+    ? audit(planned, departed, server, at)
+    : apply(planned, departed, server, at);
 }
 
 function plan(book: Book, at: string): Generated[] {
@@ -48,13 +60,23 @@ function plan(book: Book, at: string): Generated[] {
   ];
 }
 
-function apply(planned: Generated[], departed: string[]): Result {
+function apply(
+  planned: Generated[],
+  departed: string[],
+  server: Planned,
+  at: string
+): Result {
   const changed = planned.filter((one) => readOr(one.file) !== one.text);
   for (const one of changed) {
     const refusal = write(resolve(one.file), one.text);
     if (refusal !== undefined) return refuse(refusal);
   }
   for (const file of departed) rmSync(file);
+  const current = same(server.server, server.held);
+  if (!current) {
+    const refusal = write(resolve(mcpFile), server.text);
+    if (refusal !== undefined) return refuse(refusal);
+  }
   const said = listed(planned);
   return {
     code: 0,
@@ -62,13 +84,30 @@ function apply(planned: Generated[], departed: string[]): Result {
       changed.length === 0 && departed.length === 0
         ? `${said} are up to date`
         : `${said} are written — an agent reading either now knows the rule and how to waive it`,
+      wroteServer(server, current),
+      "",
+      ...snippets(at),
       "",
       ...gemini,
     ],
   };
 }
 
-function audit(planned: Generated[], departed: string[]): Result {
+function wroteServer(server: Planned, current: boolean): string {
+  if (current) return `${mcpFile} is up to date`;
+  if (server.held !== undefined)
+    return `the domainbook entry in ${mcpFile} was rewritten`;
+  if (server.existed)
+    return `${mcpFile} already existed, so the domainbook server was added to it`;
+  return `${mcpFile} is written — Claude Code in this repo can now ask the book questions`;
+}
+
+function audit(
+  planned: Generated[],
+  departed: string[],
+  server: Planned,
+  at: string
+): Result {
   if (!existsSync("AGENTS.md"))
     return {
       code: 0,
@@ -82,15 +121,33 @@ function audit(planned: Generated[], departed: string[]): Result {
       .map((one) => one.file),
     ...departed,
   ].sort();
-  if (stale.length === 0)
-    return { code: 0, lines: [`${listed(planned)} are up to date`] };
+  const drifted = same(server.server, server.held)
+    ? []
+    : [serverStale(server, at)];
+  if (stale.length === 0 && drifted.length === 0)
+    return {
+      code: 0,
+      lines: [`${listed(planned, mcpFile)} are up to date`],
+    };
   return {
     code: 1,
-    lines: stale.map(
-      (file) =>
-        `${file} is out of date — run "domainbook instructions" to write it again`
-    ),
+    lines: [
+      ...stale.map(
+        (file) =>
+          `${file} is out of date — run "domainbook instructions" to write it again`
+      ),
+      ...drifted,
+    ],
   };
+}
+
+function serverStale(server: Planned, at: string): string {
+  const rooted = at === "domainbook" ? "" : ` ${at}`;
+  if (server.held === undefined)
+    return `${mcpFile} carries no domainbook server — run "domainbook instructions${rooted}" to write it`;
+  return `${mcpFile} points at ${rootOf(
+    server.held
+  )}, which is not where the book is — run "domainbook instructions${rooted}" to write it again`;
 }
 
 function strays(planned: Generated[]): string[] {
@@ -150,11 +207,20 @@ function mapped(at: string, claiming: DomainRecord[]): string[] {
 
 function vocabulary(at: string, claiming: DomainRecord[]): string[] {
   if (claiming.length === 0) return [];
+  const written = claiming.filter((domain) => domain.glossary !== undefined);
   return [
-    "Before you write code in a domain, look the domain's terms up and use the words it defines:",
+    "Before you name anything, look the word up and use the one this book already has. The book answers over MCP: call `explain_terms` with the words you are about to use, and `where_to_document` with the paths you are changing. `domainbook serve mcp` starts the server if your client is not connected to it.",
     "",
-    ...claiming.map((domain) => `- \`${at}/domains/${domain.id}/glossary.md\``),
-    "",
+    ...(written.length === 0
+      ? []
+      : [
+          "Without MCP, the words are written down here:",
+          "",
+          ...written.map(
+            (domain) => `- \`${at}/domains/${domain.id}/glossary.md\``
+          ),
+          "",
+        ]),
   ];
 }
 
@@ -171,7 +237,11 @@ function rule(domain: DomainRecord, at: string, key: string): string {
     "",
     `Code here is claimed by the ${domain.id} domain. Changing it means updating \`${book}/\` in the same commit, or waiving the commit with a "${key}: <reason>" trailer. Any file under that folder clears the check: the canvas, the glossary, the changelog, a feature, a decision, or a debt record.`,
     "",
-    `Look the domain's terms up in \`${book}/glossary.md\` and use the words it defines before you write code here. \`${book}/index.md\` holds the domain's canvas.`,
+    `Before you name anything here, call \`explain_terms\` with the words you are about to use — this context has its own, and they win over the book's. \`${book}/index.md\` holds its canvas.${
+      domain.glossary === undefined
+        ? ""
+        : ` Without MCP, its words are in \`${book}/glossary.md\`.`
+    }`,
     "",
   ].join("\n");
 }
@@ -183,10 +253,15 @@ function claude(): string {
   return `${before.trimEnd()}\n\n@AGENTS.md\n`;
 }
 
-function listed(planned: Generated[]): string {
+function listed(planned: Generated[], ...extra: string[]): string {
   const count = planned.filter((one) => one.file.startsWith(rules)).length;
-  if (count === 0) return "AGENTS.md and CLAUDE.md";
-  return `AGENTS.md, CLAUDE.md and ${count} rule file${count === 1 ? "" : "s"}`;
+  const parts = [
+    "AGENTS.md",
+    "CLAUDE.md",
+    ...(count === 0 ? [] : [`${count} rule file${count === 1 ? "" : "s"}`]),
+    ...extra,
+  ];
+  return `${parts.slice(0, -1).join(", ")} and ${parts.at(-1)}`;
 }
 
 function readOr(file: string): string | undefined {

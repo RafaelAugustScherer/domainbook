@@ -82,3 +82,5 @@ in a sentence and names the record.
 This is not the same as reporting scope you deliberately left out — that is the
 next section, and it is about work already decided, not about decisions still
 waiting.
+
+@AGENTS.md
