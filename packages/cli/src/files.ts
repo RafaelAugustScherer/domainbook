@@ -6,6 +6,7 @@ import {
   writeFileSync,
 } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
+import { formatIssue, loadBook } from "@domainbook/core";
 
 const readAsSomethingElse = new Set([
   "true",
@@ -26,6 +27,12 @@ export function bookRoot(given: string | undefined): string {
 
 export function relate(path: string): string {
   return relative(process.cwd(), path) || ".";
+}
+
+export function missingBook(root: string): string | undefined {
+  if (existsSync(root) && statSync(root).isDirectory()) return undefined;
+  const [issue] = loadBook(root).issues;
+  return issue === undefined ? undefined : formatIssue(issue);
 }
 
 export function rooted(command: string, root: string): string {

@@ -8,6 +8,7 @@ classification:
 owners: [RafaelAugustScherer]
 code:
   - packages/core/src/body/**
+  - packages/core/src/change.ts
   - packages/core/src/check.ts
   - packages/core/src/check/**
   - packages/core/src/index.ts

@@ -33,7 +33,7 @@ Read `domainbook/roadmap.md` and the relevant book artifacts before verifying an
   views show the fixture's content.
 - **Enforcement**: scripted git flows in a fixture repo — commit with mapped code and
   no book change (must block), same commit with the waiver trailer (must pass), the
-  Stop-hook block/clear cycle, and CI catching a `--no-verify` bypass.
+  Stop-hook block/clear cycle, and CI catching a commit that never met the hook.
 
 ## Rules
 

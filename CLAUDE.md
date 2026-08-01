@@ -64,13 +64,21 @@ leaves the task looking finished when it isn't. If X matters, it is a question i
 the same turn it appeared. If it doesn't matter enough to ask, it doesn't matter
 enough to mention.
 
+**A question written into an artifact is still a parked question.** A feature's
+`Open Questions` section is not a safe place to put a choice you did not want to
+ask about. It is Example Mapping's red card: what nobody in the session could
+answer — something that needs a user, a measurement, or a later phase to settle,
+and that says which. If I could have answered it in one reply, it was never a red
+card; it was a question you owed me in the turn it came up. Writing it down is
+worse than saying nothing, because in a book whose point is that knowledge lives
+in the repo, a parked question reads as documentation and functions as a
+deferral. The section still closes every feature, and it reads `None.` when
+nothing survives that test.
+
+The same goes for a cost already weighed somewhere else. If a decision record
+accepted a trade-off, the feature does not re-open it as a question — it says so
+in a sentence and names the record.
+
 This is not the same as reporting scope you deliberately left out — that is the
 next section, and it is about work already decided, not about decisions still
 waiting.
-
-## Say what you did not do
-
-At the end of a phase, name what was left out and why, in the PR and in the
-handover — scope you dropped, a criterion you could not meet, a decision you took
-that nobody asked you to take. A phase reported as complete with a quiet gap in
-it is worse than one reported as nine-tenths done.

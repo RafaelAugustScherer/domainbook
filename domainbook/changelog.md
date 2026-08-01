@@ -15,11 +15,53 @@ the decision it references, not here (`ADR-0006`).
 
 ### Added
 
+- The enforcement loop. `domainbook check` refuses a change that touches code a
+  domain's `code:` globs claim while that domain's folder under the book stays
+  untouched, and names the stale files. It reads a change three ways — `--staged`
+  for a commit about to happen, `--range <base>..<head>` for everything a branch
+  adds, and `--session <path>` for the files an agent session touched — and
+  judges all three by the same rules (`enforcement/ADR-0001`).
+- Waivers as commit trailers. `Skip-Docs: <reason>` on the commit clears it, and
+  `git log --format='%(trailers:key=Skip-Docs,valueonly)'` reads back what has
+  been waived and why. An agent shell must write a reason; a person may run
+  `SKIP_DOCS=1 git commit`, which the check stamps into the message as
+  `Skip-Docs: human bypass` so history reads the same either way. The key,
+  `enforcement.mode`, and `enforcement.require_reason` are config
+  (`enforcement/ADR-0002`).
+- `domainbook hooks install` and `domainbook hooks uninstall`. Install writes the
+  check into the repo's `commit-msg` hook between `# domainbook:start` and
+  `# domainbook:end`, adding to a hook that is already there rather than
+  replacing it, and hands the snippet back instead when lefthook owns
+  `.git/hooks`. Uninstall removes the block and leaves every other line where it
+  was.
+- `domainbook instructions`, which writes the rule into `AGENTS.md`, a `CLAUDE.md`
+  that imports it, and one `.claude/rules/domainbook-<domain>.md` per domain that
+  claims code, scoped to that domain's globs. `--check` says whether they are
+  current and writes nothing. The instructions point at each domain's glossary
+  rather than copying it, so a glossary that moves on does not leave them wrong.
+  They steer and stop nothing (`ADR-0005`).
+- A Claude Code plugin under `integrations/claude-code-plugin/`: a silent
+  `PostToolUse` hook that records the paths a session touched, a `Stop` hook that
+  runs the same check over them and blocks with the stale files named, and a
+  `PreToolUse` guard that denies an agent the two ways it could take a person's
+  waiver tier. The Stop hook honors `stop_hook_active` and stops blocking after
+  the third time, which it says out loud.
+- A GitHub Action under `integrations/action/`, which validates the book and runs
+  the check over the pull request's range. Stale generated instruction files are
+  printed and never fail the run.
+- Open technical debt over a changed path is named on every run, and never
+  changes the verdict.
 - `authored-by: agent` on a decision, marking one an agent took without the
   people in `decision-makers` weighing it. Optional, absent by default, and
   `decision-makers` still names the people accountable (`format/ADR-0019`).
 
 ### Changed
+
+- This repo's own pull requests now run the check. `.github/workflows/ci.yml`
+  calls the action over the pull request's range, so the rule `CONTRIBUTING.md`
+  states — a change in behaviour, format, or a decision updates the book in the
+  same pull request, or carries an explicit waiver — is enforced here rather than
+  agreed to.
 
 - Seven decision records are retired and now read `deprecated`. In every case the
   choice still holds, the code is unchanged, and it is the record that is retired

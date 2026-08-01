@@ -116,6 +116,12 @@ with every fixture.
 gates were adopted with their existing violations fixed first, not grandfathered.
 Every failure after that gets argued with rather than waved through.
 
+**One sonarjs rule is off: `no-os-command-from-path`.** domainbook shells out to
+`git`, and its hooks shell out to `domainbook`, both by name — resolving them
+from `PATH` is the design, not an oversight, and a hook that hard-coded
+`/usr/bin/git` would break on half the machines it runs on. The rule is off in
+`eslint.config.mjs` rather than disabled at each of the four call sites.
+
 The lint config lives in `eslint.config.mjs`. It runs the recommended sets of
 `typescript-eslint` and `eslint-plugin-sonarjs` — the sonarjs rules exist to catch
 exactly the complexity this document argues against (deep nesting, high cognitive
