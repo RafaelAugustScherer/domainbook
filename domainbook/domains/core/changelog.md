@@ -9,8 +9,24 @@ Versions match the book-wide changelog.
 
 ## [Unreleased]
 
+### Added
+
+- `domainbook new domain` scaffolds every artifact a domain holds rather than
+  the canvas alone: `glossary.md` and `changelog.md` next to `index.md`, and
+  `features/`, `decisions/` and `debt/` each holding a `.gitkeep` so the folder
+  reaches the reader who clones instead of vanishing at the first commit. Each
+  page names the fields it takes and the values they accept, so the first agent
+  to open one fills it in without reading a schema (`core/TDR-0005`).
+- `domainbook init` writes `glossary.md` and `changelog.md` at the book root the
+  same way. A fresh book now reports one term rather than none, because a
+  glossary with no terms does not validate and the scaffolded one carries
+  `<Term>` until somebody replaces it.
+
 ### Changed
 
+- `new domain` refuses when any of the three pages it writes is already there,
+  not `index.md` alone, so a glossary left behind by a deleted canvas is named
+  rather than written over.
 - `core/ADR-0005` and `core/ADR-0007` are retired under the bar in
   `CONTRIBUTING.md` and read `deprecated`. No code changed: generated scalars a
   YAML parser could misread are still quoted, and one descriptor still serves

@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { run } from "../src/index.js";
+import { git } from "./repo.js";
 
 let home = "";
 let previous = "";
@@ -70,7 +71,7 @@ describe("what the generators write", () => {
     ran("new", "debt", "Seat map is read on every request");
     ran("new", "debt", "Holds are swept by a cron", "--domain", "ticketing");
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 1 domain, 1 feature, 3 decisions, 0 terms, 2 debt records",
+      "domainbook is a valid book — 1 domain, 1 feature, 3 decisions, 2 terms, 2 debt records",
     ]);
   });
 
@@ -100,7 +101,7 @@ describe("what the generators write", () => {
       "",
     ]);
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 1 debt record",
+      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 1 term, 1 debt record",
     ]);
   });
 
@@ -135,7 +136,7 @@ describe("what the generators write", () => {
       "wrote domainbook/debt/0001-座席表を毎回読み直している.md"
     );
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 1 debt record",
+      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 1 term, 1 debt record",
     ]);
   });
 
@@ -200,7 +201,68 @@ describe("what the generators write", () => {
   it("writes a book that is only the files the format knows", () => {
     ran("init");
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 0 debt records",
+      "domainbook is a valid book — 0 domains, 0 features, 0 decisions, 1 term, 0 debt records",
+    ]);
+  });
+
+  it("scaffolds a domain as every artifact a domain holds", () => {
+    ran("init");
+    expect(ran("new", "domain", "ticketing")).toEqual([
+      "wrote domainbook/domains/ticketing/ — index.md, glossary.md, changelog.md, features/, decisions/ and debt/",
+      'next: set the three classification axes, fill in the eight canvas sections, and replace the placeholder term in glossary.md, then "domainbook validate"',
+    ]);
+    expect(ran("validate")).toEqual([
+      "domainbook is a valid book — 1 domain, 0 features, 0 decisions, 2 terms, 0 debt records",
+    ]);
+  });
+
+  it("scaffolds a glossary carrying one term, which a glossary needs to validate", () => {
+    ran("init");
+    ran("new", "domain", "ticketing");
+    const glossary = readFileSync(
+      "domainbook/domains/ticketing/glossary.md",
+      "utf8"
+    );
+    expect(glossary).toContain("# Ticketing glossary");
+    expect(glossary).toContain("\n## <Term>\n");
+    expect(glossary).toContain("\n- **Status:** draft\n");
+    expect(glossary.replace(/\s+/g, " ")).toContain(
+      "a **Status:** bullet reading draft, validated or deprecated"
+    );
+  });
+
+  it("scaffolds a changelog that is open and holds no release", () => {
+    ran("init");
+    ran("new", "domain", "ticketing");
+    const changelog = readFileSync(
+      "domainbook/domains/ticketing/changelog.md",
+      "utf8"
+    );
+    expect(changelog).toContain('written "## [1.2.0] - 2026-06-30"');
+    expect(changelog).toContain("\n## [Unreleased]\n");
+  });
+
+  it("scaffolds log folders that reach the reader who clones", () => {
+    git("init", "--initial-branch=main");
+    git("config", "user.email", "book@example.com");
+    git("config", "user.name", "A Reader");
+    ran("init");
+    ran("new", "domain", "ticketing");
+    git("add", "-A");
+    git("commit", "-m", "the book");
+    expect(git("ls-files", "domainbook/domains/ticketing").split("\n")).toEqual(
+      [
+        "domainbook/domains/ticketing/changelog.md",
+        "domainbook/domains/ticketing/debt/.gitkeep",
+        "domainbook/domains/ticketing/decisions/.gitkeep",
+        "domainbook/domains/ticketing/features/.gitkeep",
+        "domainbook/domains/ticketing/glossary.md",
+        "domainbook/domains/ticketing/index.md",
+        "",
+      ]
+    );
+    expect(ran("validate")).toEqual([
+      "domainbook is a valid book — 1 domain, 0 features, 0 decisions, 2 terms, 0 debt records",
     ]);
   });
 
@@ -209,7 +271,7 @@ describe("what the generators write", () => {
     ran("new", "domain", "ticketing", "docs/book");
     ran("new", "debt", "Seat map is read on every request", "docs/book");
     expect(ran("validate", "docs/book")).toEqual([
-      "docs/book is a valid book — 1 domain, 0 features, 0 decisions, 0 terms, 1 debt record",
+      "docs/book is a valid book — 1 domain, 0 features, 0 decisions, 2 terms, 1 debt record",
     ]);
   });
 
@@ -223,7 +285,7 @@ describe("what the generators write", () => {
     ran("new", "decision", "Expire holds after ten minutes", "--domain", "9");
     ran("new", "debt", "Holds are swept by a cron", "--domain", "9");
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 2 domains, 1 feature, 1 decision, 0 terms, 1 debt record",
+      "domainbook is a valid book — 2 domains, 1 feature, 1 decision, 3 terms, 1 debt record",
     ]);
   });
 
@@ -237,7 +299,7 @@ describe("what the generators write", () => {
       "wrote domainbook/domains/販売/decisions/0001-座席の保留は十分で切れる.md"
     );
     expect(ran("validate")).toEqual([
-      "domainbook is a valid book — 1 domain, 1 feature, 1 decision, 0 terms, 0 debt records",
+      "domainbook is a valid book — 1 domain, 1 feature, 1 decision, 2 terms, 0 debt records",
     ]);
   });
 
@@ -381,7 +443,7 @@ describe("what the CLI says when it is misused", () => {
   it("refuses to write a book into a root that already holds one", () => {
     ran("init");
     expect(failed("init")).toEqual([
-      '"domainbook" is not empty — it holds "domainbook.config.yaml"; "domainbook init" writes a new book into an empty folder, so pass another root, or edit the book that is already here',
+      '"domainbook" is not empty — it holds "changelog.md"; "domainbook init" writes a new book into an empty folder, so pass another root, or edit the book that is already here',
     ]);
   });
 
@@ -411,6 +473,17 @@ describe("what the CLI says when it is misused", () => {
     expect(failed("new", "domain", "ticketing")).toEqual([
       "domainbook/domains/ticketing/index.md already exists — edit what is there, or pick another id",
     ]);
+  });
+
+  it("refuses to write over a glossary left behind by a deleted canvas", () => {
+    book();
+    const glossary = "domainbook/domains/ticketing/glossary.md";
+    const before = readFileSync(glossary, "utf8");
+    rmSync("domainbook/domains/ticketing/index.md");
+    expect(failed("new", "domain", "ticketing")).toEqual([
+      `${glossary} already exists — edit what is there, or pick another id`,
+    ]);
+    expect(readFileSync(glossary, "utf8")).toBe(before);
   });
 
   it("names a mistyped option and lists the ones the command takes", () => {
@@ -536,7 +609,7 @@ describe("what the CLI says when it is misused", () => {
     ).toEqual([
       '"--supersedes" is not an option here — usage: domainbook new debt "<title>" [root] [--domain <domain-id>]',
     ]);
-    expect(existsSync(debtLog)).toBe(false);
+    expect(existsSync(`${debtLog}/0001-holds-leak.md`)).toBe(false);
   });
 
   it("refuses to write into a root that holds no book", () => {
@@ -552,7 +625,7 @@ describe("what the CLI says when it is misused", () => {
     ).toEqual([missing]);
     expect(failed("new", "debt", "Holds leak", "docs/bok")).toEqual([missing]);
     expect(ran("validate", "docs/book")).toEqual([
-      "docs/book is a valid book — 0 domains, 0 features, 0 decisions, 0 terms, 0 debt records",
+      "docs/book is a valid book — 0 domains, 0 features, 0 decisions, 1 term, 0 debt records",
     ]);
   });
 
@@ -568,6 +641,7 @@ describe("what the CLI says when it is misused", () => {
   it("names the file standing where a features folder has to go", () => {
     ran("init");
     ran("new", "domain", "ticketing");
+    rmSync("domainbook/domains/ticketing/features", { recursive: true });
     writeFileSync("domainbook/domains/ticketing/features", "");
     expect(
       failed("new", "feature", "refund-order", "--domain", "ticketing")
