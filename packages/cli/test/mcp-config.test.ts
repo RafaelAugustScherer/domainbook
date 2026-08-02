@@ -56,7 +56,7 @@ describe("what instructions writes for a client", () => {
     leave();
     enter();
     expect(ran("init")[0]).toBe(
-      "wrote domainbook/roadmap.md, domainbook/domainbook.config.yaml and .mcp.json"
+      "wrote domainbook/roadmap.md, domainbook/glossary.md, domainbook/changelog.md, domainbook/domainbook.config.yaml and .mcp.json"
     );
     expect(server().command).toBe("npx");
   });

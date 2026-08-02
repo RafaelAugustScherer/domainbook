@@ -51,7 +51,7 @@ describe("the published entry point", () => {
     const validated = ran("validate");
     expect(validated.status).toBe(0);
     expect(validated.stdout).toBe(
-      "domainbook is a valid book — 1 domain, 0 features, 0 decisions, 0 terms, 1 debt record\n"
+      "domainbook is a valid book — 1 domain, 0 features, 0 decisions, 2 terms, 1 debt record\n"
     );
     expect(validated.stderr).toBe("");
   });

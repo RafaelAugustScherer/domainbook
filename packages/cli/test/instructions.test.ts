@@ -79,6 +79,7 @@ describe("what instructions writes", () => {
   });
 
   it("never points at a glossary the domain does not keep", () => {
+    rmSync("domainbook/domains/ticketing/glossary.md");
     ran("instructions");
     expect(held("AGENTS.md")).not.toContain("glossary.md");
     expect(held(rule)).not.toContain("glossary.md");

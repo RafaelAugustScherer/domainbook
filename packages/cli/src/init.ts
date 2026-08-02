@@ -3,6 +3,7 @@ import { basename, dirname, join, resolve } from "node:path";
 import { configFile, termSlug } from "@domainbook/core";
 import { entries, quoted, relate, rooted, write } from "./files.js";
 import { mcpFile, planServer } from "./mcp.js";
+import { changelogPage, glossaryPage } from "./new.js";
 import { refuse, type Result } from "./result.js";
 
 const config = `enforcement:
@@ -25,17 +26,21 @@ export function init(root: string): Result {
       );
   }
   const roadmap = join(root, "roadmap.md");
+  const glossary = join(root, "glossary.md");
+  const changelog = join(root, "changelog.md");
   const failed =
     write(roadmap, page(termSlug(basename(dirname(root))) || "book")) ??
+    write(glossary, glossaryPage("Glossary", "this book")) ??
+    write(changelog, changelogPage("this project")) ??
     write(join(root, configFile), config) ??
     server(at);
   if (failed !== undefined) return refuse(failed);
   return {
     code: 0,
     lines: [
-      `wrote ${relate(roadmap)}, ${relate(
-        join(root, configFile)
-      )} and ${mcpFile}`,
+      `wrote ${relate(roadmap)}, ${relate(glossary)}, ${relate(
+        changelog
+      )}, ${relate(join(root, configFile))} and ${mcpFile}`,
       `next: name the milestone in roadmap.md, then "${rooted(
         "domainbook new domain <id>",
         root

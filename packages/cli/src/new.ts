@@ -39,20 +39,34 @@ const debtKind: Kind = {
 };
 
 export function newDomain(root: string, id: string): Result {
-  const path = join(root, "domains", id, "index.md");
+  const dir = join(root, "domains", id);
+  const page = join(dir, "index.md");
+  const glossary = join(dir, "glossary.md");
+  const changelog = join(dir, "changelog.md");
+  const context = `the ${id} context`;
   const wrong =
     noBook(root) ??
     notSlug(id, "domain id") ??
     unwritable(id, "domain id") ??
-    taken(path);
+    taken(page) ??
+    taken(glossary) ??
+    taken(changelog);
   if (wrong !== undefined) return refuse(wrong);
-  const failed = write(path, domainPage(id));
+  const failed =
+    write(page, domainPage(id)) ??
+    write(glossary, glossaryPage(`${titled(id)} glossary`, context)) ??
+    write(changelog, changelogPage(context)) ??
+    write(join(dir, "features", ".gitkeep"), "") ??
+    write(join(dir, "decisions", ".gitkeep"), "") ??
+    write(join(dir, "debt", ".gitkeep"), "");
   if (failed !== undefined) return refuse(failed);
   return {
     code: 0,
     lines: [
-      `wrote ${relate(path)}`,
-      `next: set the three classification axes and fill in the eight canvas sections, then "${rooted(
+      `wrote ${relate(
+        dir
+      )}/ — index.md, glossary.md, changelog.md, features/, decisions/ and debt/`,
+      `next: set the three classification axes, fill in the eight canvas sections, and replace the placeholder term in glossary.md, then "${rooted(
         "domainbook validate",
         root
       )}"`,
@@ -381,6 +395,38 @@ date: ${today()}
 ## Decision Outcome
 
 ### Consequences
+`;
+}
+
+export function glossaryPage(heading: string, scope: string): string {
+  return `# ${heading}
+
+The words ${scope} uses, defined once and then used the same way
+wherever they appear. A term is an H2 heading with its definition below it; it
+may also carry an **Aliases:** bullet, a **Status:** bullet reading draft,
+validated or deprecated, and one **Example:** bullet per case worth showing.
+
+## <Term>
+
+<Replace the heading with the word, and this line with what the word means
+in ${scope} — a sentence or two, in the business's own language.>
+
+- **Aliases:** <other names for the same thing — separate them with commas>
+- **Status:** draft
+- **Example:** <a concrete case the word covers>
+`;
+}
+
+export function changelogPage(scope: string): string {
+  return `# Changelog
+
+What changed in ${scope}, newest release first, in the
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format: one H2 per
+release, written "## [1.2.0] - 2026-06-30" with " [YANKED]" appended if the
+release was pulled, holding Added, Changed, Deprecated, Removed, Fixed or
+Security as H3s, each of them a bullet list.
+
+## [Unreleased]
 `;
 }
 
