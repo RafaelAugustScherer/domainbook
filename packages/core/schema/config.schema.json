@@ -29,6 +29,20 @@
         }
       },
       "additionalProperties": false
+    },
+    "site": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "base": {
+          "default": "/",
+          "description": "The path the built site is published under, starting with a slash.",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^\\/"
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false,

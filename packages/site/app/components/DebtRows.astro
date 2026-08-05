@@ -1,0 +1,49 @@
+---
+import { debtBadge, debtPath, href, worstFirst } from "../lib.ts";
+import Badge from "./Badge.astro";
+
+type Props = { records: any[]; empty: string };
+
+const { records, empty } = Astro.props;
+const ordered = worstFirst(
+  records.map((one) => ({
+    ...one,
+    status: one.frontmatter.status,
+    severity: one.frontmatter.severity,
+  }))
+);
+---
+
+{ordered.length === 0 ? <p class="empty">{empty}</p> : null}
+<ul class="rows">
+  {
+    ordered.map((one) => {
+      const badge = debtBadge(one.frontmatter.status);
+      return (
+        <li class={badge.current ? undefined : "stale"}>
+          <div class="head">
+            <span class="ref">{one.ref}</span>
+            <a href={href(debtPath(one.domain, one.number))}>{one.title}</a>
+            <Badge {...badge} />
+            <Badge
+              text={one.frontmatter.severity}
+              title="how much this costs"
+              tone={one.frontmatter.severity}
+            />
+            <span class="tag">{one.frontmatter.quadrant}</span>
+            <span class="ref">{one.frontmatter.date}</span>
+          </div>
+          <p class="note">in {one.log}</p>
+        </li>
+      );
+    })
+  }
+</ul>
+{
+  ordered.length > 0 ? (
+    <p class="note">
+      Severity is what the debt costs. The quadrant answers how it happened, in
+      Fowler's four: deliberate or inadvertent, prudent or reckless.
+    </p>
+  ) : null
+}

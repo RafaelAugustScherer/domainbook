@@ -1,0 +1,63 @@
+---
+import Badge from "../../components/Badge.astro";
+import Page from "../../layouts/Page.astro";
+import { collected, href, termBadge, termPath } from "../../lib.ts";
+
+export async function getStaticPaths() {
+  const defined = await collected("terms");
+  return defined.length === 0 ? [] : [{ params: { all: undefined } }];
+}
+
+const all = await collected("terms");
+const terms = all
+  .map((entry) => entry.data as Record<string, any>)
+  .sort((one, other) => (one.name < other.name ? -1 : 1));
+---
+
+<Page
+  title="Glossary"
+  lede="Every word the book defines. Two contexts may define the same one, and neither wins.">
+  <form class="search" role="search" data-pagefind-ignore>
+    <input
+      id="filter"
+      type="search"
+      aria-label="Narrow the glossary"
+      placeholder="Narrow this list"
+    />
+  </form>
+  <p class="empty" id="nothing" hidden></p>
+  <ul class="rows" id="terms">
+    {
+      terms.map((one) => (
+        <li data-search={one.search}>
+          <div class="head">
+            <a href={href(termPath(one.domain, one.slug))}>{one.name}</a>
+            <span class="tag">{one.domain ?? "the book"}</span>
+            <Badge {...termBadge(one.status)} />
+          </div>
+          {one.aliases.length > 0 ? (
+            <p class="note">also: {one.aliases.join(", ")}</p>
+          ) : null}
+        </li>
+      ))
+    }
+  </ul>
+</Page>
+
+<script>
+  const filter = document.querySelector<HTMLInputElement>("#filter");
+  const rows = [...document.querySelectorAll<HTMLElement>("#terms li")];
+  const nothing = document.querySelector<HTMLElement>("#nothing");
+  filter?.addEventListener("input", () => {
+    const asked = filter.value.trim().toLowerCase();
+    let shown = 0;
+    for (const row of rows) {
+      const hit = asked === "" || (row.dataset.search ?? "").includes(asked);
+      row.hidden = !hit;
+      if (hit) shown += 1;
+    }
+    if (nothing === null) return;
+    nothing.hidden = shown > 0;
+    nothing.textContent = `no term here is called "${asked}" — search the whole book to find where the word is used`;
+  });
+</script>

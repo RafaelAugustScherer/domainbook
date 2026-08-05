@@ -3,7 +3,7 @@ import { join, resolve } from "node:path";
 import { formatIssue, type Issue } from "./issue.js";
 import { loadChangelog } from "./load/changelog.js";
 import { configFile, loadConfig } from "./load/config.js";
-import { entries, relate, strange } from "./load/disk.js";
+import { entries, isFile, relate, strange } from "./load/disk.js";
 import { loadDomain } from "./load/domain.js";
 import { loadGlossary } from "./load/glossary.js";
 import { loadLog } from "./load/log.js";
@@ -16,12 +16,21 @@ export { configFile } from "./load/config.js";
 
 const rootHolds = `a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`;
 const domainsHold = "domains/ holds one folder per domain and nothing else";
+const notAFolder = "a book root is a folder, and this path is a file";
+
+function noBook(root: string): Issue {
+  return {
+    file: root,
+    message: `no book here — run "domainbook init ${root}" to write one`,
+  };
+}
 
 export function missingBook(root: string): string | undefined {
   const dir = resolve(root);
-  if (existsSync(dir) && statSync(dir).isDirectory()) return undefined;
-  const [issue] = loadBook(dir).issues;
-  return issue === undefined ? undefined : formatIssue(issue);
+  if (existsSync(dir) && !statSync(dir).isDirectory())
+    return formatIssue({ file: relate(dir), message: notAFolder });
+  if (isFile(join(dir, "roadmap.md"))) return undefined;
+  return formatIssue(noBook(relate(dir)));
 }
 
 export function loadBook(root: string): { book: Book; issues: Issue[] } {
@@ -38,17 +47,11 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
   };
 
   if (!existsSync(dir)) {
-    issues.push({
-      file: book.root,
-      message: `no book here — run "domainbook init ${book.root}" to write one`,
-    });
+    issues.push(noBook(book.root));
     return { book, issues };
   }
   if (!statSync(dir).isDirectory()) {
-    issues.push({
-      file: book.root,
-      message: "a book root is a folder, and this path is a file",
-    });
+    issues.push({ file: book.root, message: notAFolder });
     return { book, issues };
   }
 

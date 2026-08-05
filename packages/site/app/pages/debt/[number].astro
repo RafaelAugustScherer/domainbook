@@ -1,0 +1,22 @@
+---
+import { getEntry } from "astro:content";
+import DebtBody from "../../components/DebtBody.astro";
+import Page from "../../layouts/Page.astro";
+import { collected, pad } from "../../lib.ts";
+
+export async function getStaticPaths() {
+  const all = await collected("debt");
+  return all
+    .filter((entry) => (entry.data as Record<string, any>).domain === undefined)
+    .map((entry) => ({
+      params: { number: pad((entry.data as Record<string, any>).number) },
+    }));
+}
+
+const { number } = Astro.params;
+const entry = await getEntry("debt", `book/${number}`);
+---
+
+<Page title={(entry!.data as Record<string, any>).title}>
+  <DebtBody entry={entry} />
+</Page>

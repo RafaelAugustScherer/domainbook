@@ -1,0 +1,24 @@
+---
+import { collected } from "../../../lib.ts";
+import { getEntry } from "astro:content";
+import Changelog from "../../../components/Changelog.astro";
+import Page from "../../../layouts/Page.astro";
+
+export async function getStaticPaths() {
+  const all = await collected("changelogs");
+  return all
+    .map((entry) => entry.data as Record<string, any>)
+    .filter((one) => one.domain !== undefined)
+    .map((one) => ({ params: { domain: one.domain } }));
+}
+
+const { domain } = Astro.params;
+const entry = await getEntry("changelogs", domain!);
+const releases = ((entry?.data as Record<string, any>)?.releases ?? []) as any[];
+---
+
+<Page
+  title={`${domain} — changelog`}
+  lede={`What has changed in ${domain}, newest first.`}>
+  <Changelog releases={releases} />
+</Page>

@@ -1,6 +1,9 @@
 notes/
 node_modules/
 dist/
+build/
 coverage/
 *.tsbuildinfo
 .DS_Store
+.astro/
+domainbook-site/

@@ -6,7 +6,7 @@ milestones:
   - { id: phase-1-1, name: Technical debt records, status: done }
   - { id: phase-2, name: Enforcement loop, status: done }
   - { id: phase-3, name: MCP server, status: done }
-  - { id: phase-4, name: Website, status: planned }
+  - { id: phase-4, name: Website, status: done }
   - { id: phase-5, name: Migration and agent authoring, status: planned }
   - { id: phase-6, name: Exports and interop, status: planned }
   - { id: phase-7, name: Release and distribution, status: planned }
@@ -58,7 +58,7 @@ since are in the same logs and not repeated here.
 | Enforcement | Layered: in-session agent hook + git hook + CI backstop; explicit waiver via commit trailer | `enforcement/ADR-0001` |
 | Waiver | `Skip-Docs: <reason>` trailer — agents must justify; humans may skip prose via `SKIP_DOCS=1` (auto-stamped trailer). `enforcement.require_reason: agents \| always` | `enforcement/ADR-0002` |
 | Scenario format | Markdown with Example Mapping structure + fenced ```gherkin blocks | `format/ADR-0008` |
-| Website | Custom Astro app with content collections | `site/ADR-0001` |
+| Website | Custom Astro app with content collections; the map is drawn as SVG and the derived Mermaid published beside it | `site/ADR-0001`, `site/ADR-0003` |
 | Versioning | Git-native — no snapshot folders; changelog + ADR supersede chains carry history | `ADR-0006` |
 | Migration | Interview-driven agent skill; CLI only scaffolds and validates | `ADR-0007` |
 | Book root | `domainbook/` at repo root (a tool argument, not a config key) | `format/ADR-0010` |
@@ -203,7 +203,7 @@ npm workspaces monorepo, changesets for releases:
 | Package | Contents |
 |---|---|
 | `@domainbook/core` | zod schemas (JSON Schema generated at build), loader (`yaml` frontmatter + markdown body), model graph, reference resolution, validation, staged-diff check logic |
-| `domainbook` (CLI) | `init`, `new`, `validate`, `check`, `hooks install`, `instructions`, `export`, `serve mcp`, `serve web` (delegates to site) |
+| `domainbook` (CLI) | `init`, `new`, `validate`, `check`, `hooks install`, `instructions`, `export`, `serve` (site and MCP together), `serve web`, `serve mcp`, `build` |
 | `@domainbook/mcp` | MCP server on `@modelcontextprotocol/server` v2 |
 | `@domainbook/site` | Custom Astro app (content collections share the zod schemas) |
 | `integrations/` | Repo directory, not a published package: Claude Code plugin (hooks + skills), AGENTS.md/CLAUDE.md/Gemini templates, GitHub Action, lefthook snippet |
@@ -371,21 +371,23 @@ features touch it?" via MCP; `where_to_document` returns correct files for a dif
 - `@domainbook/site`: custom Astro app; content collections with the shared zod schemas
   (build-time validation = same rules as the CLI).
 - Views: overview; domain pages rendering the canvas; context map derived from
-  `relationships:` frontmatter as Mermaid (no hand-drawn diagrams, no visual editor);
-  searchable glossary; feature browser with highlighted Gherkin; decision log with
-  status badges and supersede chains; debt register with severity badges; changelog
-  timeline. Pagefind full-text search.
-- The decision log's status badge has a problem to solve rather than a value to render:
+  `relationships:` frontmatter (no hand-drawn diagrams, no visual editor) — drawn
+  as SVG at build time, with the Mermaid it derives from published beside it
+  (`site/ADR-0003`); searchable glossary; feature browser with highlighted
+  Gherkin; decision log with status badges and supersede chains; debt register
+  with severity badges; changelog timeline. Pagefind full-text search.
+- The decision log's status badge had a problem to solve rather than a value to render:
   `deprecated` means both "this decision no longer applies" and "this record was retired
   for failing the bar in `CONTRIBUTING.md` while the choice it describes still holds".
-  The frontmatter cannot
-  tell them apart, so the page has to — by reading More Information, or by the badge
-  saying less than the word does.
+  The frontmatter cannot tell them apart, so the badge says less than the word does —
+  it reads `not current`, true of both, and the record's own words settle which.
 - Read for the person who opens it twice a year, not the one who lives in it: what
   matters is that every decision and every current rule of the business is there when
   someone finally goes looking.
-- `domainbook dev` / `domainbook build` → static-first output, deployable to GitHub
-  Pages.
+- `domainbook serve` brings the site up beside the MCP server, reading the book from
+  disk so an edit lands without a restart; `domainbook build` writes static output
+  into `domainbook-site`, deployable to GitHub Pages. Where the site is mounted is
+  `site.base` in the book's config, not an argument (`site/ADR-0002`).
 
 Exit: the site builds from any valid book; this book published as the live demo.
 

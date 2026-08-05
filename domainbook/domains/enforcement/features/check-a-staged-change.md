@@ -153,7 +153,7 @@ Example: A passing commit still hears about the debt it is walking into
   And TDR-0002 in domains/ticketing/debt/ is open and claims src/ticketing/**
   And src/ticketing/hold.ts and domainbook/domains/ticketing/changelog.md are staged
   When domainbook check --staged runs
-  Then it prints: ticketing/TDR-0002 is open over src/ticketing/hold.ts — read domainbook/domains/ticketing/debt/0002-holds-are-swept-by-hand.md before you change this
+  Then it prints: TDR-0002 is open over src/ticketing/hold.ts — read domainbook/domains/ticketing/debt/0002-holds-are-swept-by-hand.md before you change this
   And it exits 0
 
 Example: Debt that is accepted or repaid is not raised
@@ -171,7 +171,7 @@ Example: A blocked commit hears both, and the block is what decides the exit cod
   And nothing under domainbook/domains/ticketing/ is staged
   When domainbook check --staged runs
   Then one line begins: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not
-  And one line begins: ticketing/TDR-0002 is open over src/ticketing/hold.ts
+  And one line begins: TDR-0002 is open over src/ticketing/hold.ts
   And it exits 1
 ```
 

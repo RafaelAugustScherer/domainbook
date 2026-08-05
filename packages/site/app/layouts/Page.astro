@@ -1,0 +1,69 @@
+---
+import { getEntry } from "astro:content";
+import Search from "../components/Search.astro";
+import { changelogPath, glossaryPath, href } from "../lib.ts";
+import "../styles/site.css";
+
+type Props = { title: string; lede?: string };
+
+const { title, lede } = Astro.props;
+const book = await getEntry("book", "book");
+const data = book?.data as Record<string, any>;
+const contexts = (data?.contexts ?? []) as { id: string; name: string }[];
+const holds = (data?.totals ?? {}) as Record<string, number | boolean>;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} — domainbook</title>
+    <meta name="description" content={lede ?? title} />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to the page</a>
+    <div class="shell">
+      <aside class="side" data-pagefind-ignore>
+        <p class="brand"><a href={href("/")}>{data?.root ?? "domainbook"}</a></p>
+        <p class="lede">the book for this repo</p>
+        <Search />
+        <details class="menu" open>
+          <summary>The book</summary>
+          <nav aria-label="The book">
+            <ul>
+              <li><a href={href("/")}>Overview</a></li>
+              <li><a href={href("/map/")}>Context map</a></li>
+              {holds.roadmap ? <li><a href={href("/roadmap/")}>Roadmap</a></li> : null}
+              {holds.glossary ? <li><a href={href(glossaryPath(undefined))}>Glossary</a></li> : null}
+              {Number(holds.decisions) > 0 ? <li><a href={href("/decisions/")}>Decisions</a></li> : null}
+              {Number(holds.debt) > 0 ? <li><a href={href("/debt/")}>Debt register</a></li> : null}
+              {holds.changelog ? <li><a href={href(changelogPath(undefined))}>Changelog</a></li> : null}
+            </ul>
+            <p class="rows note">Contexts</p>
+            <ul>
+              {contexts.map((one) => (
+                <li><a href={href(`/domains/${encodeURIComponent(one.id)}/`)}>{one.name}</a></li>
+              ))}
+            </ul>
+          </nav>
+        </details>
+      </aside>
+      <main id="main" data-pagefind-body>
+        <h1>{title}</h1>
+        {lede ? <p class="lede">{lede}</p> : null}
+        <slot />
+      </main>
+    </div>
+    <script is:inline>
+      (() => {
+        const menu = document.querySelector(".menu");
+        const narrow = window.matchMedia("(max-width: 55rem)");
+        const fit = () => {
+          menu.open = !narrow.matches;
+        };
+        fit();
+        narrow.addEventListener("change", fit);
+      })();
+    </script>
+  </body>
+</html>

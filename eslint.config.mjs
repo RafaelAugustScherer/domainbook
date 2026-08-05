@@ -5,7 +5,14 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  globalIgnores(["**/dist/", "graphify-out/", "notes/", "**/test/fixtures/"]),
+  globalIgnores([
+    "**/dist/",
+    "**/.astro/",
+    "domainbook-site/",
+    "graphify-out/",
+    "notes/",
+    "**/test/fixtures/",
+  ]),
   {
     files: ["**/*.{js,mjs,ts}"],
     extends: [

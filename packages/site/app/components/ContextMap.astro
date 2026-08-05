@@ -1,0 +1,22 @@
+---
+import { dashedMeans, drawMap, href } from "../lib.ts";
+
+type Props = { map: any; caption?: string };
+
+const { map, caption } = Astro.props;
+const svg = drawMap(map, (id: string) =>
+  href(`/domains/${encodeURIComponent(id)}/`)
+);
+const apart = map.edges.some(
+  (one: { type: string }) => one.type === "separate-ways"
+);
+const total = map.contexts.length;
+---
+
+<figure>
+  <div class="scroll"><Fragment set:html={svg} /></div>
+  <figcaption class="rows note">
+    {caption ?? `${total} context${total === 1 ? "" : "s"}, drawn from what they declare.`}
+    {apart ? <><br />{dashedMeans}</> : null}
+  </figcaption>
+</figure>

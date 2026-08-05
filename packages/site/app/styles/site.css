@@ -1,0 +1,413 @@
+:root {
+  --ink: #17181c;
+  --quiet: #5b6070;
+  --line: #e2e4ea;
+  --page: #ffffff;
+  --panel: #f7f8fa;
+  --live: #1c6b3f;
+  --live-ink: #ffffff;
+  --warn: #8a4b00;
+  --hot: #a11d1d;
+  --link: #1a4fbf;
+  --measure: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #e7e9ef;
+    --quiet: #9aa1b4;
+    --line: #2b2e38;
+    --page: #14151a;
+    --panel: #1b1d24;
+    --live: #6fd39b;
+    --live-ink: #0d1a12;
+    --warn: #e5b168;
+    --hot: #f08a8a;
+    --link: #8ab2ff;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--page);
+  color: var(--ink);
+  font: 16px/1.6 ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+a {
+  color: var(--link);
+}
+
+code,
+pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.9em;
+}
+
+pre {
+  overflow-x: auto;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--panel);
+}
+
+@media (prefers-color-scheme: dark) {
+  .astro-code-themes,
+  .astro-code-themes span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg, transparent) !important;
+    font-style: var(--shiki-dark-font-style, inherit) !important;
+    font-weight: var(--shiki-dark-font-weight, inherit) !important;
+    text-decoration: var(--shiki-dark-text-decoration, inherit) !important;
+  }
+}
+
+:not(pre) > code {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 0.05em 0.35em;
+}
+
+.shell {
+  display: grid;
+  grid-template-columns: 15rem minmax(0, 1fr);
+  gap: 2.5rem;
+  max-width: 78rem;
+  margin: 0 auto;
+  padding: 1.5rem;
+}
+
+@media (max-width: 60rem) {
+  .shell {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+}
+
+.side {
+  position: sticky;
+  top: 1.5rem;
+  align-self: start;
+  font-size: 0.92rem;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  z-index: 2;
+  background: var(--page);
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 0 0 8px 0;
+}
+
+.skip:focus {
+  left: 0;
+}
+
+.brand {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin: 0 0 0.2rem;
+}
+
+.menu {
+  margin: 0;
+}
+
+.menu > summary {
+  display: none;
+}
+
+@media (max-width: 55rem) {
+  .menu > summary {
+    display: list-item;
+    margin: 0.6rem 0;
+  }
+}
+
+.side nav ul {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+}
+
+.side nav li {
+  margin: 0.15rem 0;
+}
+
+main {
+  min-width: 0;
+  max-width: var(--measure);
+  overflow-wrap: anywhere;
+}
+
+main h1 {
+  font-size: 1.7rem;
+  line-height: 1.25;
+  margin: 0 0 0.4rem;
+}
+
+main h2 {
+  font-size: 1.2rem;
+  margin: 2rem 0 0.5rem;
+  padding-top: 0.6rem;
+  border-top: 1px solid var(--line);
+}
+
+main h3 {
+  font-size: 1.02rem;
+  margin: 1.4rem 0 0.4rem;
+}
+
+.lede {
+  color: var(--quiet);
+  margin: 0 0 1.5rem;
+}
+
+.axes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0;
+  margin: 0 0 1.2rem;
+  list-style: none;
+}
+
+.tag,
+.badge {
+  display: inline-block;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  padding: 0.12rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  color: var(--quiet);
+  white-space: nowrap;
+}
+
+.badge[data-current="true"] {
+  background: var(--live);
+  color: var(--live-ink);
+  border-color: transparent;
+}
+
+.tag[data-tone="high"],
+.badge[data-tone="high"] {
+  color: var(--warn);
+  border-color: currentColor;
+}
+
+.tag[data-tone="critical"],
+.badge[data-tone="critical"] {
+  color: var(--hot);
+  border-color: currentColor;
+}
+
+.rows {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.rows > li {
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.rows .head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.rows .ref {
+  color: var(--quiet);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.82rem;
+}
+
+.cards {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.8rem;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+}
+
+.cards > li {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  background: var(--panel);
+}
+
+.cards .head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.4rem;
+}
+
+.issues {
+  border: 1px solid var(--hot);
+  border-radius: 10px;
+  padding: 0.9rem 1rem;
+  margin: 0 0 1.5rem;
+}
+
+.issues > p {
+  margin: 0 0 0.5rem;
+}
+
+.issues ul {
+  margin: 0 0 0.5rem;
+  padding-left: 1.2rem;
+}
+
+.cards .note,
+.rows .note,
+.empty {
+  color: var(--quiet);
+  font-size: 0.92rem;
+  margin: 0.2rem 0 0;
+}
+
+.rows .note > p {
+  margin: 0;
+}
+
+.empty {
+  font-style: italic;
+}
+
+.stale {
+  opacity: 0.72;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.94rem;
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.4rem 0.6rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.scroll {
+  overflow-x: auto;
+}
+
+.map {
+  width: 100%;
+  height: auto;
+  max-height: 32rem;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.5rem;
+}
+
+.map rect {
+  fill: var(--page);
+  stroke: var(--line);
+}
+
+.map .node-name {
+  fill: var(--ink);
+  font-size: 15px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.map .node-axis {
+  fill: var(--quiet);
+  font-size: 11px;
+  text-anchor: middle;
+}
+
+.map .edge {
+  fill: none;
+  stroke: var(--quiet);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+}
+
+.map .edge-apart {
+  stroke-dasharray: 7 5;
+}
+
+.map .arrow {
+  fill: var(--quiet);
+}
+
+.map .edge-label {
+  fill: var(--quiet);
+  font-size: 11px;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 7px;
+  stroke-linejoin: round;
+}
+
+.map .edge-pattern {
+  fill: var(--ink);
+  font-size: 10px;
+  font-weight: 600;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  paint-order: stroke;
+  stroke: var(--panel);
+  stroke-width: 6px;
+  stroke-linejoin: round;
+}
+
+.search input {
+  width: 100%;
+  font: inherit;
+  padding: 0.5rem 0.7rem;
+  color: inherit;
+  background: var(--page);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+
+mark {
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+}
+
+.gherkin pre {
+  background: var(--panel);
+}
+
+figure {
+  margin: 0 0 1.2rem;
+}
+
+details {
+  margin: 0.6rem 0;
+}
+
+summary {
+  cursor: pointer;
+  color: var(--quiet);
+  font-size: 0.92rem;
+}

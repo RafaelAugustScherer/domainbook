@@ -1,0 +1,48 @@
+---
+import { featurePath, href, termBadge } from "../lib.ts";
+import Badge from "./Badge.astro";
+
+type Props = { entry: any };
+
+const one = Astro.props.entry.data;
+const badge = termBadge(one.status);
+const aliases: string[] = one.aliases ?? [];
+const examples: string[] = one.examplesHtml ?? [];
+const uses = one.usedBy as { domain: string; id: string; name: string }[];
+---
+
+<ul class="axes">
+  <li><Badge {...badge} /></li>
+  <li>
+    <span class="tag">
+      {one.domain === undefined ? "the book's word" : `${one.domain}'s word`}
+    </span>
+  </li>
+  {aliases.map((alias) => <li><span class="tag">also: {alias}</span></li>)}
+</ul>
+
+<div set:html={one.definitionHtml} />
+
+{examples.length > 0 ? <h2>Examples</h2> : null}
+{examples.map((html) => <div set:html={html} />)}
+
+<h2>What uses it</h2>
+{
+  uses.length === 0 ? (
+    <p class="empty">no feature names this term yet</p>
+  ) : (
+    <ul class="rows">
+      {uses.map((use) => (
+        <li>
+          <div class="head">
+            <a href={href(featurePath(use.domain, use.id))}>{use.name}</a>
+            <span class="tag">{use.domain}</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+  )
+}
+<p class="note">
+  searching for the word finds every page it appears on
+</p>

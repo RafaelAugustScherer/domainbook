@@ -1,0 +1,26 @@
+---
+import DebtRows from "../../../../components/DebtRows.astro";
+import Page from "../../../../layouts/Page.astro";
+import { collected, domainPath, href } from "../../../../lib.ts";
+
+export async function getStaticPaths() {
+  const owed = await collected("debt");
+  const owing = new Set(
+    owed
+      .map((entry) => (entry.data as Record<string, any>).domain)
+      .filter((one): one is string => one !== undefined)
+  );
+  return [...owing].map((domain) => ({ params: { domain } }));
+}
+
+const { domain } = Astro.params;
+const all = await collected("debt");
+const records = all
+  .map((entry) => entry.data as Record<string, any>)
+  .filter((one) => one.domain === domain);
+---
+
+<Page title={`${domain} debt`} lede={`What ${domain} is carrying, worst first.`}>
+  <DebtRows records={records} empty="" />
+  <p class="note"><a href={href(domainPath(domain!))}>Back to {domain}</a></p>
+</Page>

@@ -1,0 +1,44 @@
+---
+import Changelog from "../../components/Changelog.astro";
+import Page from "../../layouts/Page.astro";
+import { changelogPath, collected, href } from "../../lib.ts";
+
+export async function getStaticPaths() {
+  const kept = await collected("changelogs");
+  return kept.length === 0 ? [] : [{ params: { all: undefined } }];
+}
+
+const all = (await collected("changelogs")).map(
+  (one) => one.data as Record<string, any>
+);
+const contexts = all
+  .map((one) => one.domain)
+  .filter((one): one is string => one !== undefined)
+  .sort();
+const releases = (all.find((one) => one.domain === undefined)?.releases ??
+  []) as any[];
+---
+
+<Page title="Changelog" lede="What has changed in this book, newest first.">
+  {
+    releases.length === 0 ? (
+      <p class="empty">this book keeps no changelog yet</p>
+    ) : (
+      <Changelog releases={releases} />
+    )
+  }
+  {
+    contexts.length > 0 ? (
+      <>
+        <h2>Kept by a context</h2>
+        <ul class="rows">
+          {contexts.map((one) => (
+            <li>
+              <a href={href(changelogPath(one))}>{one} keeps a changelog of its own</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    ) : null
+  }
+</Page>

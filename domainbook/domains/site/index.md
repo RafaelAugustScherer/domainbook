@@ -36,7 +36,7 @@ relationships already describe.
 | Message      | Collaborator | Type    |
 | ------------ | ------------ | ------- |
 | `BuildSite`  | core         | Command |
-| `ServeDev`   | core         | Command |
+| `ServeSite`  | core         | Command |
 
 ## Outbound Communication
 
@@ -52,10 +52,19 @@ relationships already describe.
 - The book is read through core's loader, and the schemas the content
   collections declare are format's. That is why this context depends on both,
   and why a page can only show what the model already holds (`ADR-0011`).
-- The context map is generated from `relationships:` frontmatter as Mermaid.
-  There is no hand-drawn diagram and no visual editor — a map that disagrees with
-  the book cannot exist.
-- Static-first output, deployable to any static host.
+- The context map is generated from `relationships:` frontmatter. The site draws
+  it as SVG at build time and prints the derived Mermaid source beside it, rather
+  than shipping Mermaid to the reader (`site/ADR-0003`). There is no hand-drawn
+  diagram and no visual editor — a map that disagrees with the book cannot exist.
+- Static-first output, deployable to any static host. Where that host mounts it
+  is a key in the book's own config rather than an argument to the command, so
+  the local site and the published one agree (`site/ADR-0002`).
+- A `separate-ways` edge is drawn, because it was declared — dashed, labelled,
+  and without an arrowhead, so it cannot be read as a channel. The alternative,
+  leaving it off, would make the map disagree with the book.
+- The decision log's `deprecated` badge reads `not current`. The status cannot
+  tell "the choice was reversed" from "the record was retired" apart, so the
+  badge says only what both senses share and the record's own words settle it.
 
 ## Assumptions
 
@@ -73,9 +82,4 @@ relationships already describe.
 
 ## Open Questions
 
-- How should a `separate-ways` edge be drawn? It is a real relationship with no
-  export in Context Mapper's DSL (`format/ADR-0007`), and drawing an edge for
-  "these two deliberately do not talk" may read as the opposite.
-- Is the site published from the default branch only, or per release?
-- Should Gherkin examples be runnable from the page, or is highlighted text
-  enough?
+None.

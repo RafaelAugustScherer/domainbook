@@ -1,0 +1,22 @@
+---
+import { collected } from "../../lib.ts";
+import { getEntry } from "astro:content";
+import TermBody from "../../components/TermBody.astro";
+import Page from "../../layouts/Page.astro";
+
+export async function getStaticPaths() {
+  const all = await collected("terms");
+  return all
+    .filter((entry) => (entry.data as Record<string, any>).domain === undefined)
+    .map((entry) => ({
+      params: { slug: (entry.data as Record<string, any>).slug },
+    }));
+}
+
+const { slug } = Astro.params;
+const entry = await getEntry("terms", `book/${slug}`);
+---
+
+<Page title={(entry!.data as Record<string, any>).name}>
+  <TermBody entry={entry} />
+</Page>

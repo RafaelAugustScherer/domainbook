@@ -1,0 +1,22 @@
+---
+import { getEntry } from "astro:content";
+import DecisionBody from "../../components/DecisionBody.astro";
+import Page from "../../layouts/Page.astro";
+import { collected, pad } from "../../lib.ts";
+
+export async function getStaticPaths() {
+  const all = await collected("decisions");
+  return all
+    .filter((entry) => (entry.data as Record<string, any>).domain === undefined)
+    .map((entry) => ({
+      params: { number: pad((entry.data as Record<string, any>).number) },
+    }));
+}
+
+const { number } = Astro.params;
+const entry = await getEntry("decisions", `book/${number}`);
+---
+
+<Page title={(entry!.data as Record<string, any>).title}>
+  <DecisionBody entry={entry} />
+</Page>

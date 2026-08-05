@@ -1,0 +1,32 @@
+---
+import { titled } from "../lib.ts";
+
+type Props = { releases: any[] };
+
+const { releases } = Astro.props;
+---
+
+{
+  releases.map((release) => (
+    <section>
+      <h2 id={encodeURIComponent(release.version)}>
+        {release.version}
+        {release.date ? <span class="ref"> {release.date}</span> : null}
+        {release.date === undefined ? (
+          <span class="tag"> not released yet</span>
+        ) : null}
+        {release.yanked ? <span class="tag"> yanked</span> : null}
+      </h2>
+      {release.buckets.map((bucket: any) => (
+        <>
+          <h3>{titled(bucket.name)}</h3>
+          <ul class="rows">
+            {bucket.entries.map((html: string) => (
+              <li set:html={html} />
+            ))}
+          </ul>
+        </>
+      ))}
+    </section>
+  ))
+}

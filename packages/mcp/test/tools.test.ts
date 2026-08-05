@@ -382,7 +382,10 @@ describe("where_to_document", () => {
       whereToDocument(book, ["src/ticketing/holds/expiry.ts"])
     );
     expect(said).toContain(
-      "ticketing/TDR-0001 is open over src/ticketing/holds/expiry.ts"
+      "TDR-0001 is open over src/ticketing/holds/expiry.ts"
+    );
+    expect(said).toContain(
+      "debt/0001-hold-expiry-is-checked-only-when-a-hold-is-read.md"
     );
   });
 
@@ -391,7 +394,9 @@ describe("where_to_document", () => {
       whereToDocument(book, ["src/ticketing/holds/expiry.ts"])
     );
     expect(said).not.toContain("TDR-0002");
-    expect(said).not.toContain("- TDR-0001 ");
+    expect(said).not.toContain(
+      "0001-seat-identifiers-are-parsed-by-each-context-in-its-own-way.md"
+    );
   });
 
   it("refuses an absolute path with the path to pass instead", () => {

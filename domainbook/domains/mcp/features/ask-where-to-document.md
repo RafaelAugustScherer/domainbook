@@ -91,7 +91,7 @@ Example: The debt on the path is named alongside where to write
   Given a book whose ticketing domain claims src/ticketing/**
   And TDR-0002 in domains/ticketing/debt/ is open and claims src/ticketing/**
   When the client calls where_to_document with paths ["src/ticketing/hold.ts"]
-  Then the answer names ticketing/TDR-0002 and domainbook/domains/ticketing/debt/0002-holds-are-swept-by-hand.md
+  Then the answer names TDR-0002 and domainbook/domains/ticketing/debt/0002-holds-are-swept-by-hand.md
   And it says to read that record before changing this code
 
 Example: Debt that is accepted or repaid is not raised
@@ -106,7 +106,7 @@ Example: Debt is named on a change the book already covers
   And TDR-0002 in domains/ticketing/debt/ is open and claims src/ticketing/**
   When the client calls where_to_document with paths ["src/ticketing/hold.ts", "domainbook/domains/ticketing/changelog.md"]
   Then the answer says the book already covers this change
-  And it still names ticketing/TDR-0002
+  And it still names TDR-0002
 ```
 
 ## Rule: Paths are read from the repo root, and one that is not says so

@@ -144,14 +144,6 @@ describe("a real client over real stdio", () => {
 });
 
 describe("what serve refuses before it starts", () => {
-  it("names the phase the site comes in", () => {
-    const answer = ran(["serve", "web"]);
-    expect(answer.status).toBe(1);
-    expect(answer.stderr).toContain(
-      '"web" is not something "domainbook serve" does yet'
-    );
-  });
-
   it("names init when there is no book", () => {
     const empty = mkdtempSync(join(tmpdir(), "domainbook-empty-"));
     const answer = ran(["serve", "mcp"], empty);

@@ -1,0 +1,12 @@
+---
+type Props = { text: string; title: string; current?: boolean; tone?: string };
+
+const { text, title, current, tone } = Astro.props;
+---
+
+<span
+  class="badge"
+  data-current={current === true ? "true" : "false"}
+  data-tone={tone}
+  title={title}>{text}</span
+>

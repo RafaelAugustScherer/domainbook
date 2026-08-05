@@ -90,12 +90,13 @@ describe("naming a record", () => {
     expect(scoped && adrRef(scoped)).toBe("ticketing/ADR-0001");
   });
 
-  it("names debt the same way", () => {
+  it("never qualifies debt, whichever log it sits in", () => {
     const [rooted] = book.debt;
     const [scoped] =
       book.domains.find((one) => one.id === "ticketing")?.debt ?? [];
     expect(rooted && tdrRef(rooted)).toBe("TDR-0001");
-    expect(scoped && tdrRef(scoped)).toBe("ticketing/TDR-0001");
+    expect(scoped && tdrRef(scoped)).toBe("TDR-0001");
+    expect(rooted?.file).not.toBe(scoped?.file);
   });
 });
 

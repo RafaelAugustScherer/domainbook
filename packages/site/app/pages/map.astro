@@ -1,0 +1,66 @@
+---
+import { getEntry } from "astro:content";
+import ContextMap from "../components/ContextMap.astro";
+import Page from "../layouts/Page.astro";
+import { href, mermaidSource } from "../lib.ts";
+
+const book = await getEntry("book", "book");
+const map = (book?.data as Record<string, any>)?.map;
+const empty = (map?.contexts ?? []).length === 0;
+const source = empty
+  ? ""
+  : mermaidSource(map, (id: string) => href(`/domains/${encodeURIComponent(id)}/`));
+---
+
+<Page
+  title="Context map"
+  lede="Every relationship the contexts declared, and nothing anyone drew by hand.">
+  {
+    empty ? (
+      <p class="empty">
+        this book has no domains yet — "domainbook new domain &lt;id&gt;" writes
+        the first one
+      </p>
+    ) : (
+      <>
+        <ContextMap map={map} />
+        <h2>Every relationship</h2>
+        {map.edges.length === 0 ? (
+          <p class="empty">no context declares a relationship with another</p>
+        ) : (
+          <div class="scroll">
+            <table>
+              <thead>
+                <tr><th>Between</th><th>Type</th><th>Direction</th><th>Patterns</th></tr>
+              </thead>
+              <tbody>
+                {map.edges.map((edge: any) => (
+                  <tr>
+                    <td>{edge.between.join(" · ")}</td>
+                    <td>{edge.type}</td>
+                    <td>
+                      {edge.upstream
+                        ? `${edge.upstream} upstream of ${edge.downstream}`
+                        : "neither side is upstream"}
+                    </td>
+                    <td>
+                      {edge.patterns.length === 0
+                        ? "—"
+                        : edge.patterns
+                            .map((one: any) => `${one.names.join(", ")} by ${one.by}`)
+                            .join("; ")}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+        <details>
+          <summary>The Mermaid this map is derived from</summary>
+          <pre><code>{source}</code></pre>
+        </details>
+      </>
+    )
+  }
+</Page>

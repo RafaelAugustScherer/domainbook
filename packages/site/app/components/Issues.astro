@@ -1,0 +1,25 @@
+---
+type Props = { issues: string[]; what: string };
+
+const { issues, what } = Astro.props;
+---
+
+{
+  issues.length > 0 ? (
+    <div class="issues" role="status">
+      <p>
+        <strong>domainbook validate</strong> has {issues.length}{" "}
+        {issues.length === 1 ? "issue" : "issues"} with {what}, so this page is
+        showing what still reads:
+      </p>
+      <ul>
+        {issues.map((line) => (
+          <li>
+            <code>{line}</code>
+          </li>
+        ))}
+      </ul>
+      <p class="note">fix the file and this page follows it — nothing restarts</p>
+    </div>
+  ) : null
+}

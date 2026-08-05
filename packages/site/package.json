@@ -1,0 +1,31 @@
+{
+  "name": "@domainbook/site",
+  "version": "0.0.0",
+  "description": "Read a domainbook book as a website",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24.18.1"
+  },
+  "exports": {
+    ".": "./dist/index.js",
+    "./app": "./dist/app.js"
+  },
+  "files": [
+    "app",
+    "dist",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "scripts": {
+    "build": "tsc --build"
+  },
+  "dependencies": {
+    "@domainbook/core": "0.0.0",
+    "astro": "7.1.6",
+    "pagefind": "1.5.2"
+  },
+  "devDependencies": {
+    "@types/node": "^24.9.2",
+    "vitest": "4.1.10"
+  }
+}

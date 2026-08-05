@@ -9,6 +9,22 @@ export const configSchema = z
         require_reason: z.enum(["agents", "always"]).default("agents"),
       })
       .prefault({}),
+    site: z
+      .strictObject({
+        base: z
+          .string()
+          .min(1)
+          .regex(/^\//u, {
+            error:
+              'must start with "/" — write "/domainbook/" for a site published under that path',
+          })
+          .default("/")
+          .meta({
+            description:
+              "The path the built site is published under, starting with a slash.",
+          }),
+      })
+      .prefault({}),
   })
   .meta({ title: "domainbook config" });
 

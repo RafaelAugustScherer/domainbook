@@ -48,7 +48,14 @@ function openDebt(book: Book, code: string[]): DebtNote[] {
       paths: matching(record.frontmatter.code, code),
     }))
     .filter((note) => note.paths.length > 0)
-    .sort((one, other) => (one.ref < other.ref ? -1 : 1));
+    .sort(
+      (one, other) => order(one.ref, other.ref) || order(one.file, other.file)
+    );
+}
+
+function order(one: string, other: string): number {
+  if (one < other) return -1;
+  return one > other ? 1 : 0;
 }
 
 function matching(globs: string[] | undefined, paths: string[]): string[] {
