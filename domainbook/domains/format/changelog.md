@@ -11,6 +11,10 @@ release it shipped in.
 
 ### Added
 
+- `build/` is reserved inside a book root: `validate` reads past it and no
+  artifact may live there. It is where `domainbook build` writes and is read by
+  nothing (`format/ADR-0020`). The closed set that makes a book root a format now
+  has one exception in it, and the record says what the bar is for a second.
 - `site.base` in `domainbook.config.yaml`: the path the built site is published
   under, defaulting to `/`. It must start with a slash, and `config.schema.json`
   carries that pattern so an editor rejects `docs` as it is typed. Where a book

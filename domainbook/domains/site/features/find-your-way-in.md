@@ -116,7 +116,7 @@ Example: A result opens the page it was found on
 
 Example: A result opens under the path the book publishes to
   Given a book whose domainbook.config.yaml carries site.base "/domainbook/"
-  And domainbook-site is served at https://example.test/domainbook/
+  And the built site is served at https://example.test/domainbook/
   When a reader searches for settlement and follows the result for Place a hold
   Then https://example.test/domainbook/domains/ticketing/features/place-a-hold/ opens
   And the path is on it once, not twice

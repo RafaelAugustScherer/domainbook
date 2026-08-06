@@ -14,7 +14,9 @@ import { configSchema } from "./schemas/config.js";
 
 export { configFile } from "./load/config.js";
 
-const rootHolds = `a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`;
+export const buildDir = "build";
+
+const rootHolds = `a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — ${buildDir}/ is written by "domainbook build" and read by nothing`;
 const domainsHold = "domains/ holds one folder per domain and nothing else";
 const notAFolder = "a book root is a folder, and this path is a file";
 
@@ -56,7 +58,7 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
   }
 
   const known = ["roadmap.md", "glossary.md", "changelog.md", configFile];
-  const rootFolders = ["decisions", "debt", "domains"];
+  const rootFolders = ["decisions", "debt", "domains", buildDir];
   for (const entry of entries(dir))
     if (
       entry.isDirectory()

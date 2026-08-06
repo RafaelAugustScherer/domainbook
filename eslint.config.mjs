@@ -8,7 +8,7 @@ export default defineConfig(
   globalIgnores([
     "**/dist/",
     "**/.astro/",
-    "domainbook-site/",
+    "**/build/",
     "graphify-out/",
     "notes/",
     "**/test/fixtures/",

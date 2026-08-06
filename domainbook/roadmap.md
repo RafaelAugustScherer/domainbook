@@ -386,7 +386,7 @@ features touch it?" via MCP; `where_to_document` returns correct files for a dif
   someone finally goes looking.
 - `domainbook serve` brings the site up beside the MCP server, reading the book from
   disk so an edit lands without a restart; `domainbook build` writes static output
-  into `domainbook-site`, deployable to GitHub Pages. Where the site is mounted is
+  into `<book>/build/site`, deployable to GitHub Pages. Where the site is mounted is
   `site.base` in the book's config, not an argument (`site/ADR-0002`).
 
 Exit: the site builds from any valid book; this book published as the live demo.

@@ -53,9 +53,11 @@ the decision it references, not here (`ADR-0006`).
 - The debt register says what a quadrant is, rather than leaving `inadvertent-prudent`
   on the page as a word with no meaning attached.
 - `domainbook serve` brings the site up beside the MCP server and `domainbook
-  build` writes the static site into `domainbook-site`. The site reads the book
-  from disk, so an artifact edited, added or deleted while it is up reaches the
-  page without a restart. Where the site is published is `site.base` in the
+  build` writes the static site into `<book>/build/site`. `build/` is reserved
+  inside a book root and read by nothing (`format/ADR-0020`); it writes its own
+  `.gitignore` of `*`, so the output never reaches a commit and no repo has to
+  learn to ignore it. The site reads the book from disk, so an artifact edited,
+  added or deleted while it is up reaches the page without a restart. Where the site is published is `site.base` in the
   book's config rather than an argument, so what reads locally is what publishes
   (`site/ADR-0002`).
 - The context map is drawn as SVG at build time, with the Mermaid it derives from

@@ -6,4 +6,3 @@ coverage/
 *.tsbuildinfo
 .DS_Store
 .astro/
-domainbook-site/

@@ -9,6 +9,7 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import {
+  buildDir,
   configFile,
   formatIssue,
   type Issue,
@@ -211,7 +212,7 @@ describe("loadBook on a tree the filesystem refuses", () => {
   it("keeps the unknown-file issue when domains is a regular file", () => {
     const root = temporary({ "roadmap.md": milestones, domains: "not here\n" });
     expect(messages(root)).toEqual([
-      `the format does not know this file — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`,
+      `the format does not know this file — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
     ]);
   });
 
@@ -219,8 +220,15 @@ describe("loadBook on a tree the filesystem refuses", () => {
     const root = temporary({ "roadmap.md": milestones });
     mkdirSync(join(root, "glossary.md"));
     expect(messages(root)).toEqual([
-      `the format does not know this folder — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`,
+      `the format does not know this folder — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
     ]);
+  });
+
+  it("reads past the folder domainbook build writes into", () => {
+    const root = temporary({ "roadmap.md": milestones });
+    mkdirSync(join(root, buildDir, "site"), { recursive: true });
+    writeFileSync(join(root, buildDir, "site", "index.html"), "<html>\n");
+    expect(messages(root)).toEqual([]);
   });
 
   it("names a file it has no permission to read", () => {

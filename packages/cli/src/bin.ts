@@ -1,12 +1,16 @@
 #!/usr/bin/env node
-import { existsSync, readFileSync, rmSync } from "node:fs";
+import {
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
-import { loadBook } from "@domainbook/core";
+import { buildDir, loadBook } from "@domainbook/core";
 import { fsRefusal, relate } from "./files.js";
 import { refuse, type Result, type Serving } from "./result.js";
 import { run } from "./run.js";
-
-const output = "domainbook-site";
 
 const result = dispatch();
 const stream = result.code === 0 ? process.stdout : process.stderr;
@@ -45,6 +49,7 @@ async function serving(asked: Serving): Promise<void> {
 
 async function building(root: string): Promise<void> {
   const { build } = await import("@domainbook/site");
+  const output = built(root);
   try {
     await build({ root, base: baseOf(root), outDir: output, quiet: true });
   } catch (thrown) {
@@ -53,10 +58,17 @@ async function building(root: string): Promise<void> {
     throw thrown;
   }
   process.stdout.write(
-    `the book at ${relate(
-      root
-    )} is built into ${output} — publish that folder\n`
+    `the book at ${relate(root)} is built into ${relate(
+      output
+    )} — publish that folder\n`
   );
+}
+
+function built(root: string): string {
+  const under = join(root, buildDir);
+  mkdirSync(under, { recursive: true });
+  writeFileSync(join(under, ".gitignore"), "*\n");
+  return join(under, "site");
 }
 
 function reached(root: string, base: string, port: number): string {
