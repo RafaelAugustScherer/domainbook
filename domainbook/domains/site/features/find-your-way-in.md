@@ -137,6 +137,22 @@ Example: A word only an alias uses still finds the term
   Then Debt record is a result
 ```
 
+## Rule: The nav is beside the page, never on top of it
+
+```gherkin
+Example: On a wide screen the nav holds its place while the page scrolls
+  Given a reader on a screen wider than sixty rem
+  When they scroll a long page
+  Then the nav stays where it is, in its own column beside the page
+  And no part of it is over the page's text
+
+Example: On a narrow screen the nav is above the page and leaves with it
+  Given a reader on a screen sixty rem or narrower, where the nav sits above the page
+  When they scroll a long page
+  Then the nav scrolls away with it
+  And no part of it is over the page's text
+```
+
 ## Open Questions
 
 None.
