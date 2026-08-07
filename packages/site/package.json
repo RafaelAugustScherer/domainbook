@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@domainbook/core": "0.0.0",
-    "astro": "7.1.6",
+    "astro": "7.2.0",
     "pagefind": "1.5.2"
   },
   "devDependencies": {
