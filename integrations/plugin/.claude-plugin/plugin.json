@@ -1,0 +1,8 @@
+{
+  "name": "domainbook",
+  "description": "Blocks a session that changed code a domain claims and left that domain's book alone, keeps a person's waiver out of an agent's reach, and ships the skills that write the book: migrate a repo, document a change, record a decision, groom the glossary",
+  "version": "0.0.0",
+  "author": { "name": "Rafael Scherer" },
+  "license": "MIT",
+  "keywords": ["documentation", "domain-driven-design", "enforcement"]
+}

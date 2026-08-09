@@ -86,6 +86,24 @@ describe("what instructions writes", () => {
     expect(held(rule)).toContain("call `explain_terms`");
   });
 
+  it("names the four procedures without carrying their steps", () => {
+    ran("instructions");
+    const agents = held("AGENTS.md");
+    expect(agents).toContain(
+      "- `migrate-a-repo` — start a book in a repo that has none."
+    );
+    expect(agents).toContain(
+      "- `document-this-change` — write the book change a commit or a Stop block is asking for."
+    );
+    expect(agents).toContain(
+      "- `record-a-decision` — decide whether a choice earns a decision record, and write it if it does."
+    );
+    expect(agents).toContain(
+      "- `groom-the-glossary` — bring the glossary back in line with the words the code uses."
+    );
+    expect(agents).toContain("follow its steps there rather than from here");
+  });
+
   it("gives a domain that claims nothing no rule file", () => {
     claims("reporting", "src/reporting/**");
     wrote(

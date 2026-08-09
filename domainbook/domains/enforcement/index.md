@@ -21,16 +21,22 @@ relationships:
 
 ## Purpose
 
-Make a change to mapped code end one of two ways: the owning domain's book was
-updated, or a waiver was recorded that a person can read years later. Nothing
-else passes.
+Keep a repo's code and its book in step, from both ends. A change to mapped code
+ends one of two ways — the owning domain's book was updated, or a waiver was
+recorded that a person can read years later, and nothing else passes. And the
+writing the gate demands has procedures behind it: how to adopt a book, document a
+change, record a decision, and groom the glossary. The gate says a change is
+undocumented; the skills are how it stops being so.
 
 ## Domain Roles
 
-- Gatekeeper context: it decides whether a change may land; it never writes
-  documentation itself.
-- Execution context: it runs inside three hosts it does not own — an agent
-  session, a git hook, and CI — and must give the same verdict in all three.
+- Gatekeeper context: it decides whether a change may land — the three-layer check
+  and the waiver. The gate blocks; it does not write the documentation itself.
+- Authoring context: it ships the procedures an agent follows to write the book —
+  migration and the three maintenance skills. They steer and never gate: nothing a
+  skill does can block a change (`ADR-0005`).
+- Execution context: it runs inside hosts it does not own — an agent session, a
+  git hook, and CI — and must give the same verdict in the three that gate.
 
 ## Inbound Communication
 
@@ -57,6 +63,9 @@ else passes.
   committing (`enforcement/ADR-0002`).
 - A changelog entry is demanded only for user-visible behaviour changes, not for
   every commit (`enforcement/ADR-0003`).
+- The book's own writing has procedures — a migration skill and three maintenance
+  skills — shipped in the plugin as steering an agent follows, never as a gate
+  (`ADR-0005`, `ADR-0007`).
 - The domain `code:` globs are the only map from code to documentation. The
   field is format's spec and the parsed value comes from core's loader;
   enforcement keeps no second map of its own, which is why both contexts treat

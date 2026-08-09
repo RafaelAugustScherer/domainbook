@@ -133,6 +133,19 @@ warning level to fall back on.
 - **Status:** validated
 - **Example:** `domainbook/domains/core/index.md:2 id: "cor" does not match the folder "core" — rename the folder to "cor" or set id to "core"` is one issue as a terminal sees it.
 
+## Migration
+
+Taking a repo that has no book to one that has a book worth enforcing. In
+domainbook the word is an interview, not a conversion: the CLI scaffolds and
+validates, and everything the code cannot reveal — where the boundaries are,
+which word the team uses, why a decision was made — comes from the maintainer,
+who confirms, corrects or rejects each thing the agent proposes (`ADR-0007`). It
+is not a schema migration or a version upgrade; a book has no versions to move
+between, because git carries its history instead (`ADR-0006`).
+
+- **Status:** validated
+- **Example:** A repo with a README, a `docs/` tree and nine MADR files migrates by having all of them read, proposed, confirmed, and written through `init`, `new domain` and `new decision`.
+
 ## Rule
 
 A statement in a feature that is always true, written as a `## Rule: …` heading
@@ -151,6 +164,21 @@ this book is a claim the project has to keep true about itself.
 
 - **Status:** validated
 - **Example:** The four contexts under `domains/` describe the packages that implement them, and the enforcement loop will one day block a change to those packages that leaves these pages stale.
+
+## Skill
+
+A procedure an agent follows, written as markdown it loads when the situation
+calls for it — not a capability built into the agent. domainbook ships four —
+migrate a repo, document this change, record a decision, groom the glossary —
+under `integrations/plugin/skills/`, where Claude Code discovers them by name and
+any other agent can read the same file. A skill runs inside a session the way a
+hook does, but it is not one of the enforcement loop's three layers: it steers
+and can block nothing, so the guarantee never rests on one having run. The
+instruction layer names the four rather than carrying their steps (`ADR-0005`).
+
+- **Aliases:** procedure
+- **Status:** validated
+- **Example:** A session blocked at Stop is the situation `document-this-change` exists for; the block is the hook's, and the skill only helps clear it.
 
 ## Slug
 

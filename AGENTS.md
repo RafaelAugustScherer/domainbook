@@ -16,6 +16,13 @@ Any file under a domain's folder clears the check for that domain — the canvas
 
 Before you name anything, look the word up and use the one this book already has. The book answers over MCP: call `explain_terms` with the words you are about to use, and `where_to_document` with the paths you are changing. `domainbook serve mcp` starts the server if your client is not connected to it.
 
+When a change means the book has to change too, these procedures say how — reach for the one that fits, and follow its steps there rather than from here:
+
+- `migrate-a-repo` — start a book in a repo that has none.
+- `document-this-change` — write the book change a commit or a Stop block is asking for.
+- `record-a-decision` — decide whether a choice earns a decision record, and write it if it does.
+- `groom-the-glossary` — bring the glossary back in line with the words the code uses.
+
 To waive a commit, end the commit message with a trailer saying what makes the change safe to leave undocumented:
 
 ```
