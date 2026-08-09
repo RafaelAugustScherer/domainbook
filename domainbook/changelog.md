@@ -15,6 +15,26 @@ the decision it references, not here (`ADR-0006`).
 
 ### Added
 
+- Four skills the plugin ships under `integrations/plugin/skills/`, the procedures
+  an agent follows to write the book rather than only to be blocked from skipping
+  it: `migrate-a-repo` takes a repo with no book to a validated one through an
+  interview with the maintainer, proposing boundaries, words, features and imported
+  decisions and writing nothing it did not confirm — when the repo's own
+  documentation is thin it asks where the rest lives, a path or a URL, before it
+  falls back to reading the code alone, and a word or a behaviour read from the
+  maintainer's own documentation is written `validated` or `ready` on their word
+  rather than parked at `draft`; `document-this-change` turns a
+  Stop-hook block into the book change it asked for; `record-a-decision` applies
+  the bar in `CONTRIBUTING.md` before a record exists and asks whether a person
+  weighed the choice; `groom-the-glossary` reconciles a glossary with the words its
+  code uses. They steer and never gate — nothing a skill does can block a change
+  (`ADR-0005`, `ADR-0007`). The enforcement domain now owns authoring beside the
+  gate, and its canvas says so.
+- `domainbook instructions` names those four procedures in the AGENTS.md section it
+  writes — one line each, situation and procedure, and no steps copied in — so an
+  agent reading the file knows what to reach for when a change needs the book
+  changed too, without the instructions going stale as a procedure's steps move
+  (`ADR-0005`).
 - `@domainbook/site`, which reads a book as a website. A custom Astro app whose
   content collections load the book through core's loader and validate it with
   the same zod schemas `validate` applies, so a page that renders is a page whose
@@ -138,7 +158,7 @@ the decision it references, not here (`ADR-0006`).
   current and writes nothing. The instructions point at each domain's glossary
   rather than copying it, so a glossary that moves on does not leave them wrong.
   They steer and stop nothing (`ADR-0005`).
-- A Claude Code plugin under `integrations/claude-code-plugin/`: a silent
+- A Claude Code plugin under `integrations/plugin/`: a silent
   `PostToolUse` hook that records the paths a session touched, a `Stop` hook that
   runs the same check over them and blocks with the stale files named, and a
   `PreToolUse` guard that denies an agent the two ways it could take a person's

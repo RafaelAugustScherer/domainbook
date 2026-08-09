@@ -3,7 +3,7 @@ id: write-the-agent-instructions
 name: Write the agent instructions
 status: implemented
 owners: [RafaelAugustScherer]
-terms: [instruction-layer, enforcement-loop, ubiquitous-language, waiver]
+terms: [instruction-layer, enforcement-loop, skill, ubiquitous-language, waiver]
 decisions: [ADR-0005, enforcement/ADR-0001]
 ---
 
@@ -142,6 +142,38 @@ Example: A glossary that moves on does not leave the instructions wrong
   When the ticketing glossary redefines hold
   Then AGENTS.md still says something true
   And nothing has to be regenerated for it to stay true
+```
+
+## Rule: The instructions name the procedures; the plugin carries their steps
+
+```gherkin
+Example: AGENTS.md names what to do in each of the four situations
+  Given a git repo with a book at domainbook
+  When domainbook instructions runs
+  Then AGENTS.md names the procedure for adopting the book in a repo that has none
+  And it names the procedure for documenting a change a check blocked
+  And it names the procedure for deciding whether a choice earns a decision record
+  And it names the procedure for grooming the glossary
+
+Example: The instructions point at each procedure rather than carrying its steps
+  Given a repo where domainbook instructions has run
+  Then AGENTS.md holds no procedure's step list
+  And each situation gets one line: what it is and which procedure answers it
+
+Example: An agent with no plugin still knows what to reach for
+  Given an agent reading AGENTS.md in a host with no plugin
+  Then each named procedure carries the one line that says which situation it is for
+  And no line tells the agent to install something before it can act
+
+Example: A procedure is named the same way in every host
+  Given the plugin is installed in Claude Code
+  Then each procedure AGENTS.md names is invocable by that name
+
+Example: A procedure that changes its steps does not make the instructions stale
+  Given a repo where domainbook instructions has run
+  When a procedure's steps are rewritten
+  Then AGENTS.md still says something true
+  And domainbook instructions --check reports it up to date
 ```
 
 ## Rule: Instructions are steering, and steering stops nothing

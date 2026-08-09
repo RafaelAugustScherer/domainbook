@@ -181,6 +181,7 @@ function body(book: Book, at: string, claiming: DomainRecord[]): string[] {
     `Any file under a domain's folder clears the check for that domain — the canvas, the glossary, the changelog, a feature, a decision, or a debt record. A change across several domains updates each of their books, or carries one record at the book root: a decision under \`${at}/decisions/\` or an entry in \`${at}/changelog.md\`.`,
     "",
     ...vocabulary(at, claiming),
+    ...procedures(),
     "To waive a commit, end the commit message with a trailer saying what makes the change safe to leave undocumented:",
     "",
     "```",
@@ -221,6 +222,18 @@ function vocabulary(at: string, claiming: DomainRecord[]): string[] {
           ),
           "",
         ]),
+  ];
+}
+
+function procedures(): string[] {
+  return [
+    "When a change means the book has to change too, these procedures say how — reach for the one that fits, and follow its steps there rather than from here:",
+    "",
+    "- `migrate-a-repo` — start a book in a repo that has none.",
+    "- `document-this-change` — write the book change a commit or a Stop block is asking for.",
+    "- `record-a-decision` — decide whether a choice earns a decision record, and write it if it does.",
+    "- `groom-the-glossary` — bring the glossary back in line with the words the code uses.",
+    "",
   ];
 }
 

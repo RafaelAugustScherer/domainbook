@@ -1,0 +1,13 @@
+{
+  "name": "domainbook-plugins",
+  "owner": {
+    "name": "Rafael Scherer"
+  },
+  "plugins": [
+    {
+      "name": "domainbook",
+      "source": "./integrations/plugin",
+      "description": "Docs-or-waiver enforcement plus the four skills that write the book: migrate a repo, document a change, record a decision, groom the glossary"
+    }
+  ]
+}
