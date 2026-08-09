@@ -16,9 +16,13 @@ Do not write anything until step 6. Reading and proposing come first.
 
 Read the repo's own documentation before you ask anything: `README*`, a `docs/`
 tree, and any existing ADR folder (`adr/`, `docs/decisions/`, `doc/adr/`). Name
-each source in your proposal as where a claim came from. If there is nothing
-written, say the proposal comes from the code alone and is weaker for it — then
-still ask before writing.
+each source in your proposal as where a claim came from. When the repo's own
+documentation is thin or absent, do not fall back to the code yet — ask the
+maintainer whether the documentation lives somewhere else: a path outside this
+repo, a URL, an exported wiki or Notion page. Read what they point you at and
+name it as a source like any other. Only when there is nothing written anywhere,
+in the repo or out of it, say the proposal comes from the code alone and is
+weaker for it — then still ask before writing.
 
 ## 2. Propose the boundaries, and confirm each one
 
@@ -33,15 +37,22 @@ context claims as unclaimed; never widen a glob to cover it.
 
 Propose glossary terms for the words the code uses, and name where each is used.
 A word the code uses two ways is a question, not a merge — ask which meaning the
-term holds here. A term the maintainer confirms is `validated`; a term you
-proposed that nobody answered stays `draft`.
+term holds here. A term's status says how sure its definition is: one read from
+the maintainer's own documentation — the repo's, or the one they pointed you at —
+is `validated`, because that documentation is the maintainer's own words; show it
+for correction, but do not wait for a second yes to write what they already
+wrote. A term you guessed from the code that nobody has answered stays `draft`
+until they confirm it.
 
 ## 4. Propose features for behaviour the code implies
 
 Where tests or code imply a behaviour, propose a feature for it and name what you
-read it from. The maintainer confirms the rule before it is written. A proposed
-feature is written at `status: draft` — nothing reads `implemented` until a
-walkthrough has run. Behaviour nobody confirmed is not written.
+read it from. A feature's status follows the same rule as a term's: behaviour you
+read from the maintainer's own documentation — a scenarios file, a spec they
+pointed you at — is written `ready`, because they already wrote it down; behaviour
+they confirm in the interview is `ready` on their word. Nothing reads
+`implemented` until a walkthrough has run, however the behaviour was sourced.
+Behaviour nobody wrote and nobody confirmed is not written.
 
 ## 5. Import existing decisions
 

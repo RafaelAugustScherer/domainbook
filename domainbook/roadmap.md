@@ -281,8 +281,8 @@ to domainbook size the way MADR's frontmatter was (`format/ADR-0004`):
   with the reason). Never deleted; git carries the history.
 - Deliverables: zod schema + generated JSON Schema, loader/model/validation in core
   (numbering, reference resolution, glob syntax), `domainbook new debt "<title>"
-  [--domain <domain-id>]`, golden and broken fixtures, and this book dogfooding the
-  format — the review's leftover findings become its first TDRs.
+  [--domain <domain-id>]`, golden and broken fixtures, and this book using the
+  format on itself — the review's leftover findings become its first TDRs.
 - Downstream, in their own phases: `check --staged` can warn when staged paths match
   an open debt's `code:` globs (Phase 2), MCP serves debt scoped by domain or changed
   paths (Phase 3), the site renders the register with severity badges (Phase 4),

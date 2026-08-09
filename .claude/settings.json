@@ -1,0 +1,13 @@
+{
+  "extraKnownMarketplaces": {
+    "domainbook-plugins": {
+      "source": {
+        "source": "directory",
+        "path": "."
+      }
+    }
+  },
+  "enabledPlugins": {
+    "domainbook@domainbook-plugins": true
+  }
+}

@@ -19,7 +19,11 @@ the decision it references, not here (`ADR-0006`).
   an agent follows to write the book rather than only to be blocked from skipping
   it: `migrate-a-repo` takes a repo with no book to a validated one through an
   interview with the maintainer, proposing boundaries, words, features and imported
-  decisions and writing nothing it did not confirm; `document-this-change` turns a
+  decisions and writing nothing it did not confirm — when the repo's own
+  documentation is thin it asks where the rest lives, a path or a URL, before it
+  falls back to reading the code alone, and a word or a behaviour read from the
+  maintainer's own documentation is written `validated` or `ready` on their word
+  rather than parked at `draft`; `document-this-change` turns a
   Stop-hook block into the book change it asked for; `record-a-decision` applies
   the bar in `CONTRIBUTING.md` before a record exists and asks whether a person
   weighed the choice; `groom-the-glossary` reconciles a glossary with the words its
