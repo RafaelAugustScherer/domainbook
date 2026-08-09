@@ -1,0 +1,78 @@
+---
+import Page from "../layouts/Page.astro";
+import { glossaryPath, href } from "../lib.ts";
+
+const glossary = href(glossaryPath(undefined));
+const bundle = href("/pagefind/pagefind.js");
+---
+
+<Page title="Search" lede="Every page in the book, one box.">
+  <form class="search" role="search" data-pagefind-ignore>
+    <input
+      id="q"
+      type="search"
+      aria-label="Search the book"
+      placeholder="Search the book"
+    />
+  </form>
+  <p class="empty" id="state">Type to search.</p>
+  <ul class="rows" id="results"></ul>
+</Page>
+
+<script define:vars={{ bundle, glossary }}>
+  const box = document.querySelector("#q");
+  const list = document.querySelector("#results");
+  const state = document.querySelector("#state");
+  const asked = new URLSearchParams(location.search).get("q") ?? "";
+  let engine;
+
+  async function loaded() {
+    engine ??= await import(/* @vite-ignore */ bundle);
+    await engine.options({ excerptLength: 25 });
+    return engine;
+  }
+
+  async function look(term) {
+    list.replaceChildren();
+    if (term.trim() === "") {
+      state.hidden = false;
+      state.textContent = "Type to search.";
+      return;
+    }
+    state.hidden = false;
+    state.textContent = "Searching…";
+    const found = await (await loaded()).search(term);
+    const rows = await Promise.all(found.results.slice(0, 40).map((one) => one.data()));
+    if (rows.length === 0) {
+      state.innerHTML =
+        `nothing in this book says "${term}" — the ` +
+        `<a href="${glossary}">glossary</a> is where its language is defined`;
+      return;
+    }
+    state.hidden = true;
+    for (const row of rows) {
+      const item = document.createElement("li");
+      const head = document.createElement("div");
+      head.className = "head";
+      const link = document.createElement("a");
+      link.href = row.url;
+      link.textContent = row.meta.title ?? row.url;
+      const kind = document.createElement("span");
+      kind.className = "tag";
+      kind.textContent = row.meta.kind ?? "page";
+      const where = document.createElement("span");
+      where.className = "tag";
+      where.textContent = row.meta.context ?? "";
+      head.append(link, kind, where);
+      const excerpt = document.createElement("p");
+      excerpt.className = "note";
+      excerpt.innerHTML = row.excerpt;
+      item.append(head, excerpt);
+      list.append(item);
+    }
+  }
+
+  box.value = asked;
+  box.addEventListener("input", () => look(box.value));
+  if (asked !== "") look(asked);
+</script>

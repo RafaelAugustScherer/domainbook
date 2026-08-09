@@ -157,5 +157,6 @@ Example: A path the shell cannot write to is named rather than thrown
   validate say anything about a page that still holds them?
 
 A scaffolded glossary term nobody replaces is counted by `validate` and returned
-by `explain_terms`. That cost was weighed in `core/TDR-0005` and taken over
+by `explain_terms`. That cost was weighed in `TDR-0005` in
+`domains/core/debt/` and taken over
 relaxing the schema to let a glossary hold no terms, so it is not reopened here.

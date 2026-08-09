@@ -1,0 +1,39 @@
+---
+import Badge from "../../../../components/Badge.astro";
+import Page from "../../../../layouts/Page.astro";
+import { collected, href, termBadge, termPath } from "../../../../lib.ts";
+
+export async function getStaticPaths() {
+  const domains = await collected("domains");
+  return domains
+    .filter((entry) => (entry.data as Record<string, any>).hasGlossary)
+    .map((entry) => ({ params: { domain: entry.id } }));
+}
+
+const { domain } = Astro.params;
+const all = await collected("terms");
+const terms = all
+  .map((entry) => entry.data as Record<string, any>)
+  .filter((one) => one.domain === domain)
+  .sort((one, other) => (one.name < other.name ? -1 : 1));
+---
+
+<Page
+  title={`${domain} — ubiquitous language`}
+  lede={`The words ${domain} agrees on. Another context may use the same word differently.`}>
+  <ul class="rows">
+    {
+      terms.map((one) => (
+        <li>
+          <div class="head">
+            <a href={href(termPath(domain, one.slug))}>{one.name}</a>
+            <Badge {...termBadge(one.status)} />
+          </div>
+          {one.aliases.length > 0 ? (
+            <p class="note">also: {one.aliases.join(", ")}</p>
+          ) : null}
+        </li>
+      ))
+    }
+  </ul>
+</Page>

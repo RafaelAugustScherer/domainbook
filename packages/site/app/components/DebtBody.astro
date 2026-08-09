@@ -1,0 +1,83 @@
+---
+import { debtBadge, decisionPath, domainPath, href } from "../lib.ts";
+import Badge from "./Badge.astro";
+
+type Props = { entry: any };
+
+const { entry } = Astro.props;
+const one = entry.data;
+const badge = debtBadge(one.frontmatter.status);
+const globs: string[] = one.frontmatter.code ?? [];
+const traces: any[] = one.traces ?? [];
+---
+
+<ul class="axes">
+  <li><span class="tag">{one.ref}</span></li>
+  <li><Badge {...badge} /></li>
+  <li>
+    <Badge
+      text={one.frontmatter.severity}
+      title="how much this costs"
+      tone={one.frontmatter.severity}
+    />
+  </li>
+  <li>
+    <span class="tag" title="how the debt happened, in Fowler's quadrants">
+      {one.frontmatter.quadrant}
+    </span>
+  </li>
+  <li><span class="tag">{one.frontmatter.date}</span></li>
+  {
+    one.domain ? (
+      <li>
+        <a class="tag" href={href(domainPath(one.domain))}>
+          {one.domain}
+        </a>
+      </li>
+    ) : null
+  }
+</ul>
+
+{badge.current ? null : <p class="note">{badge.title}</p>}
+
+<div class="scroll" set:html={one.html} />
+
+<h2>What it traces to</h2>
+{
+  globs.length === 0 && traces.length === 0 ? (
+    <p class="empty">
+      this record traces to no code and no decision, so nothing in the repo
+      points back at it
+    </p>
+  ) : null
+}
+{
+  globs.length > 0 ? (
+    <p class="note">
+      Code: {globs.map((glob, index) => (<>{index > 0 ? ", " : ""}<code>{glob}</code></>))}
+    </p>
+  ) : null
+}
+{
+  traces.length > 0 ? (
+    <ul class="rows">
+      {traces.map((trace) => (
+        <li>
+          <div class="head">
+            <span class="ref">{trace.ref}</span>
+            {trace.title ? (
+              <a href={href(decisionPath(trace.domain, trace.number))}>
+                {trace.title}
+              </a>
+            ) : (
+              <span class="empty">
+                no decision in this book carries that reference
+              </span>
+            )}
+          </div>
+        </li>
+      ))}
+    </ul>
+  ) : null
+}
+<p class="note">Written in {one.file}, the log at {one.log}.</p>

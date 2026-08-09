@@ -1,0 +1,12 @@
+---
+import { href } from "../lib.ts";
+---
+
+<form class="search" role="search" action={href("/search/")} method="get">
+  <input
+    type="search"
+    name="q"
+    aria-label="Search the book"
+    placeholder="Search the book"
+  />
+</form>

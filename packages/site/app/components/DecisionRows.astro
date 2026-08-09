@@ -1,0 +1,29 @@
+---
+import { decisionBadge, decisionPath, href } from "../lib.ts";
+import Badge from "./Badge.astro";
+
+type Props = { records: any[]; empty: string };
+
+const { records, empty } = Astro.props;
+const ordered = [...records].sort((one, other) => one.number - other.number);
+---
+
+{ordered.length === 0 ? <p class="empty">{empty}</p> : null}
+<ul class="rows">
+  {
+    ordered.map((one) => {
+      const badge = decisionBadge(one.frontmatter.status);
+      return (
+        <li class={badge.current ? undefined : "stale"}>
+          <div class="head">
+            <span class="ref">{one.ref}</span>
+            <a href={href(decisionPath(one.domain, one.number))}>{one.title}</a>
+            <Badge {...badge} />
+            <span class="ref">{one.frontmatter.date}</span>
+          </div>
+          {one.outcome ? <div class="note" set:html={one.outcome} /> : null}
+        </li>
+      );
+    })
+  }
+</ul>

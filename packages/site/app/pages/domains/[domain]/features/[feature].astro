@@ -1,0 +1,98 @@
+---
+import { getEntry } from "astro:content";
+import Badge from "../../../../components/Badge.astro";
+import Page from "../../../../layouts/Page.astro";
+import { collected, decisionPath, domainPath, featureBadge, href, termPath } from "../../../../lib.ts";
+
+export async function getStaticPaths() {
+  const all = await collected("features");
+  return all.map((entry) => {
+    const one = entry.data as Record<string, any>;
+    return { params: { domain: one.domain, feature: one.frontmatter.id } };
+  });
+}
+
+const { domain, feature } = Astro.params;
+const entry = await getEntry("features", `${domain}/${feature}`);
+const one = entry!.data as Record<string, any>;
+const badge = featureBadge(one.frontmatter.status);
+const at = (ref: string) => {
+  const [left, right] = ref.includes("/") ? ref.split("/") : [undefined, ref];
+  return href(decisionPath(left, Number((right ?? "").replace("ADR-", ""))));
+};
+---
+
+<Page title={one.frontmatter.name}>
+  <ul class="axes">
+    <li><Badge {...badge} /></li>
+    <li><a class="tag" href={href(domainPath(domain!))}>{domain}</a></li>
+  </ul>
+  {
+    one.frontmatter.status === "draft" ? (
+      <p class="note">
+        this feature is a draft — the behaviour on this page is proposed, not
+        built
+      </p>
+    ) : null
+  }
+
+  <h2>Story</h2>
+  <div set:html={one.storyHtml} />
+
+  {
+    one.rules.map((rule: any) => (
+      <>
+        <h2 id={rule.slug}>Rule: {rule.name}</h2>
+        {rule.examples.map((example: any) => (
+          <section class="gherkin" id={example.slug} aria-label={example.title}>
+            <div set:html={example.html} />
+          </section>
+        ))}
+      </>
+    ))
+  }
+
+  {
+    one.terms.length > 0 || one.decisions.length > 0 ? (
+      <>
+        <h2>What it leans on</h2>
+        {one.terms.length > 0 ? (
+          <p class="note">
+            Terms:{" "}
+            <>
+              {one.terms.map((term: any, index: number) => (
+                <>
+                  {index > 0 ? ", " : ""}
+                  <a href={href(termPath(term.domain, term.slug))}>{term.name}</a>
+                </>
+              ))}
+            </>
+          </p>
+        ) : null}
+        {one.decisions.length > 0 ? (
+          <p class="note">
+            Decisions:{" "}
+            <>
+              {one.decisions.map((made: any, index: number) => (
+                <>
+                  {index > 0 ? ", " : ""}
+                  <a href={at(made.ref)}>{made.ref}</a>
+                  {made.title ? ` — ${made.title}` : ""}
+                </>
+              ))}
+            </>
+          </p>
+        ) : null}
+      </>
+    ) : null
+  }
+
+  <h2>Open Questions</h2>
+  {
+    one.openQuestionsHtml ? (
+      <div set:html={one.openQuestionsHtml} />
+    ) : (
+      <p class="empty">None.</p>
+    )
+  }
+</Page>

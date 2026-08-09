@@ -11,12 +11,25 @@ Versions match the book-wide changelog.
 
 ### Added
 
+- `domainbook build [root]` writes the book as a static site into
+  `<book>/build/site`, so a book at `docs/book` builds into `docs/book/build/site`
+  and the repo root is never touched (`format/ADR-0020`). The folder writes its
+  own `.gitignore` of `*` as it is created. The command refuses a book that does
+  not validate, in `validate`'s own words, and writes nothing in that case, so a
+  previous build is left as it was.
+- `buildDir` on core's surface, and `loadBook` reads past the folder it names
+  the way it reads past `decisions/`, `debt/` and `domains/`. The root-holds
+  message says what `build/` is for, because a folder listed beside `roadmap.md`
+  with no explanation invites someone to put an artifact in it.
+- Core exports `Context` and `supersededBy`, which the site needs to draw a
+  context map and to walk a supersede chain in both directions.
 - `domainbook new domain` scaffolds every artifact a domain holds rather than
   the canvas alone: `glossary.md` and `changelog.md` next to `index.md`, and
   `features/`, `decisions/` and `debt/` each holding a `.gitkeep` so the folder
   reaches the reader who clones instead of vanishing at the first commit. Each
   page names the fields it takes and the values they accept, so the first agent
-  to open one fills it in without reading a schema (`core/TDR-0005`).
+  to open one fills it in without reading a schema (`TDR-0005` in
+  `domains/core/debt/`).
 - `domainbook init` writes `glossary.md` and `changelog.md` at the book root the
   same way. A fresh book now reports one term rather than none, because a
   glossary with no terms does not validate and the scaffolded one carries
@@ -24,6 +37,37 @@ Versions match the book-wide changelog.
 
 ### Changed
 
+- `domainbook serve` with no target brings up **both** the site and the MCP
+  server: the protocol on stdio, the site on a port, and the line naming the URL
+  on stderr so nothing but the protocol reaches stdout. `serve web` and
+  `serve mcp` each bring up one of them. Every `.mcp.json` and client snippet
+  domainbook writes already spells out `serve mcp`, so nothing it configured
+  changes.
+- `serve web` no longer refuses: the site it named is here.
+- A book root is a folder holding `roadmap.md`, not any folder that happens to
+  exist. Every command that asks "is there a book here" — `serve`, `build`,
+  `check`, `hooks`, `instructions`, and the MCP server — now answers
+  `docs/book: no book here — run "domainbook init docs/book" to write one` for a
+  folder with no roadmap in it, where before it let the question through and
+  reported whatever `validate` found inside. `validate` itself is unchanged: it
+  still names the missing `roadmap.md`, because that is the question it was
+  asked.
+
+### Fixed
+
+- `domainbook build` runs the site build in production mode whatever `NODE_ENV`
+  says. A shell carrying `NODE_ENV=test` finished the build, wrote every page,
+  and then never exited, because the bundler kept a handle open outside
+  production — the command looked hung when its work was already done.
+- `tdrRef` no longer qualifies a debt record with its domain, so `checkChange` and
+  every message built from it name one the way `validate` always has: `TDR-0002`,
+  with the record's file in the same sentence. `format/ADR-0017` settled that there
+  is no `<domain-id>/TDR-NNNN` to write, and this function was the last thing still
+  writing it. Two records in different logs can now share a reference, so
+  `checkChange` orders debt by file where the references tie.
+- `domainbook build` that dies part-way through takes its half-written output
+  with it. The bundler had already put chunks in the output folder by then, so it
+  was left holding no page and still looking like a site to publish.
 - `new domain` refuses when any of the three pages it writes is already there,
   not `index.md` alone, so a glossary left behind by a deleted canvas is named
   rather than written over.

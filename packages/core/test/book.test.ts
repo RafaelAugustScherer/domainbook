@@ -84,6 +84,7 @@ describe("the valid fixture book", () => {
         trailer: "Skip-Docs",
         require_reason: "agents",
       },
+      site: { base: "/" },
     });
   });
 
@@ -94,6 +95,7 @@ describe("the valid fixture book", () => {
         trailer: "Skip-Docs",
         require_reason: "agents",
       },
+      site: { base: "/" },
     });
   });
 

@@ -207,10 +207,25 @@ describe("the debt a change walks into", () => {
     expect(found.stale).toEqual([]);
     expect(found.debt).toEqual([
       {
-        ref: "ticketing/TDR-0002",
+        ref: "TDR-0002",
         file: "book/domains/ticketing/debt/0002-swept-by-hand.md",
         paths: ["src/ticketing/hold.ts"],
       },
+    ]);
+  });
+
+  it("tells two records that share a number apart by the file, not the reference", () => {
+    const found = changed(
+      book(two, [
+        owed(1, "open", ["src/ticketing/**"], "ticketing"),
+        owed(1, "open", ["src/ticketing/**"]),
+      ]),
+      "src/ticketing/hold.ts"
+    );
+    expect(found.debt.map((one) => one.ref)).toEqual(["TDR-0001", "TDR-0001"]);
+    expect(found.debt.map((one) => one.file)).toEqual([
+      "book/debt/0001-swept-by-hand.md",
+      "book/domains/ticketing/debt/0001-swept-by-hand.md",
     ]);
   });
 

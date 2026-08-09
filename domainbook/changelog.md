@@ -15,6 +15,62 @@ the decision it references, not here (`ADR-0006`).
 
 ### Added
 
+- `@domainbook/site`, which reads a book as a website. A custom Astro app whose
+  content collections load the book through core's loader and validate it with
+  the same zod schemas `validate` applies, so a page that renders is a page whose
+  content passed the same rules (`site/ADR-0001`). Every artifact has a page: an
+  overview counting what the book holds and naming the milestone in progress, the
+  roadmap's own prose on a page of its own, a domain page laying the canvas out
+  in canvas order with the context's own glossary where the canvas puts it and
+  its logs reachable on their own, a feature with its story, rules and each
+  Gherkin example separately addressable and highlighted, a decision log with
+  supersede chains readable in both directions, a debt register worst first, and
+  a changelog timeline. Pagefind indexes the book itself rather than the built
+  HTML, so the same index serves a running site and a published one.
+- Any decision reference in any prose the book holds opens that record — a
+  canvas section, a feature's story, a decision's own body, a debt record, a
+  changelog entry. A bare `ADR-NNNN` is the book's log and a qualified one is a
+  context's, the grammar `format/ADR-0005` already set; a reference no record
+  answers to is left as text, and one inside a Gherkin example is left alone.
+  There is no `<domain-id>/TDR-NNNN` to link, because `format/ADR-0017` says
+  there is no such reference to write: a debt record reads `TDR-NNNN` and the
+  page names the log it sits in.
+- An artifact that stops validating while the site is up puts `validate`'s own
+  line on that artifact's page instead of taking the page away. The overview
+  keeps listing the context and says its canvas does not read; every other page
+  is untouched; fixing the file clears it without a restart.
+- The Astro project is staged into `.astro/` in the repo being read rather than
+  run from inside `node_modules`, because Vite treats everything under
+  `node_modules` as immutable and an edit reached the page 2 times in 9 from an
+  installed package against 2 in 2 from a checkout. It is 10 in 10 now
+  (`site/ADR-0004`). The folder carries its own `.gitignore` of `*`, and the watcher
+  ignores any path with a dot-segment in it, so neither the staged folder nor `.git`
+  can look like an edit to the book.
+- `serve` serves the search bundle under the path the book publishes to. Vite strips
+  `site.base` from a request before the middleware sees it, so the one prefix the
+  middleware matched could never match and search was dead for the whole session on any
+  book carrying a `site.base`. The built site was never affected.
+- The debt register says what a quadrant is, rather than leaving `inadvertent-prudent`
+  on the page as a word with no meaning attached.
+- `domainbook serve` brings the site up beside the MCP server and `domainbook
+  build` writes the static site into `<book>/build/site`. `build/` is reserved
+  inside a book root and read by nothing (`format/ADR-0020`); it writes its own
+  `.gitignore` of `*`, so the output never reaches a commit and no repo has to
+  learn to ignore it. The site reads the book from disk, so an artifact edited,
+  added or deleted while it is up reaches the page without a restart. Where the site is published is `site.base` in the
+  book's config rather than an argument, so what reads locally is what publishes
+  (`site/ADR-0002`).
+- The context map is drawn as SVG at build time, with the Mermaid it derives from
+  published beside it and every relationship in a table — no Mermaid shipped to
+  the reader, and nothing to see only after JavaScript runs (`site/ADR-0003`). A
+  `separate-ways` edge is drawn, because it was declared: dashed, labelled, and
+  without an arrowhead, so it cannot be read as a channel. Contexts are laid out
+  in rows by which way the arrows point, and every edge is routed around what
+  sits between its two ends rather than straight through it, so no edge crosses
+  a node and no label is drawn over another.
+- The decision log's `deprecated` badge reads `not current`. The status cannot
+  tell "the choice was reversed" from "the record was retired" apart, so the
+  badge says only what both senses share and the record's own words settle it.
 - `@domainbook/mcp`, which serves the book to an agent's own client over MCP.
   `domainbook serve mcp [root]` speaks the protocol on stdio and nothing else
   reaches stdout. Eight tools, every one of them read-only: `search_book`,
@@ -99,6 +155,15 @@ the decision it references, not here (`ADR-0006`).
 
 ### Changed
 
+- A debt record is named `TDR-NNNN` everywhere, never `<domain-id>/TDR-NNNN`.
+  `format/ADR-0017` ruled that grammar out in Phase 1.1 — nothing resolves a debt
+  reference, no artifact has a field that takes one — and 0.3.0 published the rule,
+  but `tdrRef` went on qualifying the way `adrRef` does, so `domainbook check` and
+  `where_to_document` printed a form the book says does not exist and nothing
+  accepts. Both already name the record's file in the same sentence, so no message
+  became less precise: `TDR-0002 is open over src/ticketing/hold.ts — read
+  domains/ticketing/debt/0002-….md before you change this`. `validate` and the site
+  said it correctly and are unchanged.
 - The instruction layer names the tool instead of pointing at a file. `AGENTS.md`
   and each `.claude/rules/domainbook-<domain>.md` now tell an agent to call
   `explain_terms` with the words it is about to use and `where_to_document` with

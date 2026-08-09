@@ -1,0 +1,28 @@
+---
+import DecisionRows from "../../../../components/DecisionRows.astro";
+import Page from "../../../../layouts/Page.astro";
+import { collected, domainPath, href } from "../../../../lib.ts";
+
+export async function getStaticPaths() {
+  const taken = await collected("decisions");
+  const owning = new Set(
+    taken
+      .map((entry) => (entry.data as Record<string, any>).domain)
+      .filter((one): one is string => one !== undefined)
+  );
+  return [...owning].map((domain) => ({ params: { domain } }));
+}
+
+const { domain } = Astro.params;
+const all = await collected("decisions");
+const records = all
+  .map((entry) => entry.data as Record<string, any>)
+  .filter((one) => one.domain === domain);
+---
+
+<Page
+  title={`${domain} decisions`}
+  lede={`Every choice ${domain} has written down, oldest first.`}>
+  <DecisionRows records={records} empty="" />
+  <p class="note"><a href={href(domainPath(domain!))}>Back to {domain}</a></p>
+</Page>

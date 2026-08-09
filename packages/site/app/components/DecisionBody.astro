@@ -1,0 +1,96 @@
+---
+import { decisionBadge, decisionPath, domainPath, href, pad } from "../lib.ts";
+import Badge from "./Badge.astro";
+
+type Props = { entry: any };
+
+const { entry } = Astro.props;
+const one = entry.data;
+const badge = decisionBadge(one.frontmatter.status);
+const people: [string, string[] | undefined][] = [
+  ["Decision makers", one.frontmatter["decision-makers"]],
+  ["Consulted", one.frontmatter.consulted],
+  ["Informed", one.frontmatter.informed],
+];
+const at = (ref: string) => {
+  const [left, right] = ref.includes("/") ? ref.split("/") : [undefined, ref];
+  return href(decisionPath(left, Number((right ?? "").replace("ADR-", ""))));
+};
+---
+
+<ul class="axes">
+  <li><span class="tag">{one.ref}</span></li>
+  <li><Badge {...badge} /></li>
+  <li><span class="tag">{one.frontmatter.date}</span></li>
+  {
+    one.domain ? (
+      <li>
+        <a class="tag" href={href(domainPath(one.domain))}>
+          {one.domain}
+        </a>
+      </li>
+    ) : null
+  }
+</ul>
+
+{
+  one.frontmatter["authored-by"] === "agent" ? (
+    <p class="note">
+      an agent took this decision without the decision-makers weighing it
+    </p>
+  ) : null
+}
+
+{badge.current ? null : <p class="note">{badge.title}</p>}
+
+{
+  one.chain.length > 0 ? (
+    <p class="note">
+      Chain:{" "}
+      {one.chain.map((link: any, index: number) => (
+        <>
+          {index > 0 ? " → " : ""}
+          {link.ref === one.ref ? (
+            <strong>{link.ref}</strong>
+          ) : (
+            <a href={at(link.ref)}>{link.ref}</a>
+          )}
+        </>
+      ))}
+    </p>
+  ) : null
+}
+{
+  one.supersededBy ? (
+    <p class="note">
+      superseded by <a href={at(one.supersededBy.ref)}>{one.supersededBy.ref}</a>
+      {one.supersededBy.title ? ` — ${one.supersededBy.title}` : ""}
+    </p>
+  ) : null
+}
+{
+  one.supersedes.length > 0 ? (
+    <p class="note">
+      supersedes{" "}
+      {one.supersedes.map((link: any, index: number) => (
+        <>
+          {index > 0 ? ", " : ""}
+          <a href={at(link.ref)}>{link.ref}</a>
+          {link.title ? ` — ${link.title}` : ""}
+        </>
+      ))}
+    </p>
+  ) : null
+}
+{
+  people.map(([label, named]) =>
+    named === undefined ? null : (
+      <p class="note">
+        {label}: {named.join(", ")}
+      </p>
+    )
+  )
+}
+
+<div class="scroll" set:html={one.html} />
+<p class="note">Written in {one.file}. Numbered {pad(one.number)}.</p>

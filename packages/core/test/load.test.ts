@@ -9,10 +9,12 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import {
+  buildDir,
   configFile,
   formatIssue,
   type Issue,
   loadBook,
+  missingBook,
   sortIssues,
   termSlug,
 } from "../src/index.js";
@@ -180,11 +182,37 @@ describe("loadBook on a path that is not a book", () => {
   });
 });
 
+describe("missingBook on what is and is not a book", () => {
+  it("finds the book that is there", () => {
+    expect(missingBook(bookDir)).toBeUndefined();
+  });
+
+  it("names init for a folder holding no roadmap.md", () => {
+    const root = temporary({ "glossary.md": "# Glossary\n" });
+    const named = relative(process.cwd(), root);
+    expect(missingBook(root)).toBe(
+      `${named}: no book here — run "domainbook init ${named}" to write one`
+    );
+  });
+
+  it("names init for a path that is not there at all", () => {
+    expect(missingBook(join(bookDir, "nowhere"))).toBe(
+      'packages/core/test/fixtures/book/nowhere: no book here — run "domainbook init packages/core/test/fixtures/book/nowhere" to write one'
+    );
+  });
+
+  it("says a book root is a folder when handed a file", () => {
+    expect(missingBook(join(bookDir, "roadmap.md"))).toBe(
+      "packages/core/test/fixtures/book/roadmap.md: a book root is a folder, and this path is a file"
+    );
+  });
+});
+
 describe("loadBook on a tree the filesystem refuses", () => {
   it("keeps the unknown-file issue when domains is a regular file", () => {
     const root = temporary({ "roadmap.md": milestones, domains: "not here\n" });
     expect(messages(root)).toEqual([
-      `the format does not know this file — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`,
+      `the format does not know this file — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
     ]);
   });
 
@@ -192,8 +220,15 @@ describe("loadBook on a tree the filesystem refuses", () => {
     const root = temporary({ "roadmap.md": milestones });
     mkdirSync(join(root, "glossary.md"));
     expect(messages(root)).toEqual([
-      `the format does not know this folder — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/`,
+      `the format does not know this folder — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
     ]);
+  });
+
+  it("reads past the folder domainbook build writes into", () => {
+    const root = temporary({ "roadmap.md": milestones });
+    mkdirSync(join(root, buildDir, "site"), { recursive: true });
+    writeFileSync(join(root, buildDir, "site", "index.html"), "<html>\n");
+    expect(messages(root)).toEqual([]);
   });
 
   it("names a file it has no permission to read", () => {

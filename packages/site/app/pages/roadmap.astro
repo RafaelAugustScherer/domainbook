@@ -1,0 +1,29 @@
+---
+import { getEntry } from "astro:content";
+import Page from "../layouts/Page.astro";
+
+const book = await getEntry("book", "book");
+const data = book?.data as Record<string, any>;
+const milestones = (data?.milestones ?? []) as any[];
+---
+
+<Page title="Roadmap" lede="The milestones this book is written against, and what each one is for.">
+  {
+    milestones.length === 0 ? (
+      <p class="empty">this book names no milestones</p>
+    ) : (
+      <ul class="rows">
+        {milestones.map((one: any) => (
+          <li class={one.status === "done" ? "stale" : undefined}>
+            <div class="head">
+              <span>{one.name}</span>
+              <span class="tag">{one.status}</span>
+            </div>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {data?.roadmapHtml ? <div class="scroll" set:html={data.roadmapHtml} /> : null}
+</Page>

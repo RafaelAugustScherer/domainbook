@@ -1,0 +1,42 @@
+---
+import DecisionRows from "../../components/DecisionRows.astro";
+import Page from "../../layouts/Page.astro";
+import { collected, domainPath, href } from "../../lib.ts";
+
+export async function getStaticPaths() {
+  const taken = await collected("decisions");
+  return taken.length === 0 ? [] : [{ params: { all: undefined } }];
+}
+
+const all = await collected("decisions");
+const records = all
+  .map((entry) => entry.data as Record<string, any>)
+  .filter((one) => one.domain === undefined);
+const contexts = [
+  ...new Set(
+    all
+      .map((entry) => (entry.data as Record<string, any>).domain)
+      .filter((one): one is string => one !== undefined)
+  ),
+].sort();
+---
+
+<Page
+  title="Decisions"
+  lede="The book's own log. Each context keeps its own alongside its canvas.">
+  <DecisionRows records={records} empty="this book's own log holds no decisions yet" />
+  {
+    contexts.length > 0 ? (
+      <>
+        <h2>Logs kept by a context</h2>
+        <ul class="rows">
+          {contexts.map((one) => (
+            <li>
+              <a href={href(domainPath(one))}>{one}</a>
+            </li>
+          ))}
+        </ul>
+      </>
+    ) : null
+  }
+</Page>

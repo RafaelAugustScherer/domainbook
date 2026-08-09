@@ -1,0 +1,95 @@
+---
+import { getEntry } from "astro:content";
+import ContextMap from "../components/ContextMap.astro";
+import Page from "../layouts/Page.astro";
+import { domainPath, href } from "../lib.ts";
+
+const book = await getEntry("book", "book");
+const data = book?.data as Record<string, any>;
+const contexts = (data?.contexts ?? []) as any[];
+const holds = (data?.totals ?? {}) as Record<string, number | boolean>;
+const now = data?.now as { name: string; status: string } | undefined;
+const some = (total: unknown, name: string, plural = `${name}s`) =>
+  Number(total) > 0 ? `${total} ${Number(total) === 1 ? name : plural}` : "";
+const holding = [
+  some(holds.domains, "domain"),
+  some(holds.features, "feature"),
+  some(holds.decisions, "decision"),
+  some(holds.terms, "term"),
+  some(holds.debt, "debt record"),
+].filter((part) => part !== "");
+const counted = (one: any) =>
+  [
+    some(one.holds.features, "feature"),
+    some(one.holds.decisions, "decision"),
+    some(one.holds.debt, "debt record"),
+    some(one.holds.terms, "term"),
+  ]
+    .filter((part) => part !== "")
+    .join(", ");
+---
+
+<Page title={data?.root ?? "The book"} lede="What this repo is, in the words its own book uses.">
+  {holding.length > 0 ? <p>This book holds {holding.join(", ")}.</p> : null}
+
+  <h2>Contexts</h2>
+  {
+    contexts.length === 0 ? (
+      <p class="empty">
+        this book has no domains yet — "domainbook new domain &lt;id&gt;" writes
+        the first one
+      </p>
+    ) : (
+      <ul class="cards">
+        {contexts.map((one) => (
+          <li>
+            <div class="head">
+              <a href={href(domainPath(one.id))}>{one.name}</a>
+              {one.classification ? (
+                <>
+                  <span class="tag">{one.classification.domain}</span>
+                  <span class="tag">{one.classification["business-model"]}</span>
+                  <span class="tag">{one.classification.evolution}</span>
+                </>
+              ) : (
+                <span class="tag" data-tone="critical">
+                  its canvas does not read
+                </span>
+              )}
+            </div>
+            {one.purpose ? <p class="note">{one.purpose}</p> : null}
+            <p class="note">{counted(one) || "nothing in it yet"}</p>
+            {one.issues > 0 ? (
+              <p class="note">
+                <a href={href(domainPath(one.id))}>
+                  {one.issues} {one.issues === 1 ? "issue" : "issues"} domainbook
+                  validate reports
+                </a>
+              </p>
+            ) : null}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+
+  {contexts.length > 0 ? <><h2>The map</h2><ContextMap map={data.map} /></> : null}
+
+  {
+    holds.roadmap ? (
+      <>
+        <h2>Where it is going</h2>
+        {now ? (
+          <p>
+            Now: <strong>{now.name}</strong> <span class="tag">{now.status}</span>
+          </p>
+        ) : (
+          <p>Every milestone on the roadmap is done.</p>
+        )}
+        <p class="note">
+          <a href={href("/roadmap/")}>The whole roadmap</a>
+        </p>
+      </>
+    ) : null
+  }
+</Page>

@@ -105,6 +105,9 @@ describe("the published JSON Schema", () => {
 
   it("warns on every described pattern that it needs the u flag", () => {
     const described = nodes
+      .filter((node) =>
+        ((node as { pattern?: string }).pattern ?? "").includes(String.raw`\p{`)
+      )
       .map((node) => (node as { description?: string }).description)
       .filter((description) => description !== undefined);
     expect(described.length).toBeGreaterThan(0);

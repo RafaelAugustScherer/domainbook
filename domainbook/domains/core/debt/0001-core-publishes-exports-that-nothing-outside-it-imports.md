@@ -58,10 +58,18 @@ compose them keep importing them as they do now. The rule to hold afterwards is
 that a name reaches `index.ts` when a consumer asks for it, not when it is
 written.
 
-Two of the twenty-nine may earn their place rather than lose it: `decisionRef`
-and `people` are the shapes a future artifact type reuses, and the site's
-content collections (Phase 4) will import types this book cannot yet name.
-Decide those two on evidence when the consumer appears, and let the count fall
-to what is read in the meantime. Repaying this record and answering the
+Two of the twenty-nine were left open pending evidence: `decisionRef` and
+`people`, on the guess that the site's content collections would import them.
+The consumer has since appeared and the guess was wrong. `@domainbook/site`
+reads twenty-eight names from this surface — `loadBook`, `contextMap`, `canvas`,
+`adrRef`, `tdrRef`, `findDecision`, `supersededBy`, `opening`, `sectionNamed`,
+`termSlug`, `parseFrontmatter`, the four artifact schemas its content
+collections validate with, and thirteen types including `Book`, `Context`,
+`Edge` and `ParsedRule` — and neither `decisionRef` nor `people` is among them.
+Both stay unread, so both fall under the same remedy as the rest.
+
+Two names were added to the surface for that consumer rather than removed:
+`Context` and `supersededBy`, each with a caller the day it was published, which
+is the rule this record asks for. Repaying this record and answering the
 context's Open Question about splitting the surface are the same piece of work,
 and doing them together costs less than doing either twice.

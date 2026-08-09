@@ -5,11 +5,11 @@ const pattern = /^(?:([^/]+)\/)?ADR-(\d{4})$/u;
 const supersede = "superseded by ";
 
 export function adrRef(record: DecisionRecord): string {
-  return qualified(record.domain, "ADR", record.number);
+  return qualified(record.domain, numbered("ADR", record.number));
 }
 
 export function tdrRef(record: DebtRecord): string {
-  return qualified(record.domain, "TDR", record.number);
+  return numbered("TDR", record.number);
 }
 
 export function findDecision(
@@ -39,11 +39,10 @@ export function live(record: DecisionRecord): boolean {
   );
 }
 
-function qualified(
-  domain: string | undefined,
-  kind: string,
-  number: number
-): string {
-  const ref = `${kind}-${String(number).padStart(4, "0")}`;
+function numbered(kind: string, number: number): string {
+  return `${kind}-${String(number).padStart(4, "0")}`;
+}
+
+function qualified(domain: string | undefined, ref: string): string {
   return domain === undefined ? ref : `${domain}/${ref}`;
 }

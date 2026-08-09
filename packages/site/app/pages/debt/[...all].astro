@@ -1,0 +1,19 @@
+---
+import { collected } from "../../lib.ts";
+import DebtRows from "../../components/DebtRows.astro";
+import Page from "../../layouts/Page.astro";
+
+export async function getStaticPaths() {
+  const owed = await collected("debt");
+  return owed.length === 0 ? [] : [{ params: { all: undefined } }];
+}
+
+const all = await collected("debt");
+const records = all.map((entry) => entry.data as Record<string, any>);
+---
+
+<Page
+  title="Debt register"
+  lede="Every shortcut this repo is carrying, worst first — the whole book, not one context.">
+  <DebtRows records={records} empty="this book records no debt yet" />
+</Page>

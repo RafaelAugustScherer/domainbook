@@ -1,0 +1,171 @@
+---
+import { getEntry } from "astro:content";
+import ContextMap from "../../../components/ContextMap.astro";
+import DebtRows from "../../../components/DebtRows.astro";
+import DecisionRows from "../../../components/DecisionRows.astro";
+import Issues from "../../../components/Issues.astro";
+import Page from "../../../layouts/Page.astro";
+import Badge from "../../../components/Badge.astro";
+import { changelogPath, collected, domainPath, featureBadge, featurePath, glossaryPath, href, labelOf, termPath } from "../../../lib.ts";
+
+export async function getStaticPaths() {
+  const domains = await collected("domains");
+  return domains.map((entry) => ({ params: { domain: entry.id } }));
+}
+
+const { domain } = Astro.params;
+const entry = await getEntry("domains", domain!);
+const one = entry!.data as Record<string, any>;
+const front = one.frontmatter;
+const issues: string[] = one.issues ?? [];
+const globs: string[] = front?.code ?? [];
+const edges = one.map.edges as any[];
+const name = front?.name ?? domain;
+---
+
+<Page title={name} lede={`The ${name} context.`}>
+  <Issues issues={issues} what={`${domain}'s book`} />
+
+  {
+    front ? (
+      <ul class="axes">
+        <li><span class="tag">{front.classification.domain}</span></li>
+        <li><span class="tag">{front.classification["business-model"]}</span></li>
+        <li><span class="tag">{front.classification.evolution}</span></li>
+        {front.owners?.map((who: string) => <li><span class="tag">{who}</span></li>)}
+      </ul>
+    ) : (
+      <p class="empty">
+        the three classification axes are not readable in {one.file}, so they are
+        not shown
+      </p>
+    )
+  }
+
+  <h2>Ubiquitous Language</h2>
+  {
+    one.hasGlossary ? (
+      <>
+        <ul class="axes">
+          {one.terms.map((term: any) => (
+            <li>
+              <a class="tag" href={href(termPath(domain, term.slug))}>
+                {term.name}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <p class="note">
+          <a href={href(glossaryPath(domain))}>All of {domain}'s language</a>
+        </p>
+      </>
+    ) : (
+      <p class="empty">
+        {domain} has no glossary yet — its terms are the book's
+      </p>
+    )
+  }
+
+  {
+    one.sections.map((section: any) => (
+      <>
+        <h2>{section.heading}</h2>
+        {section.html ? (
+          <div class="scroll" set:html={section.html} />
+        ) : (
+          <p class="empty">this section is empty in {one.file}</p>
+        )}
+      </>
+    ))
+  }
+
+  <h2>The code it claims</h2>
+  {
+    globs.length === 0 ? (
+      <p class="empty">
+        {domain} claims no code, so no change to the repo is checked against it
+      </p>
+    ) : (
+      <>
+        <ul class="axes">
+          {globs.map((glob) => <li><code>{glob}</code></li>)}
+        </ul>
+        <p class="note">
+          changing code these globs match means updating this context's book in
+          the same commit, or waiving it
+        </p>
+      </>
+    )
+  }
+
+  <h2>What it talks to</h2>
+  <ContextMap map={one.map} />
+  {
+    edges.length === 0 ? (
+      <p class="empty">{domain} declares no relationships, and nobody declares one with it</p>
+    ) : (
+      <ul class="rows">
+        {edges.map((edge) => {
+          const other = edge.between.find((id: string) => id !== domain) ?? domain;
+          return (
+            <li>
+              <div class="head">
+                <a href={href(`/domains/${encodeURIComponent(other)}/`)}>{other}</a>
+                <span class="tag">{labelOf(edge)}</span>
+                {edge.upstream ? (
+                  <span class="tag">{edge.upstream} upstream</span>
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
+      </ul>
+    )
+  }
+
+  {
+    one.features.length > 0 ? (
+      <>
+        <h2>Features</h2>
+        <ul class="rows">
+          {one.features.map((feature: any) => (
+            <li>
+              <div class="head">
+                <a href={href(featurePath(domain!, feature.id))}>{feature.name}</a>
+                <Badge {...featureBadge(feature.status)} />
+              </div>
+            </li>
+          ))}
+        </ul>
+      </>
+    ) : null
+  }
+
+  {
+    one.decisions.length > 0 ? (
+      <>
+        <h2>Decisions</h2>
+        <DecisionRows records={one.decisions.map((d: any) => ({ ...d, frontmatter: { status: d.status, date: d.date }, domain }))} empty="" />
+        <p class="note"><a href={href(`${domainPath(domain!)}decisions/`)}>{domain}'s decision log on its own</a></p>
+      </>
+    ) : null
+  }
+
+  {
+    one.debt.length > 0 ? (
+      <>
+        <h2>Debt</h2>
+        <DebtRows records={one.debt.map((d: any) => ({ ...d, frontmatter: { status: d.status, severity: d.severity, quadrant: d.quadrant, date: d.date }, domain }))} empty="" />
+        <p class="note"><a href={href(`${domainPath(domain!)}debt/`)}>{domain}'s debt on its own</a></p>
+      </>
+    ) : null
+  }
+
+  {
+    one.hasChangelog ? (
+      <p class="note">
+        <a href={href(changelogPath(domain))}>What has changed in {domain}</a>
+      </p>
+    ) : null
+  }
+</Page>
