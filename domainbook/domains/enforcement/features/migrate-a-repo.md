@@ -1,7 +1,7 @@
 ---
 id: migrate-a-repo
 name: Migrate a repo
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [migration, skill, book, domain, decision, feature]
 decisions: [ADR-0005, ADR-0007, format/ADR-0004]

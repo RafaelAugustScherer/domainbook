@@ -1,7 +1,7 @@
 ---
 id: decide-what-earns-a-record
 name: Decide what earns a record
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [skill, decision, feature]
 decisions: [ADR-0013, format/ADR-0004, format/ADR-0019]

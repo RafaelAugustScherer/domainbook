@@ -1,7 +1,7 @@
 ---
 id: document-this-change
 name: Document this change
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [skill, artifact, waiver, enforcement-loop, domain]
 decisions: [ADR-0013, enforcement/ADR-0001, enforcement/ADR-0003]

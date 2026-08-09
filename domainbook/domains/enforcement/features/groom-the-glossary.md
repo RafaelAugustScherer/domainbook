@@ -1,7 +1,7 @@
 ---
 id: groom-the-glossary
 name: Groom the glossary
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [skill, ubiquitous-language, domain]
 decisions: [ADR-0007, format/ADR-0005]
