@@ -11,6 +11,7 @@ import { buildDir, loadBook } from "@domainbook/core";
 import { fsRefusal, relate } from "./files.js";
 import { refuse, type Result, type Serving } from "./result.js";
 import { run } from "./run.js";
+import { broke } from "./site.js";
 
 const result = dispatch();
 const stream = result.code === 0 ? process.stdout : process.stderr;
@@ -23,15 +24,6 @@ try {
 } catch (thrown) {
   process.stderr.write(`${broke(thrown)}\n`);
   process.exitCode = 1;
-}
-
-function broke(thrown: unknown): string {
-  const message = thrown instanceof Error ? thrown.message : String(thrown);
-  if ((thrown as { code?: string }).code === "ERR_MODULE_NOT_FOUND")
-    return `the site could not be built here — ${
-      message.split("\n")[0]
-    }; run this from the repo domainbook is installed in, so its dependencies can be found`;
-  return `the site could not be built — ${message.split("\n")[0]}`;
 }
 
 async function serving(asked: Serving): Promise<void> {

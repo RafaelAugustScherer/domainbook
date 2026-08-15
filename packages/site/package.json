@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "description": "Read a domainbook book as a website",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RafaelAugustScherer/domainbook.git",
+    "directory": "packages/site"
+  },
   "type": "module",
   "engines": {
     "node": ">=24.18.1"

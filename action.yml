@@ -1,5 +1,8 @@
 name: domainbook
 description: Validate the book, and refuse a change that leaves a domain's book behind
+branding:
+  icon: book-open
+  color: purple
 
 inputs:
   root:
@@ -20,4 +23,4 @@ runs:
         DOMAINBOOK_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
         DOMAINBOOK_HEAD: ${{ github.event.pull_request.head.sha || github.sha }}
         DOMAINBOOK_CLI: npx -y domainbook@${{ inputs.version }}
-      run: ${{ github.action_path }}/run.sh
+      run: ${{ github.action_path }}/integrations/action/run.sh

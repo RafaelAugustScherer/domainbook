@@ -10,6 +10,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { run } from "../src/index.js";
+import { broke } from "../src/site.js";
 
 let home = "";
 let previous = "";
@@ -186,5 +187,26 @@ describe("what the config says about where the site publishes", () => {
       "site:\n  base: /domainbook/\n"
     );
     expect(run(["build"]).code).toBe(0);
+  });
+});
+
+describe("what the CLI says when the website is not installed", () => {
+  function missing(pkg: string): Error {
+    return Object.assign(
+      new Error(`Cannot find package '${pkg}' imported from bin.js`),
+      { code: "ERR_MODULE_NOT_FOUND" }
+    );
+  }
+
+  it("names the install when @domainbook/site cannot be found", () => {
+    expect(broke(missing("@domainbook/site"))).toBe(
+      'the website is not installed — the CLI ships without it; run "npm i -g domainbook @domainbook/site" (or add both to this project), then try again'
+    );
+  });
+
+  it("keeps the wrong-place message for another missing module", () => {
+    expect(broke(missing("astro"))).toContain(
+      "run this from the repo domainbook is installed in"
+    );
   });
 });

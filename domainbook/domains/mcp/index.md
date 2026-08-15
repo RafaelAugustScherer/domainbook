@@ -8,6 +8,7 @@ classification:
 owners: [RafaelAugustScherer]
 code:
   - packages/mcp/**
+  - server.json
 relationships:
   - with: core
     type: upstream-downstream

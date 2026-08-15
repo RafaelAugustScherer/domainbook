@@ -96,6 +96,7 @@ npm test              # vitest
 npm run lint          # eslint: typescript-eslint + sonarjs recommended
 npm run duplication   # jscpd copy/paste gate
 npm run schemas       # regenerate committed JSON Schema; CI fails on drift
+npx changeset status --since=origin/main   # CI fails a packages/** change with no changeset
 npm audit --audit-level=high --package-lock-only   # CI fails on high or critical
 ```
 
@@ -146,3 +147,29 @@ complexity, duplicated branches). Fix the code rather than disabling a rule; a
   `install-the-git-hook.md`).
 - Tests accompany the change: unit tests next to the package
   (`packages/*/test`), fixtures under `test/fixtures`.
+
+## Releasing
+
+domainbook publishes to npm from CI with changesets; the version numbers and the
+per-package `CHANGELOG.md` files are generated, never hand-edited (`ADR-0014`).
+
+- **Every change to a published package carries a changeset.** `npx changeset`
+  writes one — pick the bump per package and describe the change in a sentence,
+  which becomes that package's changelog entry. CI refuses a PR that touches
+  `packages/**` with none (`changeset status`). A change that needs no release —
+  docs, a refactor, a test-only edit — satisfies the gate with an empty changeset:
+  `npx changeset --empty`. That is the release twin of the `Skip-Docs:` waiver: an
+  intentional, committed "no release here", auditable in the same way.
+- **The release runs itself.** On a push to `main`, `.github/workflows/release.yml`
+  opens a "Version Packages" PR that consumes the changesets and bumps versions;
+  merging that PR builds and publishes every changed package to npm with provenance
+  (`npm run release` → `changeset publish`). It needs an `NPM_TOKEN` repo secret and
+  the "Allow GitHub Actions to create and approve pull requests" setting enabled
+  once. The first release is `1.0.0`.
+- **The server, the Action, and the plugin publish beside npm.** After the npm
+  publish: `mcp-publisher publish` sends `server.json` to the MCP Registry — the
+  `mcpName` in `@domainbook/mcp` must match its `name`, and the npm package must be
+  live first; a GitHub release with "Publish this Action to the Marketplace" ticked
+  lists the root `action.yml`; the Claude Code plugin is already served from
+  `.claude-plugin/marketplace.json`, which a consumer adds with `/plugin marketplace
+  add RafaelAugustScherer/domainbook`.

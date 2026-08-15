@@ -4,7 +4,7 @@ name: Build the site
 status: implemented
 owners: [RafaelAugustScherer]
 terms: [book, book-root, artifact, issue]
-decisions: [site/ADR-0001, ADR-0006]
+decisions: [site/ADR-0001, ADR-0006, core/ADR-0011]
 ---
 
 ## Story
@@ -121,6 +121,20 @@ Example: A repo with no book
   Given a git repo with no domainbook folder
   When domainbook build runs
   Then it refuses with: domainbook: no book here — run "domainbook init domainbook" to write one
+  And it exits 1
+```
+
+## Rule: The website is a separate install, and its absence is named
+
+`build` renders the site, so it needs `@domainbook/site`, which the CLI does not
+install (`core/ADR-0011`). When it is absent, `build` names what to install
+rather than failing with a stack trace.
+
+```gherkin
+Example: build without the website installed names what to install
+  Given a git repo with a book at domainbook, and @domainbook/site installed nowhere on it
+  When domainbook build runs
+  Then it refuses with: the website is not installed — the CLI ships without it; run "npm i -g domainbook @domainbook/site" (or add both to this project), then try again
   And it exits 1
 ```
 

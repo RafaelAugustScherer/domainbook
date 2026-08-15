@@ -7,9 +7,9 @@ The book under `domainbook/` documents this codebase, and a commit hook checks i
 | Code | Book |
 | --- | --- |
 | `packages/core/src/body/**`, `packages/core/src/change.ts`, `packages/core/src/check.ts`, `packages/core/src/check/**`, `packages/core/src/index.ts`, `packages/core/src/issue.ts`, `packages/core/src/load.ts`, `packages/core/src/load/**`, `packages/core/src/log.ts`, `packages/core/src/map.ts`, `packages/core/src/model.ts`, `packages/core/src/read.ts`, `packages/core/src/ref.ts`, `packages/core/src/unicode.ts`, `packages/core/src/validate.ts`, `packages/core/test/*.ts`, `packages/cli/**` | `domainbook/domains/core/` |
-| `integrations/**` | `domainbook/domains/enforcement/` |
+| `integrations/**`, `action.yml` | `domainbook/domains/enforcement/` |
 | `packages/core/src/schemas/**`, `packages/core/src/frontmatter.ts`, `packages/core/schema/**`, `packages/core/scripts/**`, `packages/core/test/fixtures/**` | `domainbook/domains/format/` |
-| `packages/mcp/**` | `domainbook/domains/mcp/` |
+| `packages/mcp/**`, `server.json` | `domainbook/domains/mcp/` |
 | `packages/site/**` | `domainbook/domains/site/` |
 
 Any file under a domain's folder clears the check for that domain — the canvas, the glossary, the changelog, a feature, a decision, or a debt record. A change across several domains updates each of their books, or carries one record at the book root: a decision under `domainbook/decisions/` or an entry in `domainbook/changelog.md`.

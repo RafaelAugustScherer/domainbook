@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "description": "Scaffold and validate a domainbook book",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RafaelAugustScherer/domainbook.git",
+    "directory": "packages/cli"
+  },
   "type": "module",
   "engines": {
     "node": ">=24.18.1"
@@ -22,10 +27,18 @@
   },
   "dependencies": {
     "@domainbook/core": "0.0.0",
-    "@domainbook/mcp": "0.0.0",
-    "@domainbook/site": "0.0.0"
+    "@domainbook/mcp": "0.0.0"
+  },
+  "peerDependencies": {
+    "@domainbook/site": "*"
+  },
+  "peerDependenciesMeta": {
+    "@domainbook/site": {
+      "optional": true
+    }
   },
   "devDependencies": {
+    "@domainbook/site": "*",
     "@types/node": "^24.9.2",
     "vitest": "4.1.10"
   }
