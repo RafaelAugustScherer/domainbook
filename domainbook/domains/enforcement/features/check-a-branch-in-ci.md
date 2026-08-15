@@ -127,6 +127,22 @@ Example: A checkout that reaches the base commit is judged normally
   And the action fails
 ```
 
+## Rule: The action fails the check; a required status check is what blocks the merge
+
+The action's job ends at the verdict — it fails its check, and there it stops. A
+failed check holds nothing back on its own; a pull request can still be merged
+over a red one. What turns the red check into a wall is the protection on the
+branch marking the check required. Mark it required on the branch you protect, so
+a commit that skipped the local hooks meets the server-side check as a gate and
+not as a button someone can click past.
+
+A repo that releases with Changesets is the one case that needs a hand here: its
+version pull request consumes every changeset and updates the generated
+`CHANGELOG.md` and `package.json` under paths a domain claims, with no book change
+of its own. Give that generated commit a `Skip-Docs` trailer — Changesets writes
+the commit message from a `commit-message` input — so the check the branch now
+requires still passes on the release.
+
 ## Open Questions
 
 None.
