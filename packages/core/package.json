@@ -1,6 +1,6 @@
 {
   "name": "@domainbook/core",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Schemas and shared model for domainbook books",
   "license": "MIT",
   "repository": {

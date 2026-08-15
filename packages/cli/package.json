@@ -1,6 +1,6 @@
 {
   "name": "domainbook",
-  "version": "0.0.0",
+  "version": "1.0.0",
   "description": "Scaffold and validate a domainbook book",
   "license": "MIT",
   "repository": {
@@ -26,8 +26,8 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@domainbook/core": "0.0.0",
-    "@domainbook/mcp": "0.0.0"
+    "@domainbook/core": "1.0.0",
+    "@domainbook/mcp": "1.0.0"
   },
   "peerDependencies": {
     "@domainbook/site": "*"
