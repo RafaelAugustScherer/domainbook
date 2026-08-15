@@ -27,4 +27,8 @@ jobs:
         with:
           version-script: npx changeset version
           publish-script: npm run release
+          commit-message: |
+            Version Packages
+
+            Skip-Docs: changeset release — generated changelogs and version bumps, no behaviour or vocabulary change
           github-token: ${{ secrets.GITHUB_TOKEN }}
