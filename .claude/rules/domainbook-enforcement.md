@@ -1,6 +1,7 @@
 ---
 paths:
   - "integrations/**"
+  - "action.yml"
 ---
 
 # Enforcement

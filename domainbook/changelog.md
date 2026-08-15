@@ -15,6 +15,19 @@ the decision it references, not here (`ADR-0006`).
 
 ### Added
 
+- domainbook 1.0.0 publishes to npm. The CLI (`domainbook`), the shared model
+  (`@domainbook/core`), the MCP server (`@domainbook/mcp`), and the website
+  (`@domainbook/site`) go public together, versioned by changesets and released
+  from CI with npm provenance; the repo is public, so the attestation is too
+  (`ADR-0014`). A `server.json` describes the MCP server for the MCP Registry
+  under `io.github.RafaelAugustScherer/domainbook`, a root-level `action.yml`
+  lists the enforcement GitHub Action on the Marketplace, and the Claude Code
+  plugin ships from the marketplace manifest already in the repo. Release and
+  packaging config — every `package.json`, `.changeset/`, the workflows,
+  `server.json`, the marketplace manifests — belongs to no domain and is recorded
+  at the book root, which closes the question `domains/core` carried about who
+  owns a manifest. The `create-domainbook` wrapper the roadmap named was dropped:
+  `npx domainbook init`, which the exit criterion names, already does it.
 - `domainbook export <target>` writes the book as the formats other tools read,
   each under `<book>/build/<target>/` — the folder `format/ADR-0020` reserves and
   gitignores, so no export reaches a commit. Six targets. `contextive` writes each

@@ -4,13 +4,22 @@ Living documentation for codebases worked on by agents. Markdown in-repo, git-ve
 explorable as a website, queryable over MCP, and — the differentiator — **enforced**:
 every code change must update the book or carry an explicit, auditable waiver.
 
-**Status: early development.** Phase 0 (foundations and spec), Phase 1 (core and CLI)
-and Phase 1.1 (technical debt records) are done: the format is specified, and a CLI
-scaffolds a book and validates one. Nothing is published to npm yet, so the tool runs
-from a checkout. Enforcement, the MCP server, and the website are still ahead. The
-build plan lives in
-[domainbook/roadmap.md](domainbook/roadmap.md), and domainbook documents itself with its
-own format under [domainbook/](domainbook/).
+## Quickstart
+
+```bash
+npm i -D domainbook            # add it to your project (-g to use it anywhere)
+npx domainbook init            # write the first book into domainbook/
+npx domainbook new domain billing
+npx domainbook validate        # schema + references + conventions, one line per issue
+npx domainbook serve mcp       # answer an agent's questions over MCP
+```
+
+`init` scaffolds a book that already validates, wires the enforcement rule into your
+agent instructions (`AGENTS.md`, `CLAUDE.md`, `.claude/rules/`), and writes an `.mcp.json`
+so an agent client can query the book. From there you map code to domains and let the
+hook keep the two in step: install it with `npx domainbook hooks install`, and a commit
+that changes mapped code without updating that domain's book is refused until you fix the
+book or waive it with a `Skip-Docs: <reason>` trailer.
 
 ## The book
 
@@ -48,28 +57,108 @@ body, and their schemas describe the parsed result.
 
 | Package | Contents |
 |---|---|
-| `@domainbook/core` | zod schemas, generated JSON Schema, frontmatter parsing, the loader and model graph, reference resolution, validation |
-| `domainbook` | the CLI: `init`, `validate`, and `new` for domains, features, decisions and debt records. Its only dependency is `@domainbook/core` |
+| [`domainbook`](packages/cli) | the CLI: `init`, `validate`, `new`, `check`, `hooks`, `instructions`, `export`, `serve`, `build` |
+| [`@domainbook/core`](packages/core) | zod schemas, generated JSON Schema, frontmatter parsing, the loader and model graph, reference resolution, validation, the staged-diff check |
+| [`@domainbook/mcp`](packages/mcp) | the MCP server — eight read-only tools over `@modelcontextprotocol/server` |
+| [`@domainbook/site`](packages/site) | the explorable website — an Astro app that reads the book from disk |
 
-The MCP server and site packages arrive in their own phases.
+Add the CLI to your project with `npm i -D domainbook`, so `npm ci` gives every contributor
+the same pinned version and the commit hook resolves it; then run it with `npx domainbook
+<command>`. For use outside any one project, `npm i -g domainbook` works too. The MCP server
+comes with it. The website is heavier — Astro and a search index — so the CLI names
+`@domainbook/site` but does not install it: add it the same way when you want `domainbook
+serve web` or `domainbook build` (`npm i -D @domainbook/site`).
+
+## Enforcement, three layers plus a waiver
+
+The steering is agent instructions; the guarantee is hooks and CI.
+
+- **Git hook** (`domainbook hooks install`) — a `commit-msg` hook that refuses a commit
+  which changes mapped code but leaves that domain's book behind.
+- **Claude Code plugin** — a `Stop` hook that runs the same check over a session's changes,
+  so the agent fixes the book while it still has the context. Add the marketplace and
+  install it:
+
+  ```
+  /plugin marketplace add RafaelAugustScherer/domainbook
+  /plugin install domainbook@domainbook
+  ```
+- **GitHub Action** — the server-side backstop, judging the whole PR as one change:
+
+  ```yaml
+  - uses: RafaelAugustScherer/domainbook@v1
+  ```
+- **Waiver** — `Skip-Docs: <reason>` as a commit trailer. Agents must give a reason; a
+  human may bypass prose with `SKIP_DOCS=1 git commit …`, which the hook auto-stamps.
+  Either way the trailer is in `git log` forever.
+
+## Ask the book over MCP
+
+`domainbook serve mcp` (or the `.mcp.json` that `init` writes) exposes eight read-only
+tools — `search_book`, `get_domain`, `get_context_map`, `explain_terms`, `get_feature`,
+`get_decisions`, `get_changelog`, and `where_to_document` — so an agent answers "what does
+*settlement* mean and which features touch it?" or "which book files does this diff need?"
+without reading the whole repo. `init` also writes install snippets for Cursor, VS Code,
+Codex, and Gemini CLI.
+
+## Export into other tools
+
+`domainbook export <target>` writes the book in the formats other tools read, under
+`<book>/build/<target>/`:
+
+| Target | Output |
+|---|---|
+| `contextive` | a Contextive `*.glossary.yml` per glossary |
+| `cml` | a Context Mapper DSL model |
+| `structurizr` | a Structurizr system-landscape `.dsl` |
+| `mermaid` | the context map as a Mermaid flowchart |
+| `gherkin` | a Cucumber `.feature` per feature |
+| `json` | the whole model as one JSON document, typed by a committed schema |
+
+## How it compares
+
+domainbook overlaps with several tools and, where it can, exports into them rather than
+competing:
+
+- **[EventCatalog](https://www.eventcatalog.dev/)** pioneered git-versioned architecture
+  catalogs and centers on event-driven systems — services, messages, schemas. domainbook
+  centers on domain knowledge, feature behaviour, and decisions, is agnostic to
+  architecture style, and adds enforcement.
+- **[Backstage](https://backstage.io/)** is a hosted developer portal with a software
+  catalog and plugins. domainbook is plain markdown in the repo, versioned by git, with no
+  service to run.
+- **[Structurizr](https://structurizr.com/) / C4** and
+  **[Context Mapper](https://contextmapper.org/)** model architecture and DDD context maps
+  as code. domainbook derives its context map from `relationships:` frontmatter and
+  exports to both, rather than being drawn by hand.
+- **[MADR](https://adr.github.io/madr/)** and **[Contextive](https://contextive.tech/)**
+  own the decision-record and IDE-glossary formats domainbook adopts and exports to.
+
+What is distinct: domainbook treats **feature scenarios as first-class** artifacts, and it
+is the one that **enforces** the documentation — a code change updates the book or carries
+an audited waiver, checked by a git hook and a CI backstop.
 
 ## Development
 
 ```bash
-npm install
+npm install           # also installs this repo's own commit hook
 npm test
-npm run build         # compile both packages
+npm run build         # tsc --build across the workspace
 npm run schemas       # regenerate the committed JSON Schema files
+npm run lint
 npm run duplication   # jscpd copy/paste check
 ```
 
-The CLI runs from the build, and this repo's own book is what it reads by default:
+domainbook documents itself with its own format under [domainbook/](domainbook/); the
+build plan is [domainbook/roadmap.md](domainbook/roadmap.md), and `CONTRIBUTING.md` is how
+the code is written. The CLI runs from the build, and this repo's own book is what it reads
+by default:
 
 ```bash
 node packages/cli/dist/bin.js validate
 ```
 
-Requires Node 24.18.0 or newer — the version in `.nvmrc` is what CI runs, and
+Requires Node 24.18.1 or newer — the version in `.nvmrc` is what CI runs, and
 `engine-strict` makes npm refuse to install under anything older.
 
 ## License

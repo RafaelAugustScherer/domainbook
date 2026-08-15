@@ -70,8 +70,11 @@ the CLI is where a person or an agent meets domainbook at all.
 - Validation is three layers and all of them are here: schema conformance,
   referential integrity, convention checks. A rule that cannot survive into the
   published JSON Schema runs here instead (`format/ADR-0002`).
-- The published CLI carries no runtime dependency but `@domainbook/core`
-  (`core/ADR-0001`).
+- The published CLI carries `@domainbook/core` and the MCP server
+  `@domainbook/mcp` (`core/ADR-0008`), and no argument-parser framework
+  (`core/ADR-0001`). The website `@domainbook/site` is an optional peer the CLI
+  names but does not install, because `astro` is heavy and `serve web` and
+  `build` are the rare commands that need it (`core/ADR-0011`).
 - Markdown is read by a line scanner of our own rather than an AST library,
   because every issue has to carry the line it is about (`core/ADR-0002`).
 - One mistake gets one message, and a message names the file, the field, and the
@@ -107,6 +110,9 @@ the CLI is where a person or an agent meets domainbook at all.
   next command then rejects.
 - Generated YAML quotes any scalar a parser could read as something else, so a
   legal id like `9` or `no` survives the round trip (`core/ADR-0005`).
+- Release and packaging config — the manifests, `.changeset/`, the workflows,
+  `server.json` — belongs to no context and is recorded at the book root, not
+  here (`ADR-0014`).
 
 ## Assumptions
 
@@ -125,8 +131,9 @@ the CLI is where a person or an agent meets domainbook at all.
   fix. Both should stay at zero; every broken fixture asserts a single line.
 - Files the generators write that `validate` then rejects — zero, and the CLI
   tests run the whole flow rather than each command alone.
-- Runtime dependencies of the published CLI. It is one, and it moves only with a
-  decision.
+- Runtime dependencies of the published CLI. They are two — `@domainbook/core`
+  and `@domainbook/mcp` — and each moves only with a decision; the website is an
+  optional peer, not among them.
 - How long `validate` takes on this book as the book grows.
 
 ## Open Questions
@@ -136,8 +143,6 @@ the CLI is where a person or an agent meets domainbook at all.
 - `packages/core/src/index.ts` is this context's file but re-exports format's
   schemas. Should the published surface be split per context, or is one entry
   point right?
-- `packages/core/package.json` belongs to no context, because it holds both
-  contexts' dependencies. Should manifests be mapped at all, and to whom?
 - Every issue fails the run today. Is a warning level worth the ambiguity of a
   book that is valid with reservations?
 - `init` names the book after the folder that *contains* the book root, which is

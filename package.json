@@ -17,10 +17,11 @@
     "lint": "eslint .",
     "schemas": "npm run schemas --workspace @domainbook/core",
     "duplication": "jscpd",
-    "changeset": "changeset"
+    "changeset": "changeset",
+    "release": "npm run build && changeset publish"
   },
   "devDependencies": {
-    "@changesets/cli": "2.31.1",
+    "@changesets/cli": "3.0.0",
     "@eslint/js": "10.0.1",
     "@types/node": "^24.9.2",
     "eslint": "10.8.0",

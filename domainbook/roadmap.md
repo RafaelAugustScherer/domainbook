@@ -9,7 +9,7 @@ milestones:
   - { id: phase-4, name: Website, status: done }
   - { id: phase-5, name: Migration and agent authoring, status: done }
   - { id: phase-6, name: Exports and interop, status: done }
-  - { id: phase-7, name: Release and distribution, status: planned }
+  - { id: phase-7, name: Release and distribution, status: in-progress }
 ---
 
 # domainbook roadmap
@@ -420,11 +420,16 @@ Exit: each export validates in its target tool.
 
 ### Phase 7 — Release and distribution
 
-- npm publish (`domainbook`, `create-domainbook` wrapper), versioned via changesets.
+- npm publish — `domainbook`, `@domainbook/core`, `@domainbook/mcp`, `@domainbook/site`
+  — versioned via changesets and released from CI with provenance. The
+  `create-domainbook` wrapper named here was dropped: `npx domainbook init`, which the
+  exit criterion already names, is the one-command start, and a second package for the
+  `npm create` shorthand did not earn its place (`ADR-0014`).
 - Claude Code plugin published; GitHub Action on the marketplace; `server.json` to the
   MCP Registry.
-- README, quickstart, demo repo, and a comparison page with related tools — written in
-  a neutral, factual register.
+- README, quickstart, and a comparison section with related tools — written in a
+  neutral, factual register. The demo is this repo and its published site (Phase 4's
+  live demo), not a separate repo.
 
 Exit: a stranger can go from `npx domainbook init` to enforced, explorable, MCP-served
 docs without reading the source.

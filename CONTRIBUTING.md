@@ -96,6 +96,7 @@ npm test              # vitest
 npm run lint          # eslint: typescript-eslint + sonarjs recommended
 npm run duplication   # jscpd copy/paste gate
 npm run schemas       # regenerate committed JSON Schema; CI fails on drift
+npx changeset status --since=origin/main   # CI fails a packages/** change with no changeset
 npm audit --audit-level=high --package-lock-only   # CI fails on high or critical
 ```
 
@@ -146,3 +147,41 @@ complexity, duplicated branches). Fix the code rather than disabling a rule; a
   `install-the-git-hook.md`).
 - Tests accompany the change: unit tests next to the package
   (`packages/*/test`), fixtures under `test/fixtures`.
+
+## Releasing
+
+domainbook publishes to npm from CI with changesets; the version numbers and the
+per-package `CHANGELOG.md` files are generated, never hand-edited (`ADR-0014`).
+
+- **Every change to a published package carries a changeset.** `npx changeset`
+  writes one — pick the bump per package and describe the change in a sentence,
+  which becomes that package's changelog entry. CI refuses a PR that touches
+  `packages/**` with none (`changeset status`). A change that needs no release —
+  docs, a refactor, a test-only edit — satisfies the gate with an empty changeset:
+  `npx changeset --empty`. That is the release twin of the `Skip-Docs:` waiver: an
+  intentional, committed "no release here", auditable in the same way.
+- **The release runs itself, with no token.** On a push to `main`,
+  `.github/workflows/release.yml` opens a "Version Packages" PR that consumes the
+  changesets and bumps versions; merging that PR builds and publishes every changed
+  package to npm (`npm run release` → `changeset publish`). It authenticates with
+  [trusted publishing](https://docs.npmjs.com/trusted-publishers/) over OIDC — the
+  workflow's `id-token: write` is the credential, there is no `NPM_TOKEN` secret, and
+  provenance is attached automatically. Enabled once: the "Allow GitHub Actions to
+  create and approve pull requests" setting, and a trusted publisher on npmjs.com for
+  each of the four packages (repository `RafaelAugustScherer/domainbook`, workflow
+  `release.yml`, action `npm publish`). This replaces long-lived automation tokens,
+  which npm is retiring through 2026–2027.
+- **The first `1.0.0` is published by hand.** npm has no pending publisher, so a
+  package must exist before its trusted publisher can be registered — the first
+  version bootstraps it. Once, from a clean `main` with npm ≥ 11.5.1: `npx changeset
+  version`, then `npm ci && npm run build`, `npm login`, then `npx changeset publish`
+  and approve each package with 2FA. That first publish carries no provenance (a
+  local publish cannot attest); register the trusted publishers after it, and every
+  release from `1.0.1` on runs from CI with provenance.
+- **The server, the Action, and the plugin publish beside npm.** After the npm
+  publish: `mcp-publisher publish` sends `server.json` to the MCP Registry — the
+  `mcpName` in `@domainbook/mcp` must match its `name`, and the npm package must be
+  live first; a GitHub release with "Publish this Action to the Marketplace" ticked
+  lists the root `action.yml`; the Claude Code plugin is already served from
+  `.claude-plugin/marketplace.json`, which a consumer adds with `/plugin marketplace
+  add RafaelAugustScherer/domainbook`.

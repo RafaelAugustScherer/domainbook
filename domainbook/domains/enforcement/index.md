@@ -8,6 +8,7 @@ classification:
 owners: [RafaelAugustScherer]
 code:
   - integrations/**
+  - action.yml
 relationships:
   - with: format
     type: customer-supplier

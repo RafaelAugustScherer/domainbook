@@ -2,7 +2,13 @@
   "name": "@domainbook/mcp",
   "version": "0.0.0",
   "description": "Serve a domainbook book over MCP",
+  "mcpName": "io.github.RafaelAugustScherer/domainbook",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RafaelAugustScherer/domainbook.git",
+    "directory": "packages/mcp"
+  },
   "type": "module",
   "engines": {
     "node": ">=24.18.1"

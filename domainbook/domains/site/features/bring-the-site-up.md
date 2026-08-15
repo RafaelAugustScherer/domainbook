@@ -4,7 +4,7 @@ name: Bring the site up
 status: implemented
 owners: [RafaelAugustScherer]
 terms: [book, book-root, artifact, issue]
-decisions: [site/ADR-0001]
+decisions: [site/ADR-0001, core/ADR-0011]
 ---
 
 ## Story
@@ -142,6 +142,32 @@ Example: A root that is not a book
   When domainbook serve web docs/book runs
   Then it refuses with: docs/book: no book here — run "domainbook init docs/book" to write one
   And it exits 1
+```
+
+## Rule: The website is a separate install, and its absence is named
+
+The CLI carries the MCP server but not the site, which pulls a large toolchain
+few commands need (`core/ADR-0011`). The two commands that do need it name what
+to install rather than failing with a stack trace.
+
+```gherkin
+Example: serve web without the website installed names what to install
+  Given a git repo with a book at domainbook, and @domainbook/site installed nowhere on it
+  When domainbook serve web runs
+  Then it refuses with: the website is not installed — the CLI ships without it; add @domainbook/site to this project with "npm i -D @domainbook/site" (or "-g" if you installed domainbook globally), then try again
+  And it exits 1
+
+Example: serve asks for both, so without the website it refuses rather than serving the server alone
+  Given a git repo with a book at domainbook, and @domainbook/site installed nowhere on it
+  When domainbook serve runs
+  Then it refuses with: the website is not installed — the CLI ships without it; add @domainbook/site to this project with "npm i -D @domainbook/site" (or "-g" if you installed domainbook globally), then try again
+  And it exits 1
+
+Example: serve mcp needs nothing but the CLI, so it comes up with the website absent
+  Given a git repo with a book at domainbook, and @domainbook/site installed nowhere on it
+  When domainbook serve mcp runs
+  Then it speaks MCP on stdio
+  And it never reaches for the website
 ```
 
 ## Open Questions

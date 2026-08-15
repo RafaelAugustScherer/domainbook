@@ -32,6 +32,9 @@ jobs:
           DOMAINBOOK_HEAD: ${{ github.event.pull_request.head.sha }}
           DOMAINBOOK_CLI: node packages/cli/dist/bin.js
         run: ./integrations/action/run.sh
+      - name: A publishable change carries a changeset
+        if: github.event_name == 'pull_request'
+        run: npx changeset status --since=${{ github.event.pull_request.base.sha }}
       - name: No high or critical vulnerabilities
         run: npm audit --audit-level=high --package-lock-only
       - name: No duplicated code above threshold

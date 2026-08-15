@@ -3,6 +3,11 @@
   "version": "0.0.0",
   "description": "Schemas and shared model for domainbook books",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RafaelAugustScherer/domainbook.git",
+    "directory": "packages/core"
+  },
   "type": "module",
   "engines": {
     "node": ">=24.18.1"
