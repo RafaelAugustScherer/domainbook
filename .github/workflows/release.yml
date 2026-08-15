@@ -28,6 +28,3 @@ jobs:
           version-script: changeset version
           publish-script: npm run release
           github-token: ${{ secrets.GITHUB_TOKEN }}
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
