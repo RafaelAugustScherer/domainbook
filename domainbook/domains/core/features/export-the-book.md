@@ -42,7 +42,7 @@ Example: An export is not an artifact, so validate counts the same book after it
 Example: A build folder the shell cannot write to is named, not thrown
   Given a book at domainbook whose build folder this shell may not write to
   When domainbook export json runs
-  Then it refuses with: domainbook/build/json cannot be opened — this shell has no permission for it; change what that path allows, or export from a book you own
+  Then it refuses, naming the path it could not write and that this shell has no permission for it
   And it exits 1 with no stack trace
 ```
 

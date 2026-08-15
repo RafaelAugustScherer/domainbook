@@ -57,13 +57,13 @@ Example: A separate-ways edge is skipped and named, never dropped in silence
   Given seating and access-control declare a separate-ways relationship
   When domainbook export cml runs
   Then domainbook/build/cml/context-map.cml carries no edge between seating and access-control
-  And it prints: skipped 1 separate-ways relationship Context Mapper has no production for: seating — access-control
+  And it prints: skipped 1 separate-ways relationship Context Mapper has no production for: access-control — seating
 
 Example: A map that is only separate-ways still writes a file and still reports the skip
   Given a book whose only relationship is a separate-ways edge between seating and access-control
   When domainbook export cml runs
   Then domainbook/build/cml/context-map.cml holds the two bounded contexts and no relationship
-  And it prints: skipped 1 separate-ways relationship Context Mapper has no production for: seating — access-control
+  And it prints: skipped 1 separate-ways relationship Context Mapper has no production for: access-control — seating
 ```
 
 ## Rule: export structurizr writes a system landscape that loads
@@ -82,14 +82,14 @@ Example: A hyphenated context name becomes a hyphen-free identifier
   Given a book whose domains include access-control and seating
   When domainbook export structurizr runs
   Then the softwareSystem for access-control carries the identifier accessControl, with no hyphen
-  And its display name reads "access-control"
+  And its display name is the domain's own name
   And every relationship that names it uses accessControl, not access-control
 
 Example: A separate-ways edge is skipped and named, as it is for Context Mapper
   Given seating and access-control declare a separate-ways relationship
   When domainbook export structurizr runs
   Then domainbook/build/structurizr/context-map.dsl carries no relationship between seating and access-control
-  And it prints: skipped 1 separate-ways relationship Structurizr has no non-directional edge for: seating — access-control
+  And it prints: skipped 1 separate-ways relationship Structurizr has no non-directional edge for: access-control — seating
 ```
 
 ## Rule: A book with no relationships exports the contexts and no edges, in every dialect

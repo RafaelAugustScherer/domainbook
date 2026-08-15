@@ -15,6 +15,22 @@ the decision it references, not here (`ADR-0006`).
 
 ### Added
 
+- `domainbook export <target>` writes the book as the formats other tools read,
+  each under `<book>/build/<target>/` — the folder `format/ADR-0020` reserves and
+  gitignores, so no export reaches a commit. Six targets. `contextive` writes each
+  glossary as a Contextive `*.glossary.yml`, a domain's scoped to its `code:` globs
+  and the book's own applying everywhere, with deprecated terms left out and
+  counted. `mermaid`, `cml` and `structurizr` write the context map in three
+  dialects from one derivation — `export mermaid` reuses the site's, now lifted
+  into core so the two cannot diverge; `separate-ways` is drawn dashed in Mermaid
+  and skipped-and-named in the two modelling dialects, whose grammars also force a
+  hyphenated id to an alphanumeric identifier (`core/ADR-0009`, `ADR-0007`).
+  `gherkin` writes each feature as a `.feature` file whose scenarios parse under
+  the pinned parser. `json` writes the whole model as one document typed by its own
+  schema, references resolved to entries in the same document (`core/ADR-0010`). An
+  export refuses a book that does not validate, in `validate`'s own words, and a
+  re-run replaces what it wrote, so a source removed between runs leaves no stale
+  file behind.
 - Four skills the plugin ships under `integrations/plugin/skills/`, the procedures
   an agent follows to write the book rather than only to be blocked from skipping
   it: `migrate-a-repo` takes a repo with no book to a validated one through an

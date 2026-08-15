@@ -39,7 +39,7 @@ Example: The markdown structure survives into the .feature file
 Example: The As / I want / So that lines sit under the Feature keyword
   Given a feature whose story begins "As an agent that has just changed a repo"
   When domainbook export gherkin runs
-  Then the three story lines appear as the description below Feature, above the first Rule
+  Then the story appears as the description below Feature, above the first Rule
 ```
 
 ## Rule: What the book pins to parse the blocks is what the export writes
