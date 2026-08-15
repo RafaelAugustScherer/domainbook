@@ -10,6 +10,7 @@ import {
   domainSchema,
   featureSchema,
   glossarySchema,
+  modelSchema,
   roadmapSchema,
 } from "../dist/index.js";
 
@@ -21,6 +22,7 @@ const schemas = {
   domain: domainSchema,
   feature: featureSchema,
   glossary: glossarySchema,
+  model: modelSchema,
   roadmap: roadmapSchema,
 };
 

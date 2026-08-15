@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { check, type Source } from "./check.js";
+import { exportTo } from "./export.js";
 import { bookRoot } from "./files.js";
 import { hooksInstall, hooksUninstall } from "./hooks.js";
 import { init } from "./init.js";
@@ -101,6 +102,11 @@ const commands = {
     usage: "domainbook build [root]",
     options: [],
   },
+  export: {
+    name: "domainbook export",
+    usage: "domainbook export <target> [root]",
+    options: [],
+  },
   domain: {
     name: "domainbook new domain",
     usage: "domainbook new domain <id> [root]",
@@ -136,6 +142,7 @@ const help = [
   `  ${commands.instructions.usage}`,
   `  ${commands.serve.usage}`,
   `  ${commands.build.usage}`,
+  `  ${commands.export.usage}`,
   `  ${commands.domain.usage}`,
   `  ${commands.feature.usage}`,
   `  ${commands.decision.usage}`,
@@ -150,6 +157,7 @@ const help = [
   "  serve          read the book in a browser and answer it over MCP; name",
   "                 web or mcp to bring up only one of them",
   "  build          write the book as a static site anyone can publish",
+  "  export         write the book as the formats other tools read",
   "  new            add a domain page, a feature, a decision, or a debt record",
   "",
   "options:",
@@ -195,7 +203,7 @@ export function run(argv: string[]): Result {
   }
   if (command === undefined)
     return refuse(
-      'domainbook needs a command — validate, init, check, hooks, instructions, serve, build, or new; run "domainbook --help" to see them'
+      'domainbook needs a command — validate, init, check, hooks, instructions, serve, build, export, or new; run "domainbook --help" to see them'
     );
   if (command === "validate")
     return (
@@ -220,10 +228,11 @@ export function run(argv: string[]): Result {
     return (
       stop(commands.build, values, positionals, 2) ?? build(bookRoot(second))
     );
+  if (command === "export") return runExport(values, positionals);
   if (command === "hooks") return runHooks(values, positionals);
   if (command !== "new")
     return refuse(
-      `"${command}" is not a domainbook command — the commands are validate, init, check, hooks, instructions, serve, build, and new; run "domainbook --help" to see them`
+      `"${command}" is not a domainbook command — the commands are validate, init, check, hooks, instructions, serve, build, export, and new; run "domainbook --help" to see them`
     );
   return runNew(values, positionals);
 }
@@ -262,6 +271,14 @@ function runServe(values: Values, positionals: string[]): Result {
     (targeted
       ? serve(second, bookRoot(third))
       : serve(undefined, bookRoot(second)))
+  );
+}
+
+function runExport(values: Values, positionals: string[]): Result {
+  const [, second, third] = positionals;
+  return (
+    stop(commands.export, values, positionals, 3) ??
+    exportTo(second ?? "", bookRoot(third))
   );
 }
 
@@ -395,7 +412,8 @@ function asked(argv: string[]): Command | undefined {
     first === "check" ||
     first === "instructions" ||
     first === "serve" ||
-    first === "build"
+    first === "build" ||
+    first === "export"
   )
     return commands[first];
   if (first === "hooks")

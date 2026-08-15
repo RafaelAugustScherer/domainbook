@@ -363,13 +363,13 @@ describe("validate", () => {
 describe("what the CLI says when it is misused", () => {
   it("names an unknown command and lists the real ones", () => {
     expect(failed("chekc")).toEqual([
-      '"chekc" is not a domainbook command — the commands are validate, init, check, hooks, instructions, serve, build, and new; run "domainbook --help" to see them',
+      '"chekc" is not a domainbook command — the commands are validate, init, check, hooks, instructions, serve, build, export, and new; run "domainbook --help" to see them',
     ]);
   });
 
   it("asks for a command when it is given none", () => {
     expect(failed()).toEqual([
-      'domainbook needs a command — validate, init, check, hooks, instructions, serve, build, or new; run "domainbook --help" to see them',
+      'domainbook needs a command — validate, init, check, hooks, instructions, serve, build, export, or new; run "domainbook --help" to see them',
     ]);
   });
 

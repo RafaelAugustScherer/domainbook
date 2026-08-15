@@ -8,7 +8,7 @@ milestones:
   - { id: phase-3, name: MCP server, status: done }
   - { id: phase-4, name: Website, status: done }
   - { id: phase-5, name: Migration and agent authoring, status: done }
-  - { id: phase-6, name: Exports and interop, status: planned }
+  - { id: phase-6, name: Exports and interop, status: done }
   - { id: phase-7, name: Release and distribution, status: planned }
 ---
 
@@ -415,8 +415,6 @@ interview flow.
   (relationships → Context Mapper DSL), `export mermaid|structurizr` (context map),
   `export gherkin` (features → `.feature` files), `export json` (whole model,
   JSON-Schema-typed).
-- Generated **Vale style** from the glossary — flags non-ubiquitous synonyms in prose
-  (e.g. "user" where the book says "member").
 
 Exit: each export validates in its target tool.
 

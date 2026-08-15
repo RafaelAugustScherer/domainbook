@@ -11,6 +11,14 @@ Versions match the book-wide changelog.
 
 ### Added
 
+- `domainbook export <target>` turns the loaded model into the formats other tools
+  read — `contextive`, `cml`, `mermaid`, `structurizr`, `gherkin` and `json` —
+  writing each under `<book>/build/<target>/` beside the built site, and refusing a
+  book that does not validate. The transforms are pure functions on core's surface
+  (`exportBook`, `exportTargets`), and the CLI writes what they return.
+  `mermaidSource` and `labelOf` moved here from `@domainbook/site`, so `export
+  mermaid` and the site draw the map from one renderer (`core/ADR-0009`). A `model`
+  schema types the JSON export (`core/ADR-0010`).
 - `domainbook build [root]` writes the book as a static site into
   `<book>/build/site`, so a book at `docs/book` builds into `docs/book/build/site`
   and the repo root is never touched (`format/ADR-0020`). The folder writes its

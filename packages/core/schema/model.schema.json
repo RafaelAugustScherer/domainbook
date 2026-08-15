@@ -1,0 +1,1075 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "root": {
+      "type": "string"
+    },
+    "roadmap": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+              "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+            },
+            "milestones": {
+              "minItems": 1,
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "type": "string",
+                    "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+                    "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1
+                  },
+                  "status": {
+                    "type": "string",
+                    "enum": [
+                      "planned",
+                      "in-progress",
+                      "done"
+                    ]
+                  }
+                },
+                "required": [
+                  "id",
+                  "name",
+                  "status"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "id",
+            "milestones"
+          ],
+          "additionalProperties": false,
+          "title": "domainbook roadmap frontmatter"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "glossary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "definition": {
+            "type": "string",
+            "minLength": 1
+          },
+          "aliases": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "examples": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "status": {
+            "default": "draft",
+            "type": "string",
+            "enum": [
+              "draft",
+              "validated",
+              "deprecated"
+            ]
+          },
+          "slug": {
+            "type": "string",
+            "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+            "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+          }
+        },
+        "required": [
+          "name",
+          "definition",
+          "slug"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "changelog": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "unreleased": {
+              "type": "object",
+              "properties": {
+                "added": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "changed": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "deprecated": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "removed": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "fixed": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "security": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "additionalProperties": false
+            },
+            "releases": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "version": {
+                    "type": "string",
+                    "pattern": "^[0-9A-Za-z][0-9A-Za-z.+-]*$"
+                  },
+                  "date": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                  },
+                  "yanked": {
+                    "default": false,
+                    "type": "boolean"
+                  },
+                  "added": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "changed": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "deprecated": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "removed": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "fixed": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  },
+                  "security": {
+                    "minItems": 1,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1
+                    }
+                  }
+                },
+                "required": [
+                  "version",
+                  "date"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "required": [
+            "releases"
+          ],
+          "additionalProperties": false,
+          "title": "domainbook changelog"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string",
+            "pattern": "^(?:[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*\\/)?ADR-\\d{4}$",
+            "description": "\"ADR-NNNN\", or \"<domain-id>/ADR-NNNN\" for a domain's own log. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+          },
+          "number": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string",
+                "enum": [
+                  "proposed",
+                  "rejected",
+                  "accepted",
+                  "deprecated"
+                ]
+              },
+              {
+                "type": "string",
+                "pattern": "^superseded by (?:[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*\\/)?ADR-\\d{4}$",
+                "description": "\"superseded by ADR-NNNN\", or \"superseded by <domain-id>/ADR-NNNN\" for a domain's own log. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+              }
+            ]
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "authored-by": {
+            "type": "string",
+            "const": "agent"
+          },
+          "decision-makers": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "consulted": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "informed": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        },
+        "required": [
+          "ref",
+          "number",
+          "title",
+          "status",
+          "date"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "debt": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "ref": {
+            "type": "string"
+          },
+          "number": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "title": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "accepted",
+              "repaid"
+            ]
+          },
+          "date": {
+            "type": "string",
+            "format": "date",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high",
+              "critical"
+            ]
+          },
+          "quadrant": {
+            "type": "string",
+            "enum": [
+              "deliberate-prudent",
+              "deliberate-reckless",
+              "inadvertent-prudent",
+              "inadvertent-reckless"
+            ]
+          },
+          "owners": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "code": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "decisions": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^(?:[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*\\/)?ADR-\\d{4}$",
+              "description": "\"ADR-NNNN\", or \"<domain-id>/ADR-NNNN\" for a domain's own log. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+            }
+          }
+        },
+        "required": [
+          "ref",
+          "number",
+          "title",
+          "status",
+          "date",
+          "severity",
+          "quadrant"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+            "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1
+          },
+          "classification": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "string",
+                "enum": [
+                  "core-domain",
+                  "supporting-domain",
+                  "generic"
+                ]
+              },
+              "business-model": {
+                "type": "string",
+                "enum": [
+                  "revenue-generator",
+                  "engagement-creator",
+                  "compliance-enforcer"
+                ]
+              },
+              "evolution": {
+                "type": "string",
+                "enum": [
+                  "genesis",
+                  "custom-built",
+                  "product",
+                  "commodity"
+                ]
+              }
+            },
+            "required": [
+              "domain",
+              "business-model",
+              "evolution"
+            ],
+            "additionalProperties": false
+          },
+          "owners": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "code": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "relationships": {
+            "minItems": 1,
+            "type": "array",
+            "items": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "with": {
+                      "type": "string",
+                      "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+                      "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                    },
+                    "type": {
+                      "type": "string",
+                      "enum": [
+                        "partnership",
+                        "shared-kernel",
+                        "separate-ways"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "with",
+                    "type"
+                  ],
+                  "additionalProperties": false
+                },
+                {
+                  "oneOf": [
+                    {
+                      "type": "object",
+                      "properties": {
+                        "with": {
+                          "type": "string",
+                          "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+                          "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "customer-supplier",
+                            "upstream-downstream"
+                          ]
+                        },
+                        "direction": {
+                          "type": "string",
+                          "const": "upstream"
+                        },
+                        "patterns": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "OHS",
+                              "PL"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "with",
+                        "type",
+                        "direction"
+                      ],
+                      "additionalProperties": false
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "with": {
+                          "type": "string",
+                          "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+                          "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                        },
+                        "type": {
+                          "type": "string",
+                          "enum": [
+                            "customer-supplier",
+                            "upstream-downstream"
+                          ]
+                        },
+                        "direction": {
+                          "type": "string",
+                          "const": "downstream"
+                        },
+                        "patterns": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "ACL",
+                              "CF"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "with",
+                        "type",
+                        "direction"
+                      ],
+                      "additionalProperties": false
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "glossary": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "definition": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "aliases": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "examples": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "status": {
+                  "default": "draft",
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "validated",
+                    "deprecated"
+                  ]
+                },
+                "slug": {
+                  "type": "string",
+                  "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+                  "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                }
+              },
+              "required": [
+                "name",
+                "definition",
+                "slug"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "features": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+                  "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                },
+                "name": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "draft",
+                    "ready",
+                    "implemented",
+                    "deprecated"
+                  ]
+                },
+                "owners": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "terms": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*$",
+                    "description": "Words joined by single hyphens, each starting with a letter or digit in any script, with no capitals. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                  }
+                },
+                "decisions": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^(?:[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*\\/)?ADR-\\d{4}$",
+                    "description": "\"ADR-NNNN\", or \"<domain-id>/ADR-NNNN\" for a domain's own log. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                  }
+                },
+                "story": {
+                  "type": "string"
+                },
+                "rules": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "name": {
+                        "type": "string"
+                      },
+                      "examples": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "required": [
+                      "name",
+                      "examples"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "status",
+                "story",
+                "rules"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "decisions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string",
+                  "pattern": "^(?:[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*\\/)?ADR-\\d{4}$",
+                  "description": "\"ADR-NNNN\", or \"<domain-id>/ADR-NNNN\" for a domain's own log. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                },
+                "number": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "title": {
+                  "type": "string"
+                },
+                "status": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "proposed",
+                        "rejected",
+                        "accepted",
+                        "deprecated"
+                      ]
+                    },
+                    {
+                      "type": "string",
+                      "pattern": "^superseded by (?:[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*\\/)?ADR-\\d{4}$",
+                      "description": "\"superseded by ADR-NNNN\", or \"superseded by <domain-id>/ADR-NNNN\" for a domain's own log. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                    }
+                  ]
+                },
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                "authored-by": {
+                  "type": "string",
+                  "const": "agent"
+                },
+                "decision-makers": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "consulted": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "informed": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                }
+              },
+              "required": [
+                "ref",
+                "number",
+                "title",
+                "status",
+                "date"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "debt": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "ref": {
+                  "type": "string"
+                },
+                "number": {
+                  "type": "integer",
+                  "exclusiveMinimum": 0,
+                  "maximum": 9007199254740991
+                },
+                "title": {
+                  "type": "string"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "open",
+                    "accepted",
+                    "repaid"
+                  ]
+                },
+                "date": {
+                  "type": "string",
+                  "format": "date",
+                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                },
+                "severity": {
+                  "type": "string",
+                  "enum": [
+                    "low",
+                    "medium",
+                    "high",
+                    "critical"
+                  ]
+                },
+                "quadrant": {
+                  "type": "string",
+                  "enum": [
+                    "deliberate-prudent",
+                    "deliberate-reckless",
+                    "inadvertent-prudent",
+                    "inadvertent-reckless"
+                  ]
+                },
+                "owners": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "code": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "minLength": 1
+                  }
+                },
+                "decisions": {
+                  "minItems": 1,
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "pattern": "^(?:[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*(?:-[\\p{Ll}\\p{Lo}\\p{Lm}\\p{Nd}][\\p{Ll}\\p{Lo}\\p{Lm}\\p{M}\\p{Nd}]*)*\\/)?ADR-\\d{4}$",
+                    "description": "\"ADR-NNNN\", or \"<domain-id>/ADR-NNNN\" for a domain's own log. The pattern uses Unicode property escapes and must be compiled with the ECMA-262 \"u\" flag."
+                  }
+                }
+              },
+              "required": [
+                "ref",
+                "number",
+                "title",
+                "status",
+                "date",
+                "severity",
+                "quadrant"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "changelog": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "unreleased": {
+                    "type": "object",
+                    "properties": {
+                      "added": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "changed": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "deprecated": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "removed": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "fixed": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      },
+                      "security": {
+                        "minItems": 1,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1
+                        }
+                      }
+                    },
+                    "additionalProperties": false
+                  },
+                  "releases": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "pattern": "^[0-9A-Za-z][0-9A-Za-z.+-]*$"
+                        },
+                        "date": {
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        },
+                        "yanked": {
+                          "default": false,
+                          "type": "boolean"
+                        },
+                        "added": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "changed": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "deprecated": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "removed": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "fixed": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        },
+                        "security": {
+                          "minItems": 1,
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "minLength": 1
+                          }
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "date"
+                      ],
+                      "additionalProperties": false
+                    }
+                  }
+                },
+                "required": [
+                  "releases"
+                ],
+                "additionalProperties": false,
+                "title": "domainbook changelog"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "classification",
+          "glossary",
+          "features",
+          "decisions",
+          "debt",
+          "changelog"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "root",
+    "roadmap",
+    "glossary",
+    "changelog",
+    "decisions",
+    "debt",
+    "domains"
+  ],
+  "additionalProperties": false,
+  "title": "domainbook book model"
+}
