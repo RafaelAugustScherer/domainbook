@@ -200,7 +200,7 @@ describe("what the CLI says when the website is not installed", () => {
 
   it("names the install when @domainbook/site cannot be found", () => {
     expect(broke(missing("@domainbook/site"))).toBe(
-      'the website is not installed — the CLI ships without it; run "npm i -g domainbook @domainbook/site" (or add both to this project), then try again'
+      'the website is not installed — the CLI ships without it; add @domainbook/site to this project with "npm i -D @domainbook/site" (or "-g" if you installed domainbook globally), then try again'
     );
   });
 

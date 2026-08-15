@@ -49,9 +49,10 @@ Versions match the book-wide changelog.
   `astro` and `pagefind` it pulls — moved from a dependency to an optional peer,
   so `npx domainbook init`, `validate`, `check`, `new`, and `serve mcp` install
   none of it (`core/ADR-0011`). `serve web`, bare `serve`, and `build` still use
-  it, and when it is absent they refuse with a line naming what to install rather
-  than a stack trace. `@domainbook/mcp` stays a dependency, so the server the
-  common path depends on still arrives with the CLI (`core/ADR-0008`).
+  it, and when it is absent they refuse with a line that says to add
+  `@domainbook/site` to the project — the same way the CLI itself is installed —
+  rather than a stack trace. `@domainbook/mcp` stays a dependency, so the server
+  the common path depends on still arrives with the CLI (`core/ADR-0008`).
 - `domainbook serve` with no target brings up **both** the site and the MCP
   server: the protocol on stdio, the site on a port, and the line naming the URL
   on stderr so nothing but the protocol reaches stdout. `serve web` and

@@ -7,6 +7,7 @@ every code change must update the book or carry an explicit, auditable waiver.
 ## Quickstart
 
 ```bash
+npm i -D domainbook            # add it to your project (-g to use it anywhere)
 npx domainbook init            # write the first book into domainbook/
 npx domainbook new domain billing
 npx domainbook validate        # schema + references + conventions, one line per issue
@@ -61,10 +62,12 @@ body, and their schemas describe the parsed result.
 | [`@domainbook/mcp`](packages/mcp) | the MCP server — eight read-only tools over `@modelcontextprotocol/server` |
 | [`@domainbook/site`](packages/site) | the explorable website — an Astro app that reads the book from disk |
 
-Install the CLI once with `npm i -g domainbook`, or reach for it per-command with `npx
-domainbook <command>`. The MCP server comes with it. The website is heavier — Astro and a
-search index — so the CLI names `@domainbook/site` but does not install it: add it when you
-want `domainbook serve web` or `domainbook build` (`npm i -g domainbook @domainbook/site`).
+Add the CLI to your project with `npm i -D domainbook`, so `npm ci` gives every contributor
+the same pinned version and the commit hook resolves it; then run it with `npx domainbook
+<command>`. For use outside any one project, `npm i -g domainbook` works too. The MCP server
+comes with it. The website is heavier — Astro and a search index — so the CLI names
+`@domainbook/site` but does not install it: add it the same way when you want `domainbook
+serve web` or `domainbook build` (`npm i -D @domainbook/site`).
 
 ## Enforcement, three layers plus a waiver
 

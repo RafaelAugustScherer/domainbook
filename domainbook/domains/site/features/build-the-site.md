@@ -134,7 +134,7 @@ rather than failing with a stack trace.
 Example: build without the website installed names what to install
   Given a git repo with a book at domainbook, and @domainbook/site installed nowhere on it
   When domainbook build runs
-  Then it refuses with: the website is not installed — the CLI ships without it; run "npm i -g domainbook @domainbook/site" (or add both to this project), then try again
+  Then it refuses with: the website is not installed — the CLI ships without it; add @domainbook/site to this project with "npm i -D @domainbook/site" (or "-g" if you installed domainbook globally), then try again
   And it exits 1
 ```
 

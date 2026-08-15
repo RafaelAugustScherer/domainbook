@@ -154,13 +154,13 @@ to install rather than failing with a stack trace.
 Example: serve web without the website installed names what to install
   Given a git repo with a book at domainbook, and @domainbook/site installed nowhere on it
   When domainbook serve web runs
-  Then it refuses with: the website is not installed — the CLI ships without it; run "npm i -g domainbook @domainbook/site" (or add both to this project), then try again
+  Then it refuses with: the website is not installed — the CLI ships without it; add @domainbook/site to this project with "npm i -D @domainbook/site" (or "-g" if you installed domainbook globally), then try again
   And it exits 1
 
 Example: serve asks for both, so without the website it refuses rather than serving the server alone
   Given a git repo with a book at domainbook, and @domainbook/site installed nowhere on it
   When domainbook serve runs
-  Then it refuses with: the website is not installed — the CLI ships without it; run "npm i -g domainbook @domainbook/site" (or add both to this project), then try again
+  Then it refuses with: the website is not installed — the CLI ships without it; add @domainbook/site to this project with "npm i -D @domainbook/site" (or "-g" if you installed domainbook globally), then try again
   And it exits 1
 
 Example: serve mcp needs nothing but the CLI, so it comes up with the website absent
