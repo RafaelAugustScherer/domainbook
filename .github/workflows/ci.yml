@@ -33,7 +33,7 @@ jobs:
           DOMAINBOOK_CLI: node packages/cli/dist/bin.js
         run: ./integrations/action/run.sh
       - name: A publishable change carries a changeset
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && github.head_ref != 'changeset-release/main'
         run: npx changeset status --since=${{ github.event.pull_request.base.sha }}
       - name: No high or critical vulnerabilities
         run: npm audit --audit-level=high --package-lock-only
