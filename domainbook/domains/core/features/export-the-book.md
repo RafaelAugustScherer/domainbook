@@ -52,13 +52,13 @@ Example: A build folder the shell cannot write to is named, not thrown
 Example: Naming no target lists the targets
   Given a book at domainbook
   When domainbook export runs
-  Then it refuses with: export what? — the targets are contextive, cml, gherkin, json, mermaid, structurizr and vale, as in "domainbook export json"
+  Then it refuses with: export what? — the targets are contextive, cml, gherkin, json, mermaid and structurizr, as in "domainbook export json"
   And it exits 1
 
 Example: A target that does not exist is answered with the ones that do
   Given a book at domainbook
   When domainbook export xml runs
-  Then it refuses with: no export "xml" — the targets are contextive, cml, gherkin, json, mermaid, structurizr and vale
+  Then it refuses with: no export "xml" — the targets are contextive, cml, gherkin, json, mermaid and structurizr
   And it exits 1
 ```
 
