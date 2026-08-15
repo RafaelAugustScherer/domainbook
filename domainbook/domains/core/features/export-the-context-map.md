@@ -1,7 +1,7 @@
 ---
 id: export-the-context-map
 name: Export the context map
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [domain, book]
 decisions: [format/ADR-0006, format/ADR-0007, site/ADR-0003]

@@ -1,7 +1,7 @@
 ---
 id: export-the-model-as-json
 name: Export the model as JSON
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [book, artifact]
 decisions: [format/ADR-0001]

@@ -8,7 +8,7 @@ milestones:
   - { id: phase-3, name: MCP server, status: done }
   - { id: phase-4, name: Website, status: done }
   - { id: phase-5, name: Migration and agent authoring, status: done }
-  - { id: phase-6, name: Exports and interop, status: planned }
+  - { id: phase-6, name: Exports and interop, status: done }
   - { id: phase-7, name: Release and distribution, status: planned }
 ---
 

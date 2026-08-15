@@ -1,7 +1,7 @@
 ---
 id: export-features-as-gherkin
 name: Export features as Gherkin
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [feature, rule]
 decisions: [format/ADR-0008, core/ADR-0004]

@@ -1,7 +1,7 @@
 ---
 id: export-the-glossary-to-contextive
 name: Export the glossary to Contextive
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [ubiquitous-language, domain]
 ---

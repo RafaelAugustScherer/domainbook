@@ -1,7 +1,7 @@
 ---
 id: export-the-book
 name: Export the book
-status: ready
+status: implemented
 owners: [RafaelAugustScherer]
 terms: [book, book-root, artifact]
 decisions: [format/ADR-0020, core/ADR-0003]
