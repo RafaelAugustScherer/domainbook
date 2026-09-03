@@ -181,7 +181,13 @@ per-package `CHANGELOG.md` files are generated, never hand-edited (`ADR-0014`).
 - **The server, the Action, and the plugin publish beside npm.** After the npm
   publish: `mcp-publisher publish` sends `server.json` to the MCP Registry — the
   `mcpName` in `@domainbook/mcp` must match its `name`, and the npm package must be
-  live first; a GitHub release with "Publish this Action to the Marketplace" ticked
-  lists the root `action.yml`; the Claude Code plugin is already served from
-  `.claude-plugin/marketplace.json`, which a consumer adds with `/plugin marketplace
-  add RafaelAugustScherer/domainbook`.
+  live first; a GitHub release tagged `vX.Y.Z`, with "Publish this Action to the
+  Marketplace" ticked, lists the root `action.yml`; the Claude Code plugin is
+  already served from `.claude-plugin/marketplace.json`, which a consumer adds
+  with `/plugin marketplace add RafaelAugustScherer/domainbook`.
+- **The Action's floating major tag moves itself.** `.github/workflows/major-tag.yml`
+  runs on every published release tagged `vX.Y.Z` and force-moves `vX` to it, so
+  a consumer can pin `uses: RafaelAugustScherer/domainbook@v1` instead of a full
+  patch version. It ignores prereleases and the npm packages' own tags (those
+  never start with a bare `v`) — nothing to do by hand beyond publishing the
+  `vX.Y.Z` release itself.
