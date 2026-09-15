@@ -10,6 +10,7 @@ milestones:
   - { id: phase-5, name: Migration and agent authoring, status: done }
   - { id: phase-6, name: Exports and interop, status: done }
   - { id: phase-7, name: Release and distribution, status: in-progress }
+  - { id: phase-8, name: Collaboration through the remote, status: done }
 ---
 
 # domainbook roadmap
@@ -69,6 +70,7 @@ since are in the same logs and not repeated here.
 | MCP SDK | `@modelcontextprotocol/server` v2 | `mcp/ADR-0001` |
 | File naming | Lowercase inside the book (`roadmap.md`, `glossary.md`, `changelog.md`); uppercase reserved for repo-root ecosystem files (`README.md`, `AGENTS.md`, `LICENSE`) | `format/ADR-0003` |
 | License | MIT, including the MCP server | `ADR-0001` |
+| Collaboration | Claims and drafts under `refs/domainbook/` on the git remote the team already has; no server, nothing synced enters the working tree | `ADR-0015` |
 
 ## The book format
 
@@ -156,7 +158,8 @@ sequences rather than prose. One key is ours rather than MADR's: the optional
 `authored-by: agent`, set when an agent took the decision without the people in
 `decision-makers` weighing it, so a record cannot claim a person who never read it
 (`format/ADR-0019`).
-4-digit sequential numbers, never reused. One rule is domainbook's alone: an accepted ADR
+4-digit numbers, rising and never reused; a gap is what an abandoned number looks like
+(`format/ADR-0021`). One rule is domainbook's alone: an accepted ADR
 is immutable, so changing course is a new ADR that marks the old one superseded — where
 MADR's `date` means "last updated", ours means the date the decision was taken.
 
@@ -173,8 +176,8 @@ the book: a known shortcut or gap, with `status: open | accepted | repaid`, `dat
 body. Optional `owners`, `code:` globs, and `decisions:` trace it to what carries it.
 Derived from Michael Stal's Technical Debt Records rather than conformant to a
 maintained spec (`ADR-0013`); the exact schema and body grammar are in
-`format/ADR-0017`. Numbered like a decision log — from 0001, no gaps, never reused,
-never deleted — but edited in place rather than superseded, and `TDR-NNNN` names one
+`format/ADR-0017`. Numbered like a decision log — rising, never reused, never
+deleted, gaps allowed since `format/ADR-0021` — but edited in place rather than superseded, and `TDR-NNNN` names one
 in a message rather than in a reference an artifact can carry.
 
 **Changelog (`changelog.md`)** — Keep a Changelog 1.1.0 content format with dated sections
@@ -433,6 +436,39 @@ Exit: each export validates in its target tool.
 
 Exit: a stranger can go from `npx domainbook init` to enforced, explorable, MCP-served
 docs without reading the source.
+
+### Phase 8 — Collaboration through the remote
+
+v1 assumed one developer on one branch. A team hits two walls: two branches take
+the same decision number, and a branch's artifacts are invisible until its pull
+request merges. Phase 8 removes both without a server. Every clone is a peer, and
+the git remote the team already has is the shared storage, under
+`refs/domainbook/` (`ADR-0015`):
+
+- **Claims** — `new` reserves a number or a slug on the remote before it writes,
+  by creating a ref that is never forced; a lost race is a retry the agent never
+  sees. Offline, the number is taken locally and the commit hook refuses the file
+  until `sync` claims it. A log may now have gaps and still never reuses a number
+  (`format/ADR-0021`).
+- **Drafts** — `new` publishes the working tree's book as the branch's draft the
+  moment it writes, and every sync refreshes it. Peers read it before the branch
+  is pushed.
+- **Peers' work** — `domainbook status` and every MCP tool that reads the book
+  answer with what peers have in progress, marked as unmerged and read straight
+  from git objects. Nothing enters the working tree, so nothing can be staged.
+- **Sync** — fetch, pending claims, the draft, and pruning, run inside `new`,
+  `check`, the MCP server, and the Stop hook, throttled to once a minute unless
+  asked for. A remote unreachable over its URL is retried over its SSH or HTTPS
+  twin, and the remote's configuration is never edited.
+- A repo with no remote, or with `collaboration.enabled: false`, behaves as v1.
+
+Exit: two clones of one repo, on branches neither has fetched, each run
+`domainbook new decision` and get different numbers; each sees the other's
+decision under `domainbook status` and `get_decisions` before either branch is
+pushed; `git status` in each shows only its own file; an offline `new` writes a
+file the hook refuses to commit until `sync` claims it; a push that fails over
+SSH lands over HTTPS with the remote's URL unchanged; a book with a gap in a log
+validates and a reused number is still refused.
 
 ## Risks
 

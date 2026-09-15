@@ -104,6 +104,14 @@ describe("what instructions writes", () => {
     expect(agents).toContain("follow its steps there rather than from here");
   });
 
+  it("tells an agent to write artifacts with new and to read peers before deciding", () => {
+    ran("instructions");
+    const agents = held("AGENTS.md");
+    expect(agents).toContain(
+      "Write every decision, debt record, feature, and domain with `domainbook new` rather than by hand — it reserves the number or id on the remote and publishes this branch's draft, so a peer cannot take the same one. Before deciding anything in a context, run `domainbook status` to see what peers have in progress there."
+    );
+  });
+
   it("gives a domain that claims nothing no rule file", () => {
     claims("reporting", "src/reporting/**");
     wrote(

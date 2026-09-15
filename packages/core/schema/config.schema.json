@@ -30,6 +30,24 @@
       },
       "additionalProperties": false
     },
+    "collaboration": {
+      "default": {},
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Whether this book shares claims and drafts through the git remote. Off, the repo works alone as before.",
+          "type": "boolean"
+        },
+        "remote": {
+          "default": "origin",
+          "description": "The git remote peers share.",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
     "site": {
       "default": {},
       "type": "object",

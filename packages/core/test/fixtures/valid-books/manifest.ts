@@ -25,4 +25,9 @@ export const validBooks: ValidBook[] = [
     proves:
       "a book written in Japanese names its domains, terms, features, and decisions in its own language, and references resolve across them",
   },
+  {
+    dir: "logs-with-gaps",
+    proves:
+      "a log's numbers may skip — 0001 then 0003 in a decision log and in both debt logs — because a number is never reused and an abandoned claim leaves one behind",
+  },
 ];

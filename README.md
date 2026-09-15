@@ -57,7 +57,7 @@ body, and their schemas describe the parsed result.
 
 | Package | Contents |
 |---|---|
-| [`domainbook`](packages/cli) | the CLI: `init`, `validate`, `new`, `check`, `hooks`, `instructions`, `export`, `serve`, `build` |
+| [`domainbook`](packages/cli) | the CLI: `init`, `validate`, `new`, `check`, `sync`, `status`, `hooks`, `instructions`, `export`, `serve`, `build` |
 | [`@domainbook/core`](packages/core) | zod schemas, generated JSON Schema, frontmatter parsing, the loader and model graph, reference resolution, validation, the staged-diff check |
 | [`@domainbook/mcp`](packages/mcp) | the MCP server — eight read-only tools over `@modelcontextprotocol/server` |
 | [`@domainbook/site`](packages/site) | the explorable website — an Astro app that reads the book from disk |
@@ -76,8 +76,8 @@ The steering is agent instructions; the guarantee is hooks and CI.
 - **Git hook** (`domainbook hooks install`) — a `commit-msg` hook that refuses a commit
   which changes mapped code but leaves that domain's book behind.
 - **Claude Code plugin** — a `Stop` hook that runs the same check over a session's changes,
-  so the agent fixes the book while it still has the context. Add the marketplace and
-  install it:
+  so the agent fixes the book while it still has the context, then publishes the branch's
+  draft to the remote. Add the marketplace and install it:
 
   ```
   /plugin marketplace add RafaelAugustScherer/domainbook
@@ -91,6 +91,31 @@ The steering is agent instructions; the guarantee is hooks and CI.
 - **Waiver** — `Skip-Docs: <reason>` as a commit trailer. Agents must give a reason; a
   human may bypass prose with `SKIP_DOCS=1 git commit …`, which the hook auto-stamps.
   Either way the trailer is in `git log` forever.
+
+## Work as a team, with no server
+
+One developer on one branch never collides. A team does: two branches take the same
+decision number, and a branch's artifacts stay invisible until its pull request merges.
+domainbook fixes both through the git remote the team already has, under
+`refs/domainbook/`, with nothing to deploy (`ADR-0015`):
+
+- **Claims** — `domainbook new` reserves the number or id on the remote before it writes,
+  by creating a ref that is never forced. Two clones racing for one number each get their
+  own. Offline, the number is taken locally and the commit hook refuses the file until
+  `domainbook sync` claims it; if the number was taken meanwhile, `sync` renumbers the
+  uncommitted file and rewrites its references.
+- **Drafts** — `new` publishes the working tree's book as the branch's draft the moment it
+  writes, and every sync refreshes it, so peers read it before the branch is pushed.
+- **Peers' work** — `domainbook status` and every MCP tool that reads the book answer with
+  what peers have in progress, marked as unmerged. It is read from git objects into
+  `.git/domainbook/`, never into the working tree, so it cannot end up in your commit.
+- **Sync** runs underneath `new`, `check`, the MCP server, and the Stop hook, throttled to
+  once a minute; `domainbook sync` runs it on demand. A remote unreachable over its URL is
+  retried over its SSH or HTTPS twin, and the remote's configuration is never edited.
+
+A repo with no remote works alone, as before; `collaboration.enabled: false` in
+`domainbook.config.yaml` turns it off, and `collaboration.remote` names a remote other than
+`origin`.
 
 ## Ask the book over MCP
 

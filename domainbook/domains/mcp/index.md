@@ -52,6 +52,8 @@ agent reading the whole repo.
 | `MatchPathsToBook` | core         | Query |
 | `ReadSections`     | core         | Query |
 | `BuildContextMap`  | core         | Query |
+| `SyncWithRemote`   | core         | Command |
+| `ReadPeerWork`     | core         | Query |
 
 ## Business Decisions
 
@@ -87,6 +89,16 @@ agent reading the whole repo.
   them is short and private: the agent reading this book is often the agent
   editing it, so a resource that outlived a turn would serve back a copy the
   session itself has already changed.
+- Peers' work is part of every answer, marked as unmerged (`ADR-0015`). The
+  server syncs before it answers — core throttles that to once a minute — and
+  reads what a peer's draft or branch holds that the default branch does not,
+  straight from git objects. A peer's record, term or feature comes after
+  main's under an in-progress line naming who, which branch and how long ago;
+  a peer's unchanged copy of a merged artifact is not repeated; a peer's file
+  that does not parse is counted, never a refusal of this book. A remote out
+  of reach dates the answer rather than failing it. The one reading tool that
+  does not change is `where_to_document`: what a commit has to document is
+  decided by this book's claims, not by what peers are writing.
 - The server is reached as `domainbook serve mcp`, which is why the CLI carries
   this package (`core/ADR-0008`). `init` and `instructions` write `.mcp.json`
   for Claude Code and print the block for Cursor, VS Code, Codex and Gemini CLI

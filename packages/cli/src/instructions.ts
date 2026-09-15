@@ -181,6 +181,8 @@ function body(book: Book, at: string, claiming: DomainRecord[]): string[] {
     `Any file under a domain's folder clears the check for that domain — the canvas, the glossary, the changelog, a feature, a decision, or a debt record. A change across several domains updates each of their books, or carries one record at the book root: a decision under \`${at}/decisions/\` or an entry in \`${at}/changelog.md\`.`,
     "",
     ...vocabulary(at, claiming),
+    "Write every decision, debt record, feature, and domain with `domainbook new` rather than by hand — it reserves the number or id on the remote and publishes this branch's draft, so a peer cannot take the same one. Before deciding anything in a context, run `domainbook status` to see what peers have in progress there.",
+    "",
     ...procedures(),
     "To waive a commit, end the commit message with a trailer saying what makes the change safe to leave undocumented:",
     "",

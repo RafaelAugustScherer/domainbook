@@ -55,6 +55,7 @@ undocumented; the skills are how it stops being so.
 | `ChangeBlocked`    | agent, developer, CI  | Event |
 | `WaiverRecorded`   | git history           | Event |
 | `GetDomainGlobs`   | core                  | Query |
+| `PublishDraft`     | core                  | Command |
 
 ## Business Decisions
 
@@ -72,6 +73,8 @@ undocumented; the skills are how it stops being so.
   enforcement keeps no second map of its own, which is why both contexts treat
   it as a customer.
 - A block always names the concrete files that would clear it.
+- The Stop hook publishes the session's book to the remote whenever it does not
+  block, and a remote out of reach never blocks the stop (`ADR-0015`).
 
 ## Assumptions
 

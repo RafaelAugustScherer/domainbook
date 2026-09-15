@@ -15,6 +15,22 @@ the decision it references, not here (`ADR-0006`).
 
 ### Added
 
+- A team shares in-progress book work through the git remote it already has,
+  with no server (`ADR-0015`). `domainbook new` reserves a decision or debt
+  number, a feature id, or a domain id as a claim under `refs/domainbook/claims/`
+  before it writes, so two branches never take the same one, and publishes the
+  working tree's book as the branch's draft under `refs/domainbook/drafts/` the
+  moment it writes. `domainbook sync` fetches claims, drafts, and branches,
+  pushes what is pending, refreshes the draft, and releases what merged; it runs
+  underneath `new`, `check`, the MCP server, and the Stop hook, throttled to
+  once a minute. `domainbook status` and every MCP tool that reads the book
+  answer with what peers have in progress, marked as unmerged and read from git
+  objects into `.git/domainbook/`, never into the working tree. The commit hook
+  refuses a new artifact whose number or id is claimed by nobody. A remote out
+  of reach over its URL is retried over its SSH or HTTPS twin. A repo with no
+  remote, or with `collaboration.enabled: false` in the config, works as before.
+  A log may now have gaps and still never reuses a number (`format/ADR-0021`).
+
 - domainbook 1.0.0 publishes to npm. The CLI (`domainbook`), the shared model
   (`@domainbook/core`), the MCP server (`@domainbook/mcp`), and the website
   (`@domainbook/site`) go public together, versioned by changesets and released

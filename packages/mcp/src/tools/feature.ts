@@ -1,10 +1,16 @@
 import type { Book, FeatureRecord } from "@domainbook/core";
-import { sectionNamed } from "@domainbook/core";
+import { peerPath, sectionNamed } from "@domainbook/core";
 import { type Answer, listed, refuse, said } from "../answer.js";
-import { noDomain } from "../scope.js";
 import { text } from "../files.js";
+import { alone, footer, home, marked, type Peers, touched } from "../peers.js";
+import { noDomain } from "../scope.js";
 
-export function getFeature(book: Book, id: string, domain?: string): Answer {
+export function getFeature(
+  book: Book,
+  id: string,
+  domain?: string,
+  peers: Peers = alone
+): Answer {
   const within =
     domain === undefined
       ? book.domains
@@ -21,11 +27,34 @@ export function getFeature(book: Book, id: string, domain?: string): Answer {
       )}`
     );
   const [feature] = found;
-  if (feature === undefined) return refuse(absent(within, id, domain));
-  return said(written(feature));
+  if (feature !== undefined)
+    return said(written(feature, feature.file), ...footer(peers));
+  const drafted = fromPeers(book, peers, id, domain);
+  if (drafted.length === 0) return refuse(absent(within, id, domain));
+  return said(drafted.join("\n\n---\n\n"), ...footer(peers));
 }
 
-function written(feature: FeatureRecord): string {
+function fromPeers(
+  book: Book,
+  peers: Peers,
+  id: string,
+  domain: string | undefined
+): string[] {
+  return peers.work.flatMap((peer) => {
+    const writing = touched(peer);
+    return peer.book.domains
+      .filter((one) => domain === undefined || one.id === domain)
+      .flatMap((one) => one.features)
+      .filter(
+        (one) =>
+          one.frontmatter.id === id &&
+          writing.has(peerPath(peer.root, one.file))
+      )
+      .map((one) => written(one, home(book, peer, one.file), marked(peer)));
+  });
+}
+
+function written(feature: FeatureRecord, file: string, note?: string): string {
   const { frontmatter } = feature;
   return [
     `# ${frontmatter.name} (${frontmatter.id})`,
@@ -37,7 +66,8 @@ function written(feature: FeatureRecord): string {
     frontmatter.decisions === undefined
       ? undefined
       : `Decisions: ${frontmatter.decisions.join(", ")}`,
-    `File: ${feature.file}`,
+    `File: ${file}`,
+    note,
     "",
     body(feature),
   ]

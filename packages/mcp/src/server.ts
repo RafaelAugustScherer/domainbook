@@ -3,6 +3,7 @@ import type { Book } from "@domainbook/core";
 import * as z from "zod";
 import { type Answer, refuse } from "./answer.js";
 import { open } from "./book.js";
+import type { Peers } from "./peers.js";
 import { listing, read, scheme } from "./resources.js";
 import { getChangelog } from "./tools/changelog.js";
 import { getDecisions } from "./tools/decisions.js";
@@ -36,9 +37,11 @@ export function createServer(root: string, version: string): McpServer {
 }
 
 function register(server: McpServer, root: string): void {
-  const answering = (give: (book: Book) => Answer) => () => {
+  const answering = (give: (book: Book, peers: Peers) => Answer) => () => {
     const opened = open(root);
-    return "refusal" in opened ? refuse(opened.refusal) : give(opened.book);
+    return "refusal" in opened
+      ? refuse(opened.refusal)
+      : give(opened.book, opened.peers);
   };
 
   server.registerTool(
@@ -59,8 +62,13 @@ function register(server: McpServer, root: string): void {
       annotations: { ...reads, title: "Search the book" },
     },
     ({ query, kind, domain }) =>
-      answering((book) =>
-        searchBook(book, query, { kind: kind as Kind | undefined, domain })
+      answering((book, peers) =>
+        searchBook(
+          book,
+          query,
+          { kind: kind as Kind | undefined, domain },
+          peers
+        )
       )()
   );
 
@@ -79,7 +87,7 @@ function register(server: McpServer, root: string): void {
       annotations: { ...reads, title: "Explain a term" },
     },
     ({ names, domain }) =>
-      answering((book) => explainTerms(book, names, domain))()
+      answering((book, peers) => explainTerms(book, names, domain, peers))()
   );
 
   server.registerTool(
@@ -123,7 +131,8 @@ function register(server: McpServer, root: string): void {
       }),
       annotations: { ...reads, title: "Read a feature" },
     },
-    ({ id, domain }) => answering((book) => getFeature(book, id, domain))()
+    ({ id, domain }) =>
+      answering((book, peers) => getFeature(book, id, domain, peers))()
   );
 
   server.registerTool(
@@ -147,7 +156,7 @@ function register(server: McpServer, root: string): void {
       }),
       annotations: { ...reads, title: "Ask what was decided" },
     },
-    (asked) => answering((book) => getDecisions(book, asked))()
+    (asked) => answering((book, peers) => getDecisions(book, asked, peers))()
   );
 
   server.registerTool(

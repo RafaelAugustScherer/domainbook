@@ -6,6 +6,7 @@ import {
   type Book,
   type Change,
 } from "@domainbook/core";
+import { claimStaged } from "./claims.js";
 import { missingBook, rooted } from "./files.js";
 import {
   messageTrailers,
@@ -64,7 +65,13 @@ export function check(root: string, source: Source): Result {
   if (typeof read === "string") return refuse(read);
   const bookPath = relative(repo, resolve(root));
   const change = checkChange(book, bookPath, pathsOf(repo, read, bookPath));
-  return report(book, bookPath, change, repo, read);
+  const docs = report(book, bookPath, change, repo, read);
+  if (read.kind !== "staged") return docs;
+  const claims = claimStaged(root, book, repo, bookPath);
+  return {
+    code: Math.max(docs.code, claims.code),
+    lines: [...docs.lines, ...claims.lines],
+  };
 }
 
 function readOf(source: Source, repo: string): Read | string {

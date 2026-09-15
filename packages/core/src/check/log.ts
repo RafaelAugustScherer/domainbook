@@ -16,7 +16,6 @@ import {
 type Titled = { file: string; number: number; title: string };
 
 type Log = {
-  id?: string;
   kind: LogNaming;
   records: Titled[];
   files: LogFile[];
@@ -44,17 +43,11 @@ function logsOf(book: Book): Log[] {
   for (const domain of book.domains)
     logs.push(
       {
-        id: domain.id,
         kind: decisionLog,
         records: domain.decisions,
         files: domain.decisionFiles,
       },
-      {
-        id: domain.id,
-        kind: debtLog,
-        records: domain.debt,
-        files: domain.debtFiles,
-      }
+      { kind: debtLog, records: domain.debt, files: domain.debtFiles }
     );
   return logs;
 }
@@ -100,21 +93,6 @@ function checkNumbers(book: Book, log: Log): Issue[] {
       )} — ${kind} numbers are never reused; renumber this one to ${pad(free)}`,
     });
     free += 1;
-  }
-  const ordered = [...seen.values()].sort(
-    (one, other) => one.number - other.number
-  );
-  let expected = 1;
-  for (const one of ordered) {
-    for (; expected < one.number; expected += 1)
-      issues.push({
-        file: one.file,
-        message: `${ref}-${pad(expected)} is missing from ${logDir(
-          log.kind.dir,
-          log.id
-        )} — ${kind} numbers run from 0001 with no gaps, and a ${kind} is never deleted`,
-      });
-    expected = one.number + 1;
   }
   return issues;
 }

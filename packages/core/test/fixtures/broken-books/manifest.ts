@@ -108,6 +108,12 @@ export const brokenBooks: BrokenBook[] = [
       'domainbook.config.yaml:2 enforcement.mode: must be one of "block", "warn"',
   },
   {
+    dir: "config-collaboration-key-unknown",
+    rule: "S1",
+    expect:
+      'domainbook.config.yaml:3 collaboration.remotes: is not a field of "collaboration" — check the spelling, or remove it',
+  },
+  {
     dir: "config-not-a-block",
     rule: "S1",
     expect: "domainbook.config.yaml:1: must be a block of keys indented below it",
@@ -532,28 +538,10 @@ export const brokenBooks: BrokenBook[] = [
       "debt/0001-holds-are-swept-by-hand.md: TDR-0001 is already debt/0001-door-scanners-trust-their-own-clock.md — debt record numbers are never reused; renumber this one to 0002",
   },
   {
-    dir: "decision-number-gap",
-    rule: "C3",
-    expect:
-      "domains/ticketing/decisions/0003-refund-a-late-capture-in-full.md: ADR-0002 is missing from domains/ticketing/decisions/ — decision numbers run from 0001 with no gaps, and a decision is never deleted",
-  },
-  {
     dir: "decision-number-below-0001",
     rule: "C3",
     expect:
       "decisions/0000-store-every-timestamp-in-utc.md: ADR-0000 is below 0001 — decision numbers run from 0001, so renumber this one to 0001",
-  },
-  {
-    dir: "debt-number-gap",
-    rule: "C3",
-    expect:
-      "debt/0003-door-scanners-trust-their-own-clock.md: TDR-0002 is missing from debt/ — debt record numbers run from 0001 with no gaps, and a debt record is never deleted",
-  },
-  {
-    dir: "domain-debt-number-gap",
-    rule: "C3",
-    expect:
-      "domains/ticketing/debt/0003-late-capture-refunds-are-reconciled-by-hand-each-morning.md: TDR-0002 is missing from domains/ticketing/debt/ — debt record numbers run from 0001 with no gaps, and a debt record is never deleted",
   },
   {
     dir: "decision-filename-does-not-match-title",

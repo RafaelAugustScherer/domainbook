@@ -6,16 +6,20 @@ import { blocks, payload, touched } from "./state.mjs";
 const cap = 3;
 
 const event = await payload();
-if (event?.stop_hook_active === true) process.exit(0);
-
 const session = event?.session_id;
 if (typeof session !== "string" || !existsSync(touched(session))) process.exit(0);
 
 const before = counted(session);
-if (before >= cap) process.exit(0);
+if (event.stop_hook_active === true || before >= cap) {
+  publish(event.cwd);
+  process.exit(0);
+}
 
-const found = ran(touched(session), event.cwd);
-if (found.code === 0) process.exit(0);
+const found = ran(["check", "--session", touched(session)], event.cwd);
+if (found.code === 0) {
+  publish(event.cwd);
+  process.exit(0);
+}
 
 const now = before + 1;
 mkdirSync(dirname(blocks(session)), { recursive: true });
@@ -26,9 +30,16 @@ process.stdout.write(
   JSON.stringify({ decision: "block", reason: reason.join("\n") })
 );
 
-function ran(file, cwd) {
+function publish(cwd) {
+  const synced = ran(["sync"], cwd);
+  const line = synced.lines[0];
+  if (synced.code !== 0 && line !== undefined)
+    process.stdout.write(JSON.stringify({ systemMessage: line }));
+}
+
+function ran(args, cwd) {
   try {
-    const out = execFileSync("domainbook", ["check", "--session", file], {
+    const out = execFileSync("domainbook", args, {
       cwd,
       encoding: "utf8",
       stdio: ["ignore", "pipe", "pipe"],

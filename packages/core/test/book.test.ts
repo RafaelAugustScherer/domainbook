@@ -73,30 +73,22 @@ describe("the valid fixture book", () => {
     expect(parseFrontmatter(read(bookDir, file)).data).toBeUndefined();
   });
 
+  const defaults = {
+    enforcement: { mode: "block", trailer: "Skip-Docs", require_reason: "agents" },
+    collaboration: { enabled: true, remote: "origin" },
+    site: { base: "/" },
+  };
+
   it("domainbook.config.yaml passes the config schema", () => {
     const result = configSchema.safeParse(
       parse(read(bookDir, "domainbook.config.yaml"))
     );
     expect(result.error?.issues ?? []).toEqual([]);
-    expect(result.data).toEqual({
-      enforcement: {
-        mode: "block",
-        trailer: "Skip-Docs",
-        require_reason: "agents",
-      },
-      site: { base: "/" },
-    });
+    expect(result.data).toEqual(defaults);
   });
 
-  it("fills enforcement defaults when the config file is empty", () => {
-    expect(configSchema.parse({})).toEqual({
-      enforcement: {
-        mode: "block",
-        trailer: "Skip-Docs",
-        require_reason: "agents",
-      },
-      site: { base: "/" },
-    });
+  it("fills every default when the config file is empty", () => {
+    expect(configSchema.parse({})).toEqual(defaults);
   });
 
   it("keeps both sides of the relationship union", () => {

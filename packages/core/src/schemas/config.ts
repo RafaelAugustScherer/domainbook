@@ -9,6 +9,17 @@ export const configSchema = z
         require_reason: z.enum(["agents", "always"]).default("agents"),
       })
       .prefault({}),
+    collaboration: z
+      .strictObject({
+        enabled: z.boolean().default(true).meta({
+          description:
+            "Whether this book shares claims and drafts through the git remote. Off, the repo works alone as before.",
+        }),
+        remote: z.string().min(1).default("origin").meta({
+          description: "The git remote peers share.",
+        }),
+      })
+      .prefault({}),
     site: z
       .strictObject({
         base: z
