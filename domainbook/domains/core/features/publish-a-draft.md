@@ -20,9 +20,16 @@ Example: The draft holds the book root and nothing else, uncommitted edits inclu
   Given git's user.email is alice@example.com and the branch is feat/outbox
   And domainbook/domains/billing/glossary.md is edited and not committed
   When domainbook new decision "Use an outbox" runs
-  Then origin holds refs/domainbook/drafts/alice@example.com/feat/outbox
+  Then origin holds refs/domainbook/drafts/alice@example.com/feat/outbox/book
   And that ref's tree holds domainbook/ exactly as the working tree holds it, the glossary edit and the new decision included
   And nothing outside domainbook/ is in that tree
+
+Example: A branch whose name extends a stale draft's still publishes
+  Given alice@example.com's draft for the branch ship is still on origin
+  And ship is gone and the branch is now ship/refunds
+  When domainbook new decision "Refund in full" runs
+  Then origin holds refs/domainbook/drafts/alice@example.com/ship/refunds/book
+  And the stale refs/domainbook/drafts/alice@example.com/ship/book is untouched
 
 Example: An edit made after new reaches the draft at the next sync
   Given the draft was published when the decision was written
@@ -42,14 +49,14 @@ Example: A draft is a snapshot, so the same content is not published twice
 Example: The same author on the same branch from a second machine replaces the draft
   Given alice@example.com published a draft for feat/outbox from a laptop
   When alice runs domainbook sync on feat/outbox from a desktop
-  Then refs/domainbook/drafts/alice@example.com/feat/outbox holds the desktop's book
+  Then refs/domainbook/drafts/alice@example.com/feat/outbox/book holds the desktop's book
   And the draft's commit has no parent
   And no merge commit is created
 
 Example: The owner is git's email, made safe for a ref name
   Given git's user.email is "a~b:c@example.com"
   When domainbook new decision "Use an outbox" runs on feat/outbox
-  Then the draft is published under refs/domainbook/drafts/a-b-c@example.com/feat/outbox
+  Then the draft is published under refs/domainbook/drafts/a-b-c@example.com/feat/outbox/book
 ```
 
 ## Rule: A detached HEAD publishes nothing and says so
@@ -69,7 +76,7 @@ Example: A claim is made, a draft is not
 Example: A merged and deleted branch takes its draft with it
   Given alice@example.com merged feat/outbox and deleted the branch locally
   When alice runs domainbook sync
-  Then refs/domainbook/drafts/alice@example.com/feat/outbox is deleted on origin
+  Then refs/domainbook/drafts/alice@example.com/feat/outbox/book is deleted on origin
   And it prints a line: draft for feat/outbox released — the branch is gone
 
 Example: A peer never prunes another author's draft

@@ -179,11 +179,12 @@ function mine(one: Source, me: Me): boolean {
   return one.branch === me.branch;
 }
 
-function draftParts(ref: string): { author: string; branch: string } | undefined {
+export function draftParts(ref: string): { author: string; branch: string } | undefined {
   const prefix = "refs/domainbook/drafts/";
   if (!ref.startsWith(prefix)) return undefined;
-  const rest = ref.slice(prefix.length);
-  const slash = rest.indexOf("/");
-  if (slash < 0) return undefined;
-  return { author: rest.slice(0, slash), branch: rest.slice(slash + 1) };
+  const parts = ref.slice(prefix.length).split("/");
+  if (parts.length < 3) return undefined;
+  const author = parts[0] ?? "";
+  const branch = parts.slice(1, -1).join("/");
+  return author === "" || branch === "" ? undefined : { author, branch };
 }

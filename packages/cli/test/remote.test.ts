@@ -107,7 +107,7 @@ describe("what new does with a remote", () => {
     expect(refs()).toEqual(
       expect.arrayContaining([
         "refs/domainbook/claims/decisions/0001",
-        "refs/domainbook/drafts/alice@example.com/feat/outbox",
+        "refs/domainbook/drafts/alice@example.com/feat/outbox/book",
       ])
     );
   });

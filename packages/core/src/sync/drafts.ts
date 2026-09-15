@@ -1,4 +1,5 @@
 import { git, object } from "../git.js";
+import { draftParts } from "./refs.js";
 import { localBranches, refExists, type Me, type Remote } from "./remote.js";
 import { tempIndex } from "./state.js";
 import { push, type Pushed } from "./transport.js";
@@ -10,8 +11,10 @@ export type Published =
   | { kind: "rejected" }
   | { kind: "unreachable"; tried: string[]; reason: string };
 
+export const draftLeaf = "book";
+
 export function draftRef(author: string, branch: string): string {
-  return `refs/domainbook/drafts/${author}/${branch}`;
+  return `refs/domainbook/drafts/${author}/${branch}/${draftLeaf}`;
 }
 
 export function bookTree(remote: Remote): string | undefined {
@@ -49,11 +52,14 @@ export function pruneOwnDrafts(remote: Remote, me: Me): string[] {
   ])
     .out.split("\n")
     .filter((ref) => ref !== "")
-    .filter((ref) => !branches.has(ref.slice(draftRef(me.author, "").length)));
+    .filter((ref) => {
+      const branch = draftParts(ref)?.branch;
+      return branch !== undefined && !branches.has(branch);
+    });
   if (gone.length === 0) return [];
   const pushed: Pushed = push(remote, gone.map((ref) => `:${ref}`), false);
   if (pushed.kind !== "ok") return [];
   for (const ref of gone)
     if (refExists(remote, ref)) git(remote.repo, ["update-ref", "-d", ref]);
-  return gone.map((ref) => ref.slice(draftRef(me.author, "").length));
+  return gone.map((ref) => draftParts(ref)?.branch ?? ref);
 }

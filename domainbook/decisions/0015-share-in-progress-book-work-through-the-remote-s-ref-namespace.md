@@ -67,10 +67,13 @@ invisible to `git branch`:
   released by whoever syncs first after the artifact is on the default branch.
   A claim that could not be pushed is *pending* under `.git/domainbook/`, and
   the commit hook refuses the artifact until it is not.
-- **Drafts** — `refs/domainbook/drafts/<author>/<branch>`, a snapshot of one
-  clone's book root as its working tree holds it, published when `new` writes
-  and refreshed by every sync. A draft has one owner, is a root commit, and is
-  replaced rather than merged. Its owner prunes it when the branch is gone.
+- **Drafts** — `refs/domainbook/drafts/<author>/<branch>/book`, a snapshot of
+  one clone's book root as its working tree holds it, published when `new` writes
+  and refreshed by every sync. The `/book` leaf is there for the same reason
+  claims end in `/index`: a git ref cannot also be a directory of refs, so a
+  stale `feat` draft would otherwise block a later `feat/refunds` from
+  publishing. A draft has one owner, is a root commit, and is replaced rather
+  than merged. Its owner prunes it when the branch is gone.
 
 Allocation counts every number the remote knows — the default branch, every
 pushed branch, every draft, every claim — before it takes the next one and

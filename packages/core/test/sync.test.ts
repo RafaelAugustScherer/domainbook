@@ -307,7 +307,7 @@ describe("drafts and peers", () => {
     const me = whoAmI(alice.remote);
     expect(publishDraft(alice.remote, me).kind).toBe("published");
     expect(publishDraft(alice.remote, me).kind).toBe("same");
-    const ref = "refs/domainbook/drafts/alice@example.com/feat/outbox";
+    const ref = "refs/domainbook/drafts/alice@example.com/feat/outbox/book";
     expect(refsOn(origin)).toContain(ref);
     const files = git(alice.dir, "ls-tree", "-r", "--name-only", ref)
       .split("\n")
@@ -316,6 +316,23 @@ describe("drafts and peers", () => {
     expect(files.some((file) => file.includes("build/"))).toBe(false);
     expect(files.some((file) => !file.startsWith("domainbook/"))).toBe(false);
     expect(git(alice.dir, "log", "-1", "--format=%P", ref)).toBe("\n");
+  });
+
+  it("publishes a draft whose branch name extends a stale draft's branch", () => {
+    const { origin, alice } = team();
+    git(alice.dir, "checkout", "--quiet", "-b", "ship");
+    expect(publishDraft(alice.remote, whoAmI(alice.remote)).kind).toBe("published");
+    git(alice.dir, "checkout", "--quiet", "feat/outbox");
+    git(alice.dir, "branch", "--quiet", "-D", "ship");
+    git(alice.dir, "checkout", "--quiet", "-b", "ship/refunds");
+    writeFileSync(join(alice.root, "decisions", "0002-use-an-outbox.md"), decision("Use an outbox"));
+    expect(publishDraft(alice.remote, whoAmI(alice.remote)).kind).toBe("published");
+    expect(refsOn(origin)).toEqual(
+      expect.arrayContaining([
+        "refs/domainbook/drafts/alice@example.com/ship/book",
+        "refs/domainbook/drafts/alice@example.com/ship/refunds/book",
+      ])
+    );
   });
 
   it("shows a peer's added and changed artifacts, and nothing enters the working tree", () => {
