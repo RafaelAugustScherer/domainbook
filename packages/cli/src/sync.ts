@@ -2,14 +2,13 @@ import { basename } from "node:path";
 import {
   counted,
   loadBook,
-  pad,
   schemeOf,
   sync,
   type Collision,
   type Moved,
   type SyncReport,
 } from "@domainbook/core";
-import { missingBook, rooted } from "./files.js";
+import { missingBook, pad, rooted } from "./files.js";
 import {
   alone,
   byWhom,
@@ -69,7 +68,7 @@ function fellBack(report: Synced): string[] {
 
 function draftLines(report: Synced, root: string): string[] {
   if (report.draft === "detached") return [detachedLine(root)];
-  if (report.draft === "unreachable")
+  if (report.draft === "unreachable" || report.draft === "rejected")
     return [
       `the draft could not be pushed to ${
         report.remote.name
@@ -134,6 +133,6 @@ function summary(report: Synced): string {
   ].filter((part) => part !== undefined);
   return [
     ...(done.length === 0 ? ["nothing pending"] : done),
-    `${counted(report.peers, "peer")} in progress`,
+    `${counted(report.peers.length, "peer")} in progress`,
   ].join(", ");
 }

@@ -11,6 +11,7 @@ export type PeerWork = {
   peer: Source;
   added: string[];
   changed: string[];
+  touched: Set<string>;
   unreadable: string[];
   book: Book;
   root: string;
@@ -26,8 +27,9 @@ export function peersOf(remote: Remote, me: Me): PeerWork[] {
     const root = materialize(remote, peer.commit);
     const { book, issues } = loadBook(root);
     const broken = new Set(issues.map((issue) => peerPath(root, issue.file)));
-    const unreadable = [...added, ...changed].filter((path) => broken.has(path));
-    work.push({ peer, added, changed, unreadable, book, root });
+    const touched = new Set([...added, ...changed]);
+    const unreadable = [...touched].filter((path) => broken.has(path));
+    work.push({ peer, added, changed, touched, unreadable, book, root });
   }
   return work.sort((one, other) => other.peer.when - one.peer.when);
 }

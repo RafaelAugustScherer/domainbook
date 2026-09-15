@@ -1,7 +1,7 @@
 import type { Book, PeerWork, TermRecord } from "@domainbook/core";
-import { peerPath, termSlug } from "@domainbook/core";
+import { inProgress, termSlug } from "@domainbook/core";
 import { type Answer, listed, said } from "../answer.js";
-import { alone, footer, home, marked, type Peers, touched } from "../peers.js";
+import { alone, drafted, footer, home, type Peers } from "../peers.js";
 
 type Glossary = {
   where: string;
@@ -98,7 +98,7 @@ function written(book: Book, found: Found, asked: string): string {
     peer === undefined
       ? usedBy(book, term.slug, (file) => file)
       : usedBy(peer.book, term.slug, (file) => home(book, peer, file)),
-    peer === undefined ? undefined : `- ${marked(peer)}`,
+    peer === undefined ? undefined : `- ${inProgress(peer.peer)}`,
   ]
     .filter((line) => line !== undefined)
     .join("\n");
@@ -135,12 +135,9 @@ function fromPeers(
   peers: Peers,
   domain: string | undefined
 ): Glossary[] {
-  return peers.work.flatMap((peer) => {
-    const writing = touched(peer);
-    return inScope(peer.book, domain)
-      .filter((one) => writing.has(peerPath(peer.root, one.file)))
-      .map((one) => ({ ...one, file: home(book, peer, one.file), peer }));
-  });
+  return drafted(peers, (peerBook) => inScope(peerBook, domain)).map(
+    ({ one, peer }) => ({ ...one, file: home(book, peer, one.file), peer })
+  );
 }
 
 function inScope(book: Book, domain: string | undefined): Glossary[] {

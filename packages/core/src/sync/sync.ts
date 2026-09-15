@@ -1,10 +1,19 @@
 import type { Config } from "../schemas/config.js";
-import { listClaims, makeClaim, releaseClaims } from "./claims.js";
+import { makeClaim, releaseClaims } from "./claims.js";
 import { type Published, publishDraft, pruneOwnDrafts } from "./drafts.js";
-import { numberKey } from "./keys.js";
+import { isNumbered, type Key, type Numbered, parseKey } from "./keys.js";
+import { peersOf, type PeerWork, pruneCache } from "./peers.js";
+import {
+  type Holder,
+  holderOf,
+  holdersOf,
+  type Ledger,
+  ledgerOf,
+  nextFree,
+  onDefault,
+  takenNumbers,
+} from "./refs.js";
 import { findRemote, type Me, type Remote, whoAmI } from "./remote.js";
-import { peersOf, pruneCache } from "./peers.js";
-import { type Holder, holderOfNumber, holdersOf, onDefault, takenNumbers } from "./refs.js";
 import { committed, renumber, type Renumbered } from "./renumber.js";
 import {
   dropPending,
@@ -14,7 +23,7 @@ import {
   throttleMs,
   writeState,
 } from "./state.js";
-import { nextFree, tries } from "./take.js";
+import { claimFree } from "./take.js";
 import { fetchAll, type FellBack } from "./transport.js";
 
 export type Collision = {
@@ -36,10 +45,11 @@ export type SyncReport =
       url: string;
       fellBack: FellBack | undefined;
       claimsPushed: number;
+      settledKeys: string[];
       draft: Published["kind"];
       claimsReleased: number;
       draftsReleased: string[];
-      peers: number;
+      peers: PeerWork[];
       renumbered: Moved[];
       collisions: Collision[];
     };
@@ -55,15 +65,19 @@ export function sync(root: string, config: Config, options: SyncOptions): SyncRe
     return { kind: "throttled", syncedAt: state.syncedAt };
   writeState(remote, { ...state, attemptedAt: now });
   const fetched = fetchAll(remote);
-  if (fetched.kind !== "ok") {
-    const tried = fetched.kind === "unreachable" ? fetched.tried : [fetched.url];
-    const reason = fetched.kind === "unreachable" ? fetched.reason : fetched.refs.join(", ");
-    return { kind: "unreachable", remote, tried, reason, pending: readPending(remote).length, syncedAt: state.syncedAt };
-  }
+  if (fetched.kind === "unreachable")
+    return {
+      kind: "unreachable",
+      remote,
+      tried: fetched.tried,
+      reason: fetched.reason,
+      pending: readPending(remote).length,
+      syncedAt: state.syncedAt,
+    };
   const me = whoAmI(remote);
   const settled = settlePending(remote, me, options.renumber);
   const draft = publishDraft(remote, me);
-  const claimsReleased = releaseMerged(remote);
+  const claimsReleased = releaseMerged(remote, me);
   const draftsReleased = pruneOwnDrafts(remote, me);
   const peers = peersOf(remote, me);
   pruneCache(remote, peers.map((one) => one.peer.commit));
@@ -75,102 +89,93 @@ export function sync(root: string, config: Config, options: SyncOptions): SyncRe
     url: fetched.url,
     fellBack: fetched.fellBack,
     claimsPushed: settled.pushed,
+    settledKeys: settled.settledKeys,
     draft: draft.kind,
     claimsReleased,
     draftsReleased,
-    peers: peers.length,
+    peers,
     renumbered: settled.renumbered,
     collisions: settled.collisions,
   };
 }
 
-type Settled = { pushed: number; renumbered: Moved[]; collisions: Collision[] };
+type Settled = {
+  pushed: number;
+  settledKeys: string[];
+  renumbered: Moved[];
+  collisions: Collision[];
+};
 
 function settlePending(remote: Remote, me: Me, fix: boolean): Settled {
-  const done: Settled = { pushed: 0, renumbered: [], collisions: [] };
+  const done: Settled = { pushed: 0, settledKeys: [], renumbered: [], collisions: [] };
   for (const pending of readPending(remote)) settleOne(remote, me, fix, pending, done);
   return done;
 }
 
 function settleOne(remote: Remote, me: Me, fix: boolean, pending: Pending, done: Settled): void {
-  const parsed = numberedKey(pending.key);
-  if (!stillTaken(remote, me, pending, parsed)) {
-    const made = makeClaim(remote, pending.key, pending.title, pending.branch);
-    if (made.kind === "unreachable") return;
-    if (made.kind === "claimed") {
-      dropPending(remote, pending.key);
-      done.pushed += 1;
-      return;
-    }
-  }
+  const key = parseKey(pending.key);
+  if (claimIfFree(remote, me, pending, key, done)) return;
   const wasCommitted = committed(remote, pending.path);
-  const by = whoHolds(remote, me, pending, parsed);
-  const free = parsed === undefined ? undefined : nextFree(remote, me, parsed.logDir);
-  const moved = parsed !== undefined && fix && !wasCommitted ? moveToFree(remote, me, pending, parsed) : undefined;
-  if (moved === undefined) {
-    done.collisions.push({ pending, by, free, committed: wasCommitted });
+  const moved =
+    key !== undefined && isNumbered(key) && fix && !wasCommitted
+      ? move(remote, me, key, pending)
+      : undefined;
+  const ledger = ledgerOf(remote, me);
+  if (moved !== undefined) {
+    done.renumbered.push({ ...moved, by: heldBy(ledger, key) });
+    dropPending(remote, pending.key);
     return;
   }
-  done.renumbered.push({ ...moved, by });
-  dropPending(remote, pending.key);
+  done.collisions.push({
+    pending,
+    by: heldBy(ledger, key),
+    free: key !== undefined && isNumbered(key) ? nextFree(ledger, key.logDir) : undefined,
+    committed: wasCommitted,
+  });
 }
 
-function whoHolds(
+function claimIfFree(
   remote: Remote,
   me: Me,
   pending: Pending,
-  parsed: { logDir: string; number: number } | undefined
-): Holder | undefined {
-  if (parsed === undefined)
-    return holdersOf(remote, pending.path, pending.key, me)[0];
-  return holderOfNumber(remote, parsed.logDir, parsed.number, me);
-}
-
-function stillTaken(
-  remote: Remote,
-  me: Me,
-  pending: Pending,
-  parsed: { logDir: string; number: number } | undefined
+  key: Key | undefined,
+  done: Settled
 ): boolean {
-  if (parsed === undefined)
-    return holdersOf(remote, pending.path, pending.key, me).length > 0;
-  return takenNumbers(remote, parsed.logDir, me).includes(parsed.number);
-}
-
-function moveToFree(
-  remote: Remote,
-  me: Me,
-  pending: Pending,
-  parsed: { logDir: string; number: number; domain: string | undefined; kind: "decision" | "debt" }
-): Renumbered | undefined {
-  for (let attempt = 1; attempt <= tries; attempt += 1) {
-    const to = nextFree(remote, me, parsed.logDir);
-    const made = makeClaim(remote, numberKey(parsed.logDir, to), pending.title, me.branch);
-    if (made.kind === "claimed")
-      return renumber(remote, pending.path, parsed.domain, parsed.logDir, parsed.kind, parsed.number, to);
-    if (made.kind === "unreachable") return undefined;
+  if (stillTaken(ledgerOf(remote, me), key)) return false;
+  const made = makeClaim(remote, pending.key, pending.title, pending.branch);
+  if (made.kind === "unreachable") return true;
+  if (made.kind === "claimed") {
+    dropPending(remote, pending.key);
+    done.pushed += 1;
+    done.settledKeys.push(pending.key);
+    return true;
   }
-  return undefined;
+  return false;
 }
 
-function releaseMerged(remote: Remote): number {
-  const merged = listClaims(remote).filter((claim) => {
-    const parsed = numberedKey(claim.key);
-    return onDefault(remote, claim.key, parsed?.logDir, parsed?.number);
+function move(remote: Remote, me: Me, key: Numbered, pending: Pending): Renumbered | undefined {
+  const freed = claimFree(remote, me, key.logDir, pending.title);
+  if (freed.kind !== "claimed") return undefined;
+  return renumber(ledgerOf(remote, me), key, pending.path, freed.number);
+}
+
+function heldBy(ledger: Ledger, key: Key | undefined): Holder | undefined {
+  return key === undefined ? undefined : holderOf(ledger, key);
+}
+
+function stillTaken(ledger: Ledger, key: Key | undefined): boolean {
+  if (key === undefined) return false;
+  return isNumbered(key)
+    ? takenNumbers(ledger, key.logDir).includes(key.number)
+    : holdersOf(ledger, key).length > 0;
+}
+
+function releaseMerged(remote: Remote, me: Me): number {
+  const ledger = ledgerOf(remote, me);
+  const merged = ledger.claims.filter((claim) => {
+    const key = parseKey(claim.key);
+    return key !== undefined && onDefault(ledger, key);
   });
   const released = releaseClaims(remote, merged.map((claim) => claim.key));
   return released?.kind === "ok" ? merged.length : 0;
-}
-
-export function numberedKey(
-  key: string
-): { logDir: string; number: number; domain: string | undefined; kind: "decision" | "debt" } | undefined {
-  const parsed = /^((?:domains\/([^/]+)\/)?(decisions|debt))\/(\d{4})$/u.exec(key);
-  if (parsed === null) return undefined;
-  return {
-    logDir: parsed[1] ?? "",
-    domain: parsed[2],
-    kind: parsed[3] === "debt" ? "debt" : "decision",
-    number: Number(parsed[4]),
-  };
 }

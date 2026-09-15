@@ -2,17 +2,18 @@ import { lines, online } from "../git.js";
 import type { Remote } from "./remote.js";
 import { readState, writeState } from "./state.js";
 
-export type Reached =
+export type Fetched =
   | { kind: "ok"; url: string; fellBack: FellBack | undefined }
-  | { kind: "rejected"; url: string; refs: string[] }
   | { kind: "unreachable"; tried: string[]; reason: string };
+
+export type Pushed = Fetched | { kind: "rejected"; url: string; refs: string[] };
 
 export type FellBack = { from: string; reason: string };
 
 export const claimsSpec = "+refs/domainbook/*:refs/domainbook/*";
 
-export function fetchAll(remote: Remote): Reached {
-  return reach(remote, (url) =>
+export function fetchAll(remote: Remote): Fetched {
+  const reached = reach(remote, (url) =>
     online(remote.repo, [
       "fetch",
       "--prune",
@@ -22,13 +23,16 @@ export function fetchAll(remote: Remote): Reached {
       claimsSpec,
     ])
   );
+  if (reached.kind === "rejected")
+    return { kind: "unreachable", tried: [reached.url], reason: reached.refs.join(", ") };
+  return reached;
 }
 
 export function push(
   remote: Remote,
   refspecs: string[],
   force: boolean
-): Reached {
+): Pushed {
   const flags = force ? ["--force"] : [];
   return reach(remote, (url) =>
     online(remote.repo, [
@@ -46,7 +50,7 @@ export function push(
 function reach(
   remote: Remote,
   attempt: (url: string) => { code: number; out: string; err: string }
-): Reached {
+): Pushed {
   const state = readState(remote);
   const urls = ordered(remote, state.url);
   const tried: string[] = [];

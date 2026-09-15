@@ -3,11 +3,12 @@ import {
   addPending,
   ago,
   dropPending,
-  findClaim,
   findRemote,
-  holderOfNumber,
+  holderOf,
   holdersOf,
+  isNumbered,
   keyOf,
+  ledgerOf,
   makeClaim,
   readPending,
   sync,
@@ -15,6 +16,7 @@ import {
   type Book,
   type Holder,
   type Key,
+  type Ledger,
   type Me,
   type Remote,
   type SyncReport,
@@ -44,11 +46,13 @@ export function claimStaged(
 ): Result {
   const remote = findRemote(root, book.config);
   if (remote === undefined) return { code: 0, lines: [] };
-  const owed = new Set(readPending(remote).map((pending) => pending.key));
   const report = sync(root, book.config, { force: false, renumber: false });
-  const clone = {
+  const me = whoAmI(remote);
+  const ledger = ledgerOf(remote, me);
+  const settled = new Set(report.kind === "synced" ? report.settledKeys : []);
+  const clone: Clone = {
     remote,
-    me: whoAmI(remote),
+    me,
     root,
     book: bookPath,
     reachable: report.kind !== "unreachable",
@@ -58,7 +62,7 @@ export function claimStaged(
     .map((path) => path.slice(bookPath.length + 1))
     .map((path) => ({ path, key: keyOf(path) }))
     .filter((one): one is Staged => one.key !== undefined)
-    .map((one) => judge(clone, one, owed))
+    .map((one) => judge(clone, ledger, one, settled))
     .filter((one) => one !== undefined);
   const refused =
     said.some((one) => one.refused) && book.config.enforcement.mode !== "warn";
@@ -77,15 +81,19 @@ function unreached(remote: Remote, report: SyncReport): string[] {
   return [`domainbook: ${remote.name} not reachable, ${fetched}`];
 }
 
-function judge(clone: Clone, one: Staged, owed: Set<string>): Said | undefined {
+function judge(
+  clone: Clone,
+  ledger: Ledger,
+  one: Staged,
+  settled: Set<string>
+): Said | undefined {
   const { remote, me } = clone;
-  const merged = holdersOf(remote, one.path, one.key.key, me).some(
-    (holder) => holder.kind === "default"
-  );
-  if (merged) return undefined;
-  if (findClaim(remote, one.key.key)?.email === me.email)
-    return owed.has(one.key.key) ? claimed(clone, one) : undefined;
-  const holder = holderOf(clone, one);
+  if (holdersOf(ledger, one.key).some((holder) => holder.kind === "default"))
+    return undefined;
+  const claim = ledger.claims.find((each) => each.key === one.key.key);
+  if (claim?.email === me.email)
+    return settled.has(one.key.key) ? claimed(clone, one) : undefined;
+  const holder = holderOf(ledger, one.key);
   if (holder !== undefined) return refusal(clone, one, holder);
   if (!clone.reachable) return offline(clone, one);
   const made = makeClaim(remote, one.key.key, titleOf(one.path), me.branch);
@@ -108,16 +116,9 @@ function claimed(clone: Clone, one: Staged): Said {
   };
 }
 
-function holderOf(clone: Clone, one: Staged): Holder | undefined {
-  const { logDir, number } = one.key;
-  if (logDir === undefined || number === undefined)
-    return holdersOf(clone.remote, one.path, one.key.key, clone.me)[0];
-  return holderOfNumber(clone.remote, logDir, number, clone.me);
-}
-
 function refusal(clone: Clone, one: Staged, holder: Holder | undefined): Said {
   const name = named(one.path);
-  if (one.key.number === undefined)
+  if (!isNumbered(one.key))
     return {
       refused: true,
       line: writtenBy(
@@ -143,10 +144,9 @@ function refusal(clone: Clone, one: Staged, holder: Holder | undefined): Said {
 
 function offline(clone: Clone, one: Staged): Said {
   remember(clone, one);
-  const then =
-    one.key.number === undefined
-      ? "if the id is taken by then, sync says so"
-      : "if the number is taken by then, sync renumbers the file and says so";
+  const then = isNumbered(one.key)
+    ? "if the number is taken by then, sync renumbers the file and says so"
+    : "if the id is taken by then, sync says so";
   return {
     refused: true,
     line: `${clone.book}/${one.path} carries ${named(

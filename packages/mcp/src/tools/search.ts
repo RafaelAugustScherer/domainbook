@@ -1,8 +1,8 @@
 import type { Book, DomainRecord } from "@domainbook/core";
-import { adrRef, live, peerPath, tdrRef } from "@domainbook/core";
+import { adrRef, inProgress, live, tdrRef } from "@domainbook/core";
 import { type Answer, said } from "../answer.js";
 import { text } from "../files.js";
-import { alone, footer, home, marked, type Peers, touched } from "../peers.js";
+import { alone, drafted, footer, home, type Peers } from "../peers.js";
 
 export type Kind =
   | "roadmap"
@@ -59,16 +59,11 @@ function local(book: Book): Source[] {
 }
 
 function fromPeers(book: Book, peers: Peers): Source[] {
-  return peers.work.flatMap((peer) => {
-    const writing = touched(peer);
-    return searchable(peer.book)
-      .filter((one) => writing.has(peerPath(peer.root, one.file)))
-      .map((one) => ({
-        ...one,
-        shown: home(book, peer, one.file),
-        note: marked(peer),
-      }));
-  });
+  return drafted(peers, searchable).map(({ one, peer }) => ({
+    ...one,
+    shown: home(book, peer, one.file),
+    note: inProgress(peer.peer),
+  }));
 }
 
 function repeats(known: Hit, hit: Hit): boolean {

@@ -7,7 +7,7 @@ import {
 } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 
-export { missingBook } from "@domainbook/core";
+export { missingBook, pad } from "@domainbook/core";
 
 const readAsSomethingElse = new Set([
   "true",
@@ -86,10 +86,6 @@ export function today(): string {
   const month = String(now.getMonth() + 1).padStart(2, "0");
   const day = String(now.getDate()).padStart(2, "0");
   return `${now.getFullYear()}-${month}-${day}`;
-}
-
-export function pad(number: number): string {
-  return String(number).padStart(4, "0");
 }
 
 function fileAbove(path: string): string | undefined {

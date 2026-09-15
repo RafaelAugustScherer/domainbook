@@ -2,14 +2,14 @@ import type { Book, DecisionRecord, PeerWork } from "@domainbook/core";
 import {
   adrRef,
   findDecision,
+  inProgress,
   live,
   opening,
-  peerPath,
   sectionNamed,
 } from "@domainbook/core";
 import { type Answer, refuse, said } from "../answer.js";
 import { text } from "../files.js";
-import { alone, footer, marked, type Peers, touched } from "../peers.js";
+import { alone, drafted, footer, type Peers } from "../peers.js";
 import { type Asked, scoped } from "../scope.js";
 
 type Drafted = { record: DecisionRecord; peer: PeerWork };
@@ -29,13 +29,13 @@ export function getDecisions(
   const found = scope(book, asked);
   if ("refusal" in found) return refuse(found.refusal);
   const local = found.records.filter(live);
-  const drafted = fromPeers(peers, asked);
-  const [first] = [...local, ...drafted.map((one) => one.record)];
+  const drafts = fromPeers(peers, asked);
+  const [first] = [...local, ...drafts.map((one) => one.record)];
   if (first === undefined)
     return said("no live decisions in that scope", ...footer(peers));
   return said(
     ...local.map((record) => `- ${indexed(record)}`),
-    ...drafted.map((one) => `- ${indexed(one.record)}\n  ${marked(one.peer)}`),
+    ...drafts.map((one) => `- ${indexed(one.record)}\n  ${inProgress(one.peer.peer)}`),
     "",
     `Read one in full with get_decisions and its id, as ids: ["${adrRef(
       first
@@ -58,14 +58,10 @@ function scope(
 }
 
 function fromPeers(peers: Peers, asked: Asked): Drafted[] {
-  return peers.work.flatMap((peer) => {
-    const found = scope(peer.book, asked);
-    if ("refusal" in found) return [];
-    const writing = touched(peer);
-    return found.records
-      .filter((record) => live(record) && writing.has(peerPath(peer.root, record.file)))
-      .map((record) => ({ record, peer }));
-  });
+  return drafted(peers, (book) => {
+    const found = scope(book, asked);
+    return "refusal" in found ? [] : found.records.filter(live);
+  }).map(({ one, peer }) => ({ record: one, peer }));
 }
 
 function bodies(book: Book, ids: string[], peers: Peers): Answer {
@@ -82,12 +78,12 @@ function bodies(book: Book, ids: string[], peers: Peers): Answer {
 function bodyOf(book: Book, peers: Peers, id: string): string | undefined {
   const local = findDecision(book, id);
   if (local !== undefined) return text(local.file);
-  for (const peer of peers.work) {
-    const record = findDecision(peer.book, id);
-    if (record !== undefined && touched(peer).has(peerPath(peer.root, record.file)))
-      return `${marked(peer)}\n\n${text(record.file)}`;
-  }
-  return undefined;
+  const [found] = drafted(peers, (peerBook) => {
+    const record = findDecision(peerBook, id);
+    return record === undefined ? [] : [record];
+  });
+  if (found === undefined) return undefined;
+  return `${inProgress(found.peer.peer)}\n\n${text(found.one.file)}`;
 }
 
 function absent(book: Book, id: string): string {

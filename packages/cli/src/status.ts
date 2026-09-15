@@ -25,7 +25,8 @@ export function status(root: string, path: string | undefined): Result {
   const remote = findRemote(root, config);
   if (remote === undefined) return { code: 0, lines: [alone] };
   const report = sync(root, config, { force: false, renumber: false });
-  const peers = peersOf(remote, whoAmI(remote));
+  const peers =
+    report.kind === "synced" ? report.peers : peersOf(remote, whoAmI(remote));
   if (path !== undefined) return held(peers, inside(path, remote.book));
   return {
     code: 0,

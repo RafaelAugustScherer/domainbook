@@ -1,13 +1,13 @@
 import {
   findRemote,
+  isNumbered,
   keyOf,
   loadBook,
-  pad,
   type Holder,
   type Key,
   type Remote,
 } from "@domainbook/core";
-import { rooted } from "./files.js";
+import { pad, rooted } from "./files.js";
 
 export const alone = "domainbook: no remote, working alone";
 
@@ -60,8 +60,7 @@ export function writtenBy(
 }
 
 function nameOf(key: Key): string {
-  if (key.number === undefined)
-    return key.key.slice(key.key.lastIndexOf("/") + 1);
+  if (!isNumbered(key)) return key.key.slice(key.key.lastIndexOf("/") + 1);
   const ref = `${key.kind === "debt" ? "TDR" : "ADR"}-${pad(key.number)}`;
   return key.kind === "decision" && key.domain !== undefined
     ? `${key.domain}/${ref}`

@@ -1,4 +1,5 @@
 import type { Book, DebtRecord, DecisionRecord } from "./model.js";
+import { pad } from "./sync/keys.js";
 
 const pattern = /^(?:([^/]+)\/)?ADR-(\d{4})$/u;
 
@@ -40,7 +41,7 @@ export function live(record: DecisionRecord): boolean {
 }
 
 function numbered(kind: string, number: number): string {
-  return `${kind}-${String(number).padStart(4, "0")}`;
+  return `${kind}-${pad(number)}`;
 }
 
 function qualified(domain: string | undefined, ref: string): string {

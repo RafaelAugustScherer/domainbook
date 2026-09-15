@@ -1,6 +1,8 @@
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { git, lines, records } from "../git.js";
-import { listClaims } from "./claims.js";
-import { numberKey } from "./keys.js";
+import { type Claim, listClaims } from "./claims.js";
+import { isNumbered, type Key, pathOf } from "./keys.js";
 import { defaultBranch, type Me, type Remote } from "./remote.js";
 
 export type Source = {
@@ -17,6 +19,16 @@ export type Holder = {
   kind: "draft" | "branch" | "claim" | "default";
   email: string;
   branch: string;
+};
+
+export type Ledger = {
+  remote: Remote;
+  me: Me;
+  base: string | undefined;
+  others: Source[];
+  claims: Claim[];
+  numbers: Map<string, number[]>;
+  present: Map<string, boolean>;
 };
 
 const numbered = /^(\d+)-.*\.md$/u;
@@ -49,7 +61,108 @@ export function others(remote: Remote, me: Me): Source[] {
   return sources(remote).filter((one) => !mine(one, me));
 }
 
-export function numbersOn(remote: Remote, ref: string, logDir: string): number[] {
+export function ledgerOf(remote: Remote, me: Me): Ledger {
+  return {
+    remote,
+    me,
+    base: defaultBranch(remote),
+    others: others(remote, me),
+    claims: listClaims(remote),
+    numbers: new Map(),
+    present: new Map(),
+  };
+}
+
+export function numbersOn(ledger: Ledger, ref: string, logDir: string): number[] {
+  const at = `${ref} ${logDir}`;
+  const hit = ledger.numbers.get(at);
+  if (hit !== undefined) return hit;
+  const found = readNumbers(ledger.remote, ref, logDir);
+  ledger.numbers.set(at, found);
+  return found;
+}
+
+export function holds(ledger: Ledger, ref: string, path: string): boolean {
+  const at = `${ref} ${path}`;
+  const hit = ledger.present.get(at);
+  if (hit !== undefined) return hit;
+  const there =
+    git(ledger.remote.repo, [
+      "cat-file",
+      "-e",
+      `${ref}:${ledger.remote.book}/${path}`,
+    ]).code === 0;
+  ledger.present.set(at, there);
+  return there;
+}
+
+export function takenNumbers(ledger: Ledger, logDir: string): number[] {
+  const taken = new Set<number>();
+  if (ledger.base !== undefined)
+    for (const one of numbersOn(ledger, ledger.base, logDir)) taken.add(one);
+  for (const source of ledger.others)
+    for (const one of numbersOn(ledger, source.ref, logDir)) taken.add(one);
+  const prefix = `${logDir}/`;
+  for (const claim of ledger.claims)
+    if (claim.key.startsWith(prefix)) {
+      const digits = claim.key.slice(prefix.length);
+      if (/^\d{4}$/u.test(digits)) taken.add(Number(digits));
+    }
+  return [...taken].sort((one, other) => one - other);
+}
+
+export function holdersOf(ledger: Ledger, key: Key): Holder[] {
+  const found: Holder[] = [];
+  if (ledger.base !== undefined && onDefault(ledger, key))
+    found.push({ kind: "default", email: "", branch: ledger.base });
+  for (const claim of ledger.claims)
+    if (claim.key === key.key && !own(ledger, claim))
+      found.push({ kind: "claim", email: claim.email, branch: claim.branch ?? "" });
+  for (const source of ledger.others)
+    if (sourceHolds(ledger, source, key))
+      found.push({ kind: source.kind, email: source.email, branch: source.branch });
+  return found;
+}
+
+export function holderOf(ledger: Ledger, key: Key): Holder | undefined {
+  return holdersOf(ledger, key)[0];
+}
+
+export function onDefault(ledger: Ledger, key: Key): boolean {
+  if (ledger.base === undefined) return false;
+  return isNumbered(key)
+    ? numbersOn(ledger, ledger.base, key.logDir).includes(key.number)
+    : holds(ledger, ledger.base, pathOf(key));
+}
+
+export function nextFree(ledger: Ledger, logDir: string): number {
+  const known = [...localNumbers(ledger.remote, logDir), ...takenNumbers(ledger, logDir)];
+  return known.length === 0 ? 1 : Math.max(...known) + 1;
+}
+
+export function localNumbers(remote: Remote, logDir: string): number[] {
+  let names: string[];
+  try {
+    names = readdirSync(join(remote.repo, remote.book, logDir));
+  } catch {
+    return [];
+  }
+  return names
+    .map((name) => Number(numbered.exec(name)?.[1] ?? Number.NaN))
+    .filter((one) => !Number.isNaN(one));
+}
+
+function sourceHolds(ledger: Ledger, source: Source, key: Key): boolean {
+  return isNumbered(key)
+    ? numbersOn(ledger, source.ref, key.logDir).includes(key.number)
+    : holds(ledger, source.ref, pathOf(key));
+}
+
+function own(ledger: Ledger, claim: Claim): boolean {
+  return claim.email === ledger.me.email && claim.branch === ledger.me.branch;
+}
+
+function readNumbers(remote: Remote, ref: string, logDir: string): number[] {
   const listed = git(remote.repo, [
     "ls-tree",
     "--name-only",
@@ -58,70 +171,6 @@ export function numbersOn(remote: Remote, ref: string, logDir: string): number[]
   return lines(listed.out)
     .map((name) => Number(numbered.exec(name)?.[1] ?? Number.NaN))
     .filter((one) => !Number.isNaN(one));
-}
-
-export function takenNumbers(remote: Remote, logDir: string, me: Me): number[] {
-  const taken = new Set<number>();
-  const base = defaultBranch(remote);
-  if (base !== undefined)
-    for (const one of numbersOn(remote, base, logDir)) taken.add(one);
-  for (const source of others(remote, me))
-    for (const one of numbersOn(remote, source.ref, logDir)) taken.add(one);
-  const prefix = `${logDir}/`;
-  for (const claim of listClaims(remote))
-    if (claim.key.startsWith(prefix)) {
-      const digits = claim.key.slice(prefix.length);
-      if (/^\d{4}$/u.test(digits)) taken.add(Number(digits));
-    }
-  return [...taken].sort((one, other) => one - other);
-}
-
-export function holds(remote: Remote, ref: string, path: string): boolean {
-  return (
-    git(remote.repo, ["cat-file", "-e", `${ref}:${remote.book}/${path}`]).code ===
-    0
-  );
-}
-
-export function holdersOf(remote: Remote, path: string, key: string, me: Me): Holder[] {
-  const found: Holder[] = [];
-  const base = defaultBranch(remote);
-  if (base !== undefined && holds(remote, base, path))
-    found.push({ kind: "default", email: "", branch: base });
-  for (const source of others(remote, me))
-    if (holds(remote, source.ref, path))
-      found.push({ kind: source.kind, email: source.email, branch: source.branch });
-  for (const claim of listClaims(remote))
-    if (claim.key === key && !(claim.email === me.email && claim.branch === me.branch))
-      found.push({ kind: "claim", email: claim.email, branch: claim.branch ?? "" });
-  return found;
-}
-
-export function onDefault(remote: Remote, key: string, logDir: string | undefined, number: number | undefined): boolean {
-  const base = defaultBranch(remote);
-  if (base === undefined) return false;
-  if (logDir !== undefined && number !== undefined)
-    return numbersOn(remote, base, logDir).includes(number);
-  const path = key.startsWith("domains/") && !key.includes("/features/") ? `${key}/index.md` : `${key}.md`;
-  return holds(remote, base, path);
-}
-
-export function holderOfNumber(
-  remote: Remote,
-  logDir: string,
-  number: number,
-  me: Me
-): Holder | undefined {
-  const claim = listClaims(remote).find((one) => one.key === numberKey(logDir, number));
-  if (claim !== undefined)
-    return { kind: "claim", email: claim.email, branch: claim.branch ?? "" };
-  for (const source of others(remote, me))
-    if (numbersOn(remote, source.ref, logDir).includes(number))
-      return { kind: source.kind, email: source.email, branch: source.branch };
-  const base = defaultBranch(remote);
-  if (base !== undefined && numbersOn(remote, base, logDir).includes(number))
-    return { kind: "default", email: "", branch: base };
-  return undefined;
 }
 
 function mine(one: Source, me: Me): boolean {

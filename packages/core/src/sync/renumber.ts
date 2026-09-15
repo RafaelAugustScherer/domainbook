@@ -2,9 +2,9 @@ import { readdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { git, lines } from "../git.js";
 import { buildDir } from "../load.js";
-import { pad } from "./keys.js";
+import { type Numbered, pad } from "./keys.js";
 import type { Remote } from "./remote.js";
-import { numbersOn } from "./refs.js";
+import { type Ledger, numbersOn } from "./refs.js";
 
 export type Renumbered = {
   from: string;
@@ -22,14 +22,14 @@ export function committed(remote: Remote, path: string): boolean {
 }
 
 export function renumber(
-  remote: Remote,
+  ledger: Ledger,
+  key: Numbered,
   path: string,
-  domain: string | undefined,
-  logDir: string,
-  kind: "decision" | "debt",
-  from: number,
   to: number
 ): Renumbered {
+  const { remote } = ledger;
+  const { domain, logDir, kind } = key;
+  const from = key.number;
   const target = path.replace(/(^|\/)\d{4}-/u, `$1${pad(to)}-`);
   const staged = stagedUnder(remote);
   renameSync(join(remote.repo, remote.book, path), join(remote.repo, remote.book, target));
@@ -42,7 +42,7 @@ export function renumber(
   const done = { from: path, to: target, was, now, rewritten: 0, left: [] as string[] };
   if (kind === "debt") return done;
   const token = new RegExp(`(?<![\\w/-])${escape(was)}(?!\\d)`, "gu");
-  if (numbersOn(remote, "HEAD", logDir).includes(from))
+  if (numbersOn(ledger, "HEAD", logDir).includes(from))
     return { ...done, left: leftAlone(remote, token) };
   for (const file of bookFiles(join(remote.repo, remote.book))) {
     const text = readFileSync(file, "utf8");

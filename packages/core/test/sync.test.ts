@@ -13,11 +13,16 @@ import { join } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import {
   configSchema,
+  fetchAll,
   findClaim,
   findRemote,
+  holderOf,
+  holdersOf,
   keyOf,
+  ledgerOf,
   listClaims,
   makeClaim,
+  parseKey,
   peersOf,
   publishDraft,
   readPending,
@@ -264,6 +269,31 @@ describe("claims", () => {
     expect(readPending(alice.remote)).toEqual([
       { key: "decisions/0002", path: "decisions/0002-use-an-outbox.md", title: "Use an outbox", branch: "feat/outbox" },
     ]);
+  });
+
+  it("does not push or delete a claim when the commit cannot be created", () => {
+    const { origin, alice } = team();
+    expect(makeClaim(alice.remote, "decisions/0002", "Use an outbox", "feat/outbox").kind).toBe("claimed");
+    const before = refsOn(origin);
+    git(alice.dir, "config", "user.name", "");
+    git(alice.dir, "config", "user.email", "");
+    git(alice.dir, "config", "user.useConfigOnly", "true");
+    const made = makeClaim(alice.remote, "decisions/0002", "Use an outbox", "feat/outbox");
+    expect(made.kind).toBe("unreachable");
+    expect(refsOn(origin)).toEqual(before);
+  });
+
+  it("reports the default holder before a peer's claim for the same number", () => {
+    const { alice, bob } = team();
+    expect(makeClaim(bob.remote, "decisions/0001", "Already merged", "feat/webhooks").kind).toBe("claimed");
+    fetchAll(alice.remote);
+    const ledger = ledgerOf(alice.remote, whoAmI(alice.remote));
+    const key = parseKey("decisions/0001");
+    if (key === undefined) throw new Error("no key");
+    const holders = holdersOf(ledger, key);
+    expect(holders[0]).toMatchObject({ kind: "default" });
+    expect(holders.some((one) => one.kind === "claim")).toBe(true);
+    expect(holderOf(ledger, key)).toMatchObject({ kind: "default" });
   });
 });
 

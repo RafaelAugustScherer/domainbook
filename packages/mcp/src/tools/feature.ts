@@ -1,8 +1,8 @@
 import type { Book, FeatureRecord } from "@domainbook/core";
-import { peerPath, sectionNamed } from "@domainbook/core";
+import { inProgress, sectionNamed } from "@domainbook/core";
 import { type Answer, listed, refuse, said } from "../answer.js";
 import { text } from "../files.js";
-import { alone, footer, home, marked, type Peers, touched } from "../peers.js";
+import { alone, drafted, footer, home, type Peers } from "../peers.js";
 import { noDomain } from "../scope.js";
 
 export function getFeature(
@@ -40,18 +40,14 @@ function fromPeers(
   id: string,
   domain: string | undefined
 ): string[] {
-  return peers.work.flatMap((peer) => {
-    const writing = touched(peer);
-    return peer.book.domains
+  return drafted(peers, (peerBook) =>
+    peerBook.domains
       .filter((one) => domain === undefined || one.id === domain)
       .flatMap((one) => one.features)
-      .filter(
-        (one) =>
-          one.frontmatter.id === id &&
-          writing.has(peerPath(peer.root, one.file))
-      )
-      .map((one) => written(one, home(book, peer, one.file), marked(peer)));
-  });
+      .filter((one) => one.frontmatter.id === id)
+  ).map(({ one, peer }) =>
+    written(one, home(book, peer, one.file), inProgress(peer.peer))
+  );
 }
 
 function written(feature: FeatureRecord, file: string, note?: string): string {

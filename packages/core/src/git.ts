@@ -38,6 +38,17 @@ export function online(cwd: string, args: string[]): Ran {
   return git(cwd, args, quiet);
 }
 
+export function object(
+  cwd: string,
+  args: string[],
+  env?: NodeJS.ProcessEnv
+): string | undefined {
+  const ran = git(cwd, args, env);
+  if (ran.code !== 0) return undefined;
+  const sha = ran.out.trim();
+  return sha === "" ? undefined : sha;
+}
+
 export function lines(out: string): string[] {
   return out.split("\n").filter((line) => line !== "");
 }

@@ -2,7 +2,6 @@ import type { Book, PeerWork, Remote } from "@domainbook/core";
 import {
   counted,
   findRemote,
-  inProgress,
   peerPath,
   peersOf,
   readState,
@@ -17,20 +16,25 @@ export const alone: Peers = { work: [], asOf: undefined };
 export function readPeers(root: string, book: Book): Peers {
   const remote = findRemote(root, book.config);
   if (remote === undefined) return alone;
-  sync(root, book.config, { force: false, renumber: false });
-  return { work: peersOf(remote, whoAmI(remote)), asOf: dated(remote) };
+  const report = sync(root, book.config, { force: false, renumber: false });
+  const work =
+    report.kind === "synced" ? report.peers : peersOf(remote, whoAmI(remote));
+  return { work, asOf: dated(remote) };
 }
 
-export function touched(peer: PeerWork): Set<string> {
-  return new Set([...peer.added, ...peer.changed]);
+export function drafted<T extends { file: string }>(
+  peers: Peers,
+  pick: (book: Book) => T[]
+): { one: T; peer: PeerWork }[] {
+  return peers.work.flatMap((peer) =>
+    pick(peer.book)
+      .filter((one) => peer.touched.has(peerPath(peer.root, one.file)))
+      .map((one) => ({ one, peer }))
+  );
 }
 
 export function home(book: Book, peer: PeerWork, file: string): string {
   return `${book.root}/${peerPath(peer.root, file)}`;
-}
-
-export function marked(peer: PeerWork): string {
-  return inProgress(peer.peer);
 }
 
 export function footer(peers: Peers): string[] {
