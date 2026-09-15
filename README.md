@@ -117,6 +117,9 @@ A repo with no remote works alone, as before; `collaboration.enabled: false` in
 `domainbook.config.yaml` turns it off, and `collaboration.remote` names a remote other than
 `origin`.
 
+Already have a 1.x book? [MIGRATING.md](MIGRATING.md) covers the upgrade — it is a package
+bump and one regenerated file, with no backfill.
+
 ## Ask the book over MCP
 
 `domainbook serve mcp` (or the `.mcp.json` that `init` writes) exposes eight read-only
