@@ -1,0 +1,282 @@
+# Glossary
+
+The words domainbook uses about itself. A term is here because the repo already
+uses it and a reader could reasonably read it two ways — not because a dictionary
+would like it.
+
+## Artifact
+
+One file in the book of a type the format knows: roadmap, domain page, glossary,
+feature, decision, debt record, or changelog. An artifact is documentation, never
+a build output — nothing this project produces from a build is called an
+artifact.
+
+- **Aliases:** book file
+- **Status:** validated
+- **Example:** `domains/format/index.md` is a domain artifact; `packages/core/dist/index.js` is not an artifact at all.
+
+## Book
+
+The folder of artifacts that documents one repo. There is one book per repo, and
+domainbook the tool reads it, checks it, serves it, and publishes it.
+
+- **Status:** validated
+- **Example:** This repo's book is `domainbook/`; the fixture book under `packages/core/test/fixtures/book/` is a second, complete book used by tests.
+
+## Book root
+
+The folder a book starts at, `domainbook/` by default. The root is an argument to
+the tool, not a setting inside the book — a book cannot say where it lives,
+because you have to have found it before you can read it.
+
+- **Status:** validated
+- **Example:** Config lives at `<book-root>/domainbook.config.yaml` and carries no `root` key.
+
+## Canvas
+
+The Bounded Context Canvas V5, the structure a domain page follows. Name and
+Strategic Classification live in the page's frontmatter, Ubiquitous Language
+lives in the domain's own glossary, and the remaining eight sections are the
+body, in canvas order.
+
+- **Status:** validated
+- **Example:** Reading a domain page top to bottom gives Purpose, Domain Roles, Inbound Communication, Outbound Communication, Business Decisions, Assumptions, Verification Metrics, Open Questions.
+
+## Claim
+
+A ref on the remote, `refs/domainbook/claims/<key>`, that reserves one artifact
+identity — a log number or a slug — before the artifact reaches any branch. A
+claim is created once and never forced, so of two peers pushing one key only one
+succeeds; it is released once the artifact is on the default branch. A claim
+that could not be pushed is *pending*, kept under `.git/domainbook/`, and the
+commit hook refuses the artifact until it is not.
+
+- **Status:** validated
+- **Example:** `refs/domainbook/claims/decisions/0015` reserves ADR-0015 in the book-level log; `refs/domainbook/claims/domains/billing/features/refund-order` reserves that feature's id; `refs/domainbook/claims/domains/billing/index` reserves the domain itself.
+
+## Debt record
+
+A known shortcut or gap written down with what it costs and what repayment looks
+like — a file under `debt/`, the decision log's twin. It is the one living
+artifact in the book: edited in place, its `status` flipped to `repaid` or
+`accepted`, and never deleted, where an accepted decision is immutable
+(`ADR-0013`).
+
+Written as TDR when referring to one by number. Unlike `ADR-NNNN`, that form is
+display only: `validate` prints `TDR-0001` and names the log it sits in, no
+artifact has a field that takes a debt reference, and there is no qualified
+`<domain-id>/TDR-NNNN` grammar to write (`format/ADR-0017`).
+
+- **Aliases:** TDR, technical debt record, debt
+- **Status:** validated
+- **Example:** `domainbook new debt "Holds are swept by hand" --domain ticketing` writes `domains/ticketing/debt/0001-holds-are-swept-by-hand.md`, and a message about it reads `TDR-0001 is missing from domains/ticketing/debt/`.
+
+## Decision
+
+A recorded choice with its context, the options weighed, and what it costs —
+MADR 4.0 in a file under `decisions/`. Written as ADR when referring to one by
+number.
+
+- **Aliases:** ADR, architecture decision record
+- **Status:** validated
+- **Example:** `format/ADR-0004` and "the MADR-narrowing decision" name the same file.
+
+## Domain
+
+One bounded context: a folder under `domains/` with a canvas, and optionally its
+own glossary, changelog, features, and decisions. The `classification.domain`
+frontmatter field is a different thing — it names the subdomain type (core,
+supporting, generic), not the domain itself.
+
+- **Aliases:** bounded context, context
+- **Status:** validated
+- **Example:** `enforcement` is a domain whose `classification.domain` is `core-domain`.
+
+## Draft
+
+A snapshot of one clone's book root as its working tree holds it, published to
+the remote as `refs/domainbook/drafts/<author>/<branch>` when `new` writes and
+refreshed by every sync. A draft has one owner and is replaced, never merged;
+peers read it before the branch is pushed. It is not a git branch and never
+appears in `git branch`.
+
+- **Status:** validated
+- **Example:** `refs/domainbook/drafts/alice@example.com/feat/outbox` holds alice's book on feat/outbox, uncommitted edits included.
+
+## Enforcement loop
+
+The three checks that make a documentation rule a guarantee: an agent hook during
+the session, a git hook at commit, and CI on the branch. All three run the same
+check and reach the same verdict.
+
+- **Status:** validated
+- **Example:** An agent that ignores the Stop hook still meets the git hook, and a developer who skips the git hook still meets CI.
+
+## Feature
+
+An artifact describing behaviour as a story, rules, and concrete examples —
+Example Mapping in markdown, with Gherkin in fenced blocks. A feature holds
+scenarios; a scenario on its own is a Gherkin keyword, not an artifact.
+
+- **Aliases:** feature scenario
+- **Status:** validated
+- **Example:** `domains/core/features/validate-a-book.md` is one feature carrying four rules and six examples.
+
+## Golden fixture
+
+A book, or a single artifact, kept in the repo for tests to run against — valid
+on purpose or broken on purpose, and named after the reason it exists.
+`packages/core/test/fixtures/book/` is one book valid in every respect. Under
+`broken-books/`, each folder is a whole book invalid in exactly one respect;
+under `valid-books/`, each folder is a whole book that must load clean, kept for
+a rule only a legal book can prove. Under `broken/`, each file is one artifact
+rather than a book, read by a single schema or a single body parser.
+
+- **Aliases:** fixture book
+- **Status:** validated
+- **Example:** `broken-books/decision-number-gap/` proves a log holding 0001 and 0003 reports the missing 0002, `valid-books/mirrored-relationship/` proves two agreeing halves of one relationship are legal, and `broken/domain-symmetric-with-direction.md` proves `separate-ways` with a `direction` is rejected.
+
+## Instruction layer
+
+The generated text that tells an agent the documentation rule — an AGENTS.md
+section, a CLAUDE.md include, path-scoped rules. It is steering, not enforcement:
+nothing about it can block a change, and it is not one of the enforcement loop's
+three layers.
+
+- **Status:** validated
+- **Example:** An agent that ignores its AGENTS.md still gets blocked by the git hook, which is the point of keeping the two separate.
+
+## Issue
+
+One thing wrong with a book, in the shape `validate` reports it: a file, often a
+line and a field, and a message naming the fix. One mistake produces one issue,
+not one per consequence of it, and every issue is a failure — there is no
+warning level to fall back on.
+
+- **Status:** validated
+- **Example:** `domainbook/domains/core/index.md:2 id: "cor" does not match the folder "core" — rename the folder to "cor" or set id to "core"` is one issue as a terminal sees it.
+
+## Migration
+
+Taking a repo that has no book to one that has a book worth enforcing. In
+domainbook the word is an interview, not a conversion: the CLI scaffolds and
+validates, and everything the code cannot reveal — where the boundaries are,
+which word the team uses, why a decision was made — comes from the maintainer,
+who confirms, corrects or rejects each thing the agent proposes (`ADR-0007`). It
+is not a schema migration or a version upgrade; a book has no versions to move
+between, because git carries its history instead (`ADR-0006`).
+
+- **Status:** validated
+- **Example:** A repo with a README, a `docs/` tree and nine MADR files migrates by having all of them read, proposed, confirmed, and written through `init`, `new domain` and `new decision`.
+
+## Peer
+
+Another clone of the same repo pushing to the same remote. A peer's work is what
+its draft or pushed branch holds under the book root that the default branch does
+not — an artifact added or changed, marked *in progress* wherever it is shown.
+This clone's own branch is not a peer, and neither is the default branch.
+
+- **Status:** validated
+- **Example:** bob on feat/refunds is a peer whose draft adds `refund-order.md`; the same draft's untouched copy of ADR-0002 is not in progress.
+
+## Remote
+
+The git remote a repo's peers share — `origin` unless `collaboration.remote` in
+config names another. domainbook uses it as shared storage under
+`refs/domainbook/` and runs nothing on it; a repo with no remote works alone, as
+v1 did.
+
+- **Status:** validated
+- **Example:** `git@github.com:acme/shop.git` is the remote; when it cannot be reached over ssh, a sync tries `https://github.com/acme/shop.git` and leaves the remote's URL as configured.
+
+## Rule
+
+A statement in a feature that is always true, written as a `## Rule: …` heading
+with its examples under it — the Example Mapping sense of the word. The same
+word is used for what `validate` enforces about the format itself: canvas order,
+ADR numbering, gherkin that parses. Those are rules of the format; a feature's
+rule is about the software the book documents.
+
+- **Status:** draft
+- **Example:** "Rule: A hold expires ten minutes after it is placed" is a feature's rule; "a decision log never reuses a number" is a rule of the format.
+
+## Self-documentation
+
+domainbook documenting domainbook with domainbook's own format. Every claim in
+this book is a claim the project has to keep true about itself.
+
+- **Status:** validated
+- **Example:** The four contexts under `domains/` describe the packages that implement them, and the enforcement loop will one day block a change to those packages that leaves these pages stale.
+
+## Skill
+
+A procedure an agent follows, written as markdown it loads when the situation
+calls for it — not a capability built into the agent. domainbook ships four —
+migrate a repo, document this change, record a decision, groom the glossary —
+under `integrations/plugin/skills/`, where Claude Code discovers them by name and
+any other agent can read the same file. A skill runs inside a session the way a
+hook does, but it is not one of the enforcement loop's three layers: it steers
+and can block nothing, so the guarantee never rests on one having run. The
+instruction layer names the four rather than carrying their steps (`ADR-0005`).
+
+- **Aliases:** procedure
+- **Status:** validated
+- **Example:** A session blocked at Stop is the situation `document-this-change` exists for; the block is the hook's, and the skill only helps clear it.
+
+## Slug
+
+An identifier made of words joined by single hyphens, where a word starts with a
+letter or digit in any script and carries no capitals. Every id in the book is a
+slug, and a glossary term is referenced by the slug of its name.
+
+Slugging keeps the name's own letters. A name is normalized to NFC and lowercased,
+and every run of slug characters in it becomes a word, so an accented letter stays
+accented and a name written in any script keeps its script (`format/ADR-0016`).
+Three rules the grammar cannot state hold as well: a slug is in NFC, a slug equals
+its own NFKC form, and a slug is at most 247 bytes as UTF-8 so that
+`NNNN-<slug>.md` fits a 255-byte filename.
+
+- **Status:** validated
+- **Example:** The term "Seat Map" is referenced as `seat-map`, "Café Order" as `café-order`, "Naïve résumé" as `naïve-résumé`, and "日本語" as `日本語`.
+
+## Sync
+
+The exchange with the remote that runs underneath a command: fetch claims,
+drafts and branches; push pending claims; refresh this branch's draft; release
+claims whose artifact merged and drafts whose branch is gone. `new` and
+`domainbook sync` run it every time; `check`, the MCP server, and the Stop hook
+run it at most once a minute.
+
+- **Status:** validated
+- **Example:** `domainbook sync` prints `domainbook: synced with origin — 1 claim pushed, draft published, 1 claim released, 2 peers in progress`.
+
+## Trailer
+
+A `Key: value` line at the end of a git commit message, the same convention as
+`Signed-off-by:`. domainbook records waivers there because git parses them,
+history keeps them, and nothing outside the commit has to be trusted.
+
+- **Aliases:** commit trailer
+- **Status:** validated
+- **Example:** `git log --format='%(trailers:key=Skip-Docs,valueonly)'` lists every waived commit and its reason.
+
+## Ubiquitous language
+
+The vocabulary one bounded context agrees on, and the thing a glossary artifact
+holds. It is a canvas section that lives outside the canvas body — a domain's
+language is its `glossary.md`, so it can be exported, searched, and referenced
+term by term.
+
+- **Status:** validated
+- **Example:** Two contexts that use "sale" differently each define it in their own glossary, and neither has to win.
+
+## Waiver
+
+A recorded, deliberate decision to change mapped code without updating the book.
+A waiver is not a silent skip: it is the audited alternative to updating the
+book, and it stays in history either way. What varies is how much it explains —
+an agent's carries its reason, a person's may carry only the fact that one was
+taken.
+
+- **Status:** validated
+- **Example:** `Skip-Docs: renamed a private helper, no behaviour or vocabulary changed` is a waiver, and so is the stamped `Skip-Docs: human bypass`; a commit that leaves no trailer at all is neither.
