@@ -1,6 +1,6 @@
 {
   "name": "@domainbook/site",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Read a domainbook book as a website",
   "license": "MIT",
   "repository": {
@@ -25,7 +25,7 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@domainbook/core": "1.0.0",
+    "@domainbook/core": "2.0.0",
     "astro": "7.2.10",
     "pagefind": "1.5.2"
   },
