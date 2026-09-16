@@ -1,7 +1,10 @@
 import type { Issue } from "../issue.js";
 import type { Book, FieldLines } from "../model.js";
 import { slug, slugSource } from "../schemas/common.js";
+import { pad } from "../sync/keys.js";
 import { divergence, overlong, slugBytes } from "../unicode.js";
+
+export { pad };
 
 export type At = { file: string; line?: number; field?: string };
 
@@ -102,8 +105,4 @@ function listed(names: string[]): string {
 
 export function basename(file: string): string {
   return file.slice(file.lastIndexOf("/") + 1);
-}
-
-export function pad(number: number): string {
-  return String(number).padStart(4, "0");
 }

@@ -11,6 +11,7 @@ code:
   - packages/core/src/change.ts
   - packages/core/src/check.ts
   - packages/core/src/check/**
+  - packages/core/src/git.ts
   - packages/core/src/index.ts
   - packages/core/src/issue.ts
   - packages/core/src/load.ts
@@ -20,6 +21,7 @@ code:
   - packages/core/src/model.ts
   - packages/core/src/read.ts
   - packages/core/src/ref.ts
+  - packages/core/src/sync/**
   - packages/core/src/unicode.ts
   - packages/core/src/validate.ts
   - packages/core/test/*.ts
@@ -53,6 +55,8 @@ the CLI is where a person or an agent meets domainbook at all.
 | `ValidateBook`     | developer, agent, CI    | Command |
 | `InitBook`         | developer, agent        | Command |
 | `WriteArtifact`    | developer, agent        | Command |
+| `Sync`             | developer, agent, enforcement, mcp | Command |
+| `Status`           | developer, agent        | Query   |
 | `LoadBook`         | enforcement, mcp, site  | Query   |
 | `MatchPathsToBook` | enforcement, mcp        | Query   |
 
@@ -113,11 +117,21 @@ the CLI is where a person or an agent meets domainbook at all.
 - Release and packaging config — the manifests, `.changeset/`, the workflows,
   `server.json` — belongs to no context and is recorded at the book root, not
   here (`ADR-0014`).
+- Peers share numbers and in-progress artifacts through the git remote's ref
+  namespace, with no server: `new` claims a number or id under
+  `refs/domainbook/claims/` before it writes and publishes the branch's book
+  under `refs/domainbook/drafts/`, `sync` and `status` are the commands over that
+  exchange, and `check --staged` refuses an artifact nobody has claimed. A repo
+  with no remote, or with `collaboration.enabled: false`, behaves as before
+  (`ADR-0015`).
 
 ## Assumptions
 
-- A book is small enough to read whole on every command. There is no cache and
-  no daemon, so two runs a second apart cannot disagree.
+- A book is small enough to read whole on every command. There is no daemon,
+  and nothing about the book itself is cached, so two runs a second apart
+  cannot disagree about it. What the remote said — pending claims, when the
+  last sync ran, a copy of each peer's book — lives under `.git/domainbook/`,
+  which git never tracks and which a sync rewrites in full (`ADR-0015`).
 - The reader of a message is as often an agent as a person, so the message has
   to carry the fix rather than only the fault.
 - The book root is an argument, not a setting (`format/ADR-0010`), so every

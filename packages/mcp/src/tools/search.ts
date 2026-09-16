@@ -1,7 +1,8 @@
 import type { Book, DomainRecord } from "@domainbook/core";
-import { adrRef, live, tdrRef } from "@domainbook/core";
+import { adrRef, inProgress, live, tdrRef } from "@domainbook/core";
 import { type Answer, said } from "../answer.js";
 import { text } from "../files.js";
+import { alone, drafted, footer, home, type Peers } from "../peers.js";
 
 export type Kind =
   | "roadmap"
@@ -12,7 +13,9 @@ export type Kind =
   | "decision"
   | "debt";
 
-type Source = { kind: Kind; file: string; domain?: string; id: string };
+type Located = { kind: Kind; file: string; domain?: string; id: string };
+
+type Source = Located & { shown: string; note?: string };
 
 type Hit = { source: Source; line: number; excerpt: string };
 
@@ -21,17 +24,24 @@ const cap = 20;
 export function searchBook(
   book: Book,
   query: string,
-  asked: { kind?: Kind; domain?: string }
+  asked: { kind?: Kind; domain?: string },
+  peers: Peers = alone
 ): Answer {
   const wanted = query.trim().toLowerCase();
   if (wanted === "") return said("there is nothing to search for");
-  const sources = searchable(book).filter(
-    (source) =>
-      (asked.kind === undefined || source.kind === asked.kind) &&
-      (asked.domain === undefined || source.domain === asked.domain)
-  );
-  const hits = sources.flatMap((source) => matches(source, wanted));
-  if (hits.length === 0) return said(`nothing in this book matches "${query}"`);
+  const kept = (source: Source) =>
+    (asked.kind === undefined || source.kind === asked.kind) &&
+    (asked.domain === undefined || source.domain === asked.domain);
+  const known = local(book)
+    .filter(kept)
+    .flatMap((source) => matches(source, wanted));
+  const drafted = fromPeers(book, peers)
+    .filter(kept)
+    .flatMap((source) => matches(source, wanted))
+    .filter((hit) => !known.some((one) => repeats(one, hit)));
+  const hits = [...known, ...drafted];
+  if (hits.length === 0)
+    return said(`nothing in this book matches "${query}"`, ...footer(peers));
   const shown = hits.slice(0, cap);
   const artifacts = new Set(hits.map((hit) => hit.source.file)).size;
   return said(
@@ -39,14 +49,32 @@ export function searchBook(
     "",
     `${artifacts} artifact${artifacts === 1 ? "" : "s"} matched${
       hits.length > shown.length ? `, showing the first ${cap} lines` : ""
-    }.`
+    }.`,
+    ...footer(peers)
   );
+}
+
+function local(book: Book): Source[] {
+  return searchable(book).map((one) => ({ ...one, shown: one.file }));
+}
+
+function fromPeers(book: Book, peers: Peers): Source[] {
+  return drafted(peers, searchable).map(({ one, peer }) => ({
+    ...one,
+    shown: home(book, peer, one.file),
+    note: inProgress(peer.peer),
+  }));
+}
+
+function repeats(known: Hit, hit: Hit): boolean {
+  return known.source.shown === hit.source.shown && known.excerpt === hit.excerpt;
 }
 
 function written(hit: Hit): string {
   const where =
     hit.source.domain === undefined ? "the book" : hit.source.domain;
-  return `- ${hit.source.kind} ${hit.source.id} (${where}) — ${hit.source.file}:${hit.line}\n  ${hit.excerpt}`;
+  const note = hit.source.note === undefined ? "" : `\n  ${hit.source.note}`;
+  return `- ${hit.source.kind} ${hit.source.id} (${where}) — ${hit.source.shown}:${hit.line}\n  ${hit.excerpt}${note}`;
 }
 
 function matches(source: Source, wanted: string): Hit[] {
@@ -64,7 +92,7 @@ function matches(source: Source, wanted: string): Hit[] {
   return found;
 }
 
-function searchable(book: Book): Source[] {
+function searchable(book: Book): Located[] {
   return [
     ...(book.roadmap === undefined
       ? []
@@ -101,7 +129,7 @@ function searchable(book: Book): Source[] {
   ];
 }
 
-function within(domain: DomainRecord): Source[] {
+function within(domain: DomainRecord): Located[] {
   return [
     { kind: "domain", file: domain.file, domain: domain.id, id: domain.id },
     ...(domain.glossary === undefined

@@ -1,9 +1,16 @@
-import type { Book, ContextMap, DomainRecord, Edge } from "@domainbook/core";
-import { contextMap, sectionsOf } from "@domainbook/core";
+import type {
+  Book,
+  ContextMap,
+  DebtRecord,
+  DomainRecord,
+  Edge,
+} from "@domainbook/core";
+import { contextMap, sectionsOf, tdrRef } from "@domainbook/core";
 import { type Answer, listed, refuse, said } from "../answer.js";
+import { alone, drafted, type Peers } from "../peers.js";
 import { noDomain } from "../scope.js";
 
-export function getDomain(book: Book, id: string): Answer {
+export function getDomain(book: Book, id: string, peers: Peers = alone): Answer {
   const domain = book.domains.find((one) => one.id === id);
   if (domain === undefined || domain.frontmatter === undefined)
     return refuse(noDomain(book, id));
@@ -25,7 +32,7 @@ export function getDomain(book: Book, id: string): Answer {
     ]),
     "## What this context holds",
     "",
-    ...holdings(domain)
+    ...holdings(domain, unmergedDebt(peers, id, domain))
   );
 }
 
@@ -83,7 +90,7 @@ function edge(one: Edge): string {
   }`;
 }
 
-function holdings(domain: DomainRecord): string[] {
+function holdings(domain: DomainRecord, unmerged: number): string[] {
   const terms = domain.glossary?.terms.length ?? 0;
   return [
     domain.features.length === 0
@@ -92,7 +99,7 @@ function holdings(domain: DomainRecord): string[] {
           domain.features.map((one) => one.frontmatter.id)
         )} — read one with get_feature`,
     counted(domain.decisions.length, "decision", "get_decisions"),
-    counted(domain.debt.length, "open or recorded debt record", "search_book"),
+    debtLine(domain.debt.length, unmerged),
     terms === 0
       ? "- No glossary"
       : `- ${terms} terms — read them with explain_terms`,
@@ -100,6 +107,26 @@ function holdings(domain: DomainRecord): string[] {
       ? "- No changelog"
       : "- A changelog — read it with get_changelog",
   ];
+}
+
+function debtLine(local: number, unmerged: number): string {
+  const total = local + unmerged;
+  if (total === 0) return "- No open or recorded debt records";
+  const progress = unmerged === 0 ? "" : `, ${unmerged} in progress from peers`;
+  return `- ${total} open or recorded debt record${
+    total === 1 ? "" : "s"
+  }${progress} — read them with search_book`;
+}
+
+function unmergedDebt(peers: Peers, id: string, domain: DomainRecord): number {
+  const here = new Set(domain.debt.map(tdrRef));
+  return drafted(peers, (book) => debtOf(book, id)).filter(
+    ({ one }) => !here.has(tdrRef(one))
+  ).length;
+}
+
+function debtOf(book: Book, id: string): DebtRecord[] {
+  return book.domains.find((one) => one.id === id)?.debt ?? [];
 }
 
 function counted(total: number, what: string, tool: string): string {

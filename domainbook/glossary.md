@@ -42,6 +42,18 @@ body, in canvas order.
 - **Status:** validated
 - **Example:** Reading a domain page top to bottom gives Purpose, Domain Roles, Inbound Communication, Outbound Communication, Business Decisions, Assumptions, Verification Metrics, Open Questions.
 
+## Claim
+
+A ref on the remote, `refs/domainbook/claims/<key>`, that reserves one artifact
+identity — a log number or a slug — before the artifact reaches any branch. A
+claim is created once and never forced, so of two peers pushing one key only one
+succeeds; it is released once the artifact is on the default branch. A claim
+that could not be pushed is *pending*, kept under `.git/domainbook/`, and the
+commit hook refuses the artifact until it is not.
+
+- **Status:** validated
+- **Example:** `refs/domainbook/claims/decisions/0015` reserves ADR-0015 in the book-level log; `refs/domainbook/claims/domains/billing/features/refund-order` reserves that feature's id; `refs/domainbook/claims/domains/billing/index` reserves the domain itself.
+
 ## Debt record
 
 A known shortcut or gap written down with what it costs and what repayment looks
@@ -79,6 +91,17 @@ supporting, generic), not the domain itself.
 - **Aliases:** bounded context, context
 - **Status:** validated
 - **Example:** `enforcement` is a domain whose `classification.domain` is `core-domain`.
+
+## Draft
+
+A snapshot of one clone's book root as its working tree holds it, published to
+the remote as `refs/domainbook/drafts/<author>/<branch>` when `new` writes and
+refreshed by every sync. A draft has one owner and is replaced, never merged;
+peers read it before the branch is pushed. It is not a git branch and never
+appears in `git branch`.
+
+- **Status:** validated
+- **Example:** `refs/domainbook/drafts/alice@example.com/feat/outbox` holds alice's book on feat/outbox, uncommitted edits included.
 
 ## Enforcement loop
 
@@ -146,6 +169,26 @@ between, because git carries its history instead (`ADR-0006`).
 - **Status:** validated
 - **Example:** A repo with a README, a `docs/` tree and nine MADR files migrates by having all of them read, proposed, confirmed, and written through `init`, `new domain` and `new decision`.
 
+## Peer
+
+Another clone of the same repo pushing to the same remote. A peer's work is what
+its draft or pushed branch holds under the book root that the default branch does
+not — an artifact added or changed, marked *in progress* wherever it is shown.
+This clone's own branch is not a peer, and neither is the default branch.
+
+- **Status:** validated
+- **Example:** bob on feat/refunds is a peer whose draft adds `refund-order.md`; the same draft's untouched copy of ADR-0002 is not in progress.
+
+## Remote
+
+The git remote a repo's peers share — `origin` unless `collaboration.remote` in
+config names another. domainbook uses it as shared storage under
+`refs/domainbook/` and runs nothing on it; a repo with no remote works alone, as
+v1 did.
+
+- **Status:** validated
+- **Example:** `git@github.com:acme/shop.git` is the remote; when it cannot be reached over ssh, a sync tries `https://github.com/acme/shop.git` and leaves the remote's URL as configured.
+
 ## Rule
 
 A statement in a feature that is always true, written as a `## Rule: …` heading
@@ -155,7 +198,7 @@ ADR numbering, gherkin that parses. Those are rules of the format; a feature's
 rule is about the software the book documents.
 
 - **Status:** draft
-- **Example:** "Rule: A hold expires ten minutes after it is placed" is a feature's rule; "a decision log runs from 0001 with no gaps" is a rule of the format.
+- **Example:** "Rule: A hold expires ten minutes after it is placed" is a feature's rule; "a decision log never reuses a number" is a rule of the format.
 
 ## Self-documentation
 
@@ -195,6 +238,17 @@ its own NFKC form, and a slug is at most 247 bytes as UTF-8 so that
 
 - **Status:** validated
 - **Example:** The term "Seat Map" is referenced as `seat-map`, "Café Order" as `café-order`, "Naïve résumé" as `naïve-résumé`, and "日本語" as `日本語`.
+
+## Sync
+
+The exchange with the remote that runs underneath a command: fetch claims,
+drafts and branches; push pending claims; refresh this branch's draft; release
+claims whose artifact merged and drafts whose branch is gone. `new` and
+`domainbook sync` run it every time; `check`, the MCP server, and the Stop hook
+run it at most once a minute.
+
+- **Status:** validated
+- **Example:** `domainbook sync` prints `domainbook: synced with origin — 1 claim pushed, draft published, 1 claim released, 2 peers in progress`.
 
 ## Trailer
 

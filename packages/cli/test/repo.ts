@@ -13,6 +13,8 @@ import { run } from "../src/index.js";
 
 let home = "";
 let previous = "";
+let origin = "";
+let clones: string[] = [];
 
 export function enter(): void {
   previous = process.cwd();
@@ -25,11 +27,46 @@ export function enter(): void {
 
 export function leave(): void {
   process.chdir(previous);
-  rmSync(home, { recursive: true, force: true });
+  for (const dir of [home, origin, ...clones])
+    if (dir !== "") rmSync(dir, { recursive: true, force: true });
+  origin = "";
+  clones = [];
+}
+
+export function shared(): string {
+  origin = mkdtempSync(join(tmpdir(), "domainbook-origin-"));
+  gitIn(origin, "init", "--bare", "--quiet", "--initial-branch=main");
+  git("remote", "add", "origin", origin);
+  return origin;
+}
+
+export function cloned(email: string, branch: string): string {
+  const dir = mkdtempSync(join(tmpdir(), "domainbook-peer-"));
+  gitIn(dir, "clone", "--quiet", origin, dir);
+  gitIn(dir, "config", "user.email", email);
+  gitIn(dir, "config", "user.name", "A Peer");
+  gitIn(dir, "checkout", "--quiet", "-b", branch);
+  clones.push(dir);
+  return dir;
+}
+
+export function within<T>(dir: string, work: () => T): T {
+  const back = process.cwd();
+  process.chdir(dir);
+  try {
+    return work();
+  } finally {
+    process.chdir(back);
+  }
 }
 
 export function git(...args: string[]): string {
+  return gitIn(process.cwd(), ...args);
+}
+
+export function gitIn(cwd: string, ...args: string[]): string {
   return execFileSync("git", args, {
+    cwd,
     encoding: "utf8",
     stdio: ["ignore", "pipe", "pipe"],
   });

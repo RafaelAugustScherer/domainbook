@@ -216,14 +216,13 @@ describe("every whole book", () => {
 });
 
 describe("decision numbering over every file in the log", () => {
-  it("claims no gap for a number whose file failed its schema", () => {
+  it("lets a decision log skip a number", () => {
     expect(
       checked(
         assembled({
-          decisions: [recorded(2, "keep-the-clock")],
           decisionFiles: [
             { file: "book/decisions/0001-expire-holds.md", number: 1 },
-            { file: "book/decisions/0002-keep-the-clock.md", number: 2 },
+            { file: "book/decisions/0003-keep-the-clock.md", number: 3 },
           ],
         })
       )
@@ -259,6 +258,22 @@ describe("decision numbering over every file in the log", () => {
       )
     ).toEqual([
       "ADR-0001 is already decisions/0001-expire-holds.md — decision numbers are never reused; renumber this one to 0003",
+    ]);
+  });
+
+  it("renumbers a reused number past the highest, not into a gap", () => {
+    expect(
+      checked(
+        assembled({
+          decisionFiles: [
+            { file: "book/decisions/0001-expire-holds.md", number: 1 },
+            { file: "book/decisions/0003-keep-the-clock.md", number: 3 },
+            { file: "book/decisions/0001-refund-a-late-capture.md", number: 1 },
+          ],
+        })
+      )
+    ).toEqual([
+      "ADR-0001 is already decisions/0001-expire-holds.md — decision numbers are never reused; renumber this one to 0004",
     ]);
   });
 
@@ -307,29 +322,13 @@ describe("decision numbering over every file in the log", () => {
 });
 
 describe("debt numbering over every file in the log", () => {
-  it("names a gap in the debt log as a TDR", () => {
+  it("lets a debt log skip a number", () => {
     expect(
       checked(
         assembled({
           debtFiles: [
             { file: "book/debt/0001-holds-are-swept-by-hand.md", number: 1 },
             { file: "book/debt/0003-door-scanners.md", number: 3 },
-          ],
-        })
-      )
-    ).toEqual([
-      "TDR-0002 is missing from debt/ — debt record numbers run from 0001 with no gaps, and a debt record is never deleted",
-    ]);
-  });
-
-  it("claims no gap for a debt number whose file failed its schema", () => {
-    expect(
-      checked(
-        assembled({
-          debt: [owed(2, "Door scanners")],
-          debtFiles: [
-            { file: "book/debt/0001-holds-are-swept-by-hand.md", number: 1 },
-            { file: "book/debt/0002-door-scanners.md", number: 2 },
           ],
         })
       )

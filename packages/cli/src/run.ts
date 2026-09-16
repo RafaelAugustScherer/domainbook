@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync } from "node:fs";
 import { parseArgs } from "node:util";
 import { check, type Source } from "./check.js";
 import { exportTo } from "./export.js";
@@ -9,6 +9,8 @@ import { instructions } from "./instructions.js";
 import { newDebt, newDecision, newDomain, newFeature } from "./new.js";
 import { refuse, type Result } from "./result.js";
 import { build, serve } from "./serve.js";
+import { status } from "./status.js";
+import { syncBook } from "./sync.js";
 import { validate } from "./validate.js";
 
 type Named =
@@ -77,6 +79,16 @@ const commands = {
       "domainbook check (--staged [--message-file <path>] | --range <base>..<head> | --session <path>) [root]",
     options: ["staged", "message-file", "range", "session"],
   },
+  sync: {
+    name: "domainbook sync",
+    usage: "domainbook sync [root]",
+    options: [],
+  },
+  status: {
+    name: "domainbook status",
+    usage: "domainbook status [path] [root]",
+    options: [],
+  },
   install: {
     name: "domainbook hooks install",
     usage: "domainbook hooks install [root]",
@@ -137,6 +149,8 @@ const help = [
   `  ${commands.validate.usage}`,
   `  ${commands.init.usage}`,
   `  ${commands.check.usage}`,
+  `  ${commands.sync.usage}`,
+  `  ${commands.status.usage}`,
   `  ${commands.install.usage}`,
   `  ${commands.uninstall.usage}`,
   `  ${commands.instructions.usage}`,
@@ -152,6 +166,9 @@ const help = [
   "  validate       read the book and print every issue, one per line",
   "  init           write a new book: roadmap.md and domainbook.config.yaml",
   "  check          refuse a change that leaves a domain's book behind",
+  "  sync           push this branch's claims and draft to the remote, and",
+  "                 fetch what peers have published",
+  "  status         list what peers are writing, or print one of their files",
   "  hooks          install or remove the commit-msg hook that runs the check",
   "  instructions   write the rule into AGENTS.md, CLAUDE.md, and .claude/rules/",
   "  serve          read the book in a browser and answer it over MCP; name",
@@ -194,16 +211,10 @@ export function run(argv: string[]): Result {
   if (values.help === true) return { code: 0, lines: help };
 
   const [command, second] = positionals;
-  if (values.version === true) {
-    if (command === undefined)
-      return { code: 0, lines: [`domainbook ${installed()}`] };
-    return refuse(
-      '"--version" is not an option here — domainbook has one version, not one per command; write "domainbook --version" on its own'
-    );
-  }
+  if (values.version === true) return version(command);
   if (command === undefined)
     return refuse(
-      'domainbook needs a command — validate, init, check, hooks, instructions, serve, build, export, or new; run "domainbook --help" to see them'
+      'domainbook needs a command — validate, init, check, sync, status, hooks, instructions, serve, build, export, or new; run "domainbook --help" to see them'
     );
   if (command === "validate")
     return (
@@ -218,6 +229,11 @@ export function run(argv: string[]): Result {
     return (
       stop(commands.check, values, positionals, 2) ?? runCheck(values, second)
     );
+  if (command === "sync")
+    return (
+      stop(commands.sync, values, positionals, 2) ?? syncBook(bookRoot(second))
+    );
+  if (command === "status") return runStatus(values, positionals);
   if (command === "instructions")
     return (
       stop(commands.instructions, values, positionals, 2) ??
@@ -232,9 +248,34 @@ export function run(argv: string[]): Result {
   if (command === "hooks") return runHooks(values, positionals);
   if (command !== "new")
     return refuse(
-      `"${command}" is not a domainbook command — the commands are validate, init, check, hooks, instructions, serve, build, export, and new; run "domainbook --help" to see them`
+      `"${command}" is not a domainbook command — the commands are validate, init, check, sync, status, hooks, instructions, serve, build, export, and new; run "domainbook --help" to see them`
     );
   return runNew(values, positionals);
+}
+
+function version(command: string | undefined): Result {
+  if (command === undefined)
+    return { code: 0, lines: [`domainbook ${installed()}`] };
+  return refuse(
+    '"--version" is not an option here — domainbook has one version, not one per command; write "domainbook --version" on its own'
+  );
+}
+
+function runStatus(values: Values, positionals: string[]): Result {
+  const [, second, third] = positionals;
+  if (second === undefined || isDirectory(second))
+    return (
+      stop(commands.status, values, positionals, 2) ??
+      status(bookRoot(second), undefined)
+    );
+  return (
+    stop(commands.status, values, positionals, 3) ??
+    status(bookRoot(third), second)
+  );
+}
+
+function isDirectory(path: string): boolean {
+  return existsSync(path) && statSync(path).isDirectory();
 }
 
 function runCheck(values: Values, root: string | undefined): Result {
@@ -410,6 +451,8 @@ function asked(argv: string[]): Command | undefined {
     first === "validate" ||
     first === "init" ||
     first === "check" ||
+    first === "sync" ||
+    first === "status" ||
     first === "instructions" ||
     first === "serve" ||
     first === "build" ||

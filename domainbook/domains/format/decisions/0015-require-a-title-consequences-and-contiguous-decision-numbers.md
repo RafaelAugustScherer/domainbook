@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by format/ADR-0021
 date: 2026-07-29
 decision-makers: [RafaelAugustScherer]
 ---

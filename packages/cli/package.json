@@ -40,6 +40,6 @@
   "devDependencies": {
     "@domainbook/site": "*",
     "@types/node": "^24.9.2",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   }
 }

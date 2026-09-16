@@ -21,6 +21,17 @@ export function stagedPaths(repo: string): string[] {
   );
 }
 
+export function stagedAdded(repo: string): string[] {
+  const fields = split(
+    git(repo, ["diff", "--cached", "--name-status", "--no-renames", "-z"]) ??
+      ""
+  );
+  const added: string[] = [];
+  for (let at = 0; at + 1 < fields.length; at += 2)
+    if (fields[at] === "A") added.push(fields[at + 1] ?? "");
+  return added;
+}
+
 export function rangePaths(repo: string, base: string, head: string): string[] {
   return split(
     git(repo, [

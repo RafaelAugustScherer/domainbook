@@ -11,6 +11,26 @@ Versions match the book-wide changelog.
 
 ### Added
 
+- `domainbook sync [root]` exchanges claims and drafts with the remote in one
+  line: it fetches `refs/domainbook/*` and the remote's branches, pushes every
+  claim that was pending, publishes this branch's book as its draft, releases
+  claims whose artifact reached the default branch and drafts whose branch is
+  gone, and reports `domainbook: synced with origin — 1 claim pushed, draft
+  published, 1 claim released, 2 peers in progress`. A pending claim whose
+  number a peer took meanwhile is moved to the next free number, the file
+  renamed and its references rewritten, if the file is still uncommitted; a
+  committed one is reported with the fix and exits 1. A remote out of reach
+  over every form of its URL exits 1 naming each URL tried and git's reason. A
+  repo with no remote prints `domainbook: no remote, working alone`
+  (`ADR-0015`).
+- `domainbook status [path] [root]` lists what peers have in progress — each
+  peer's draft or pushed branch, the artifacts it adds (`+`) or changes (`~`)
+  against the default branch, and one it cannot read yet (`?`) — under a header
+  naming the remote and when it was last synced, followed by one `pending:`
+  line per claim this clone still owes. With a path, it prints each peer's copy
+  of that file straight from git objects, so nothing enters the working tree;
+  a path nobody holds is refused. It runs the throttled sync first, so what it
+  shows is at most a minute old (`ADR-0015`).
 - `domainbook export <target>` turns the loaded model into the formats other tools
   read — `contextive`, `cml`, `mermaid`, `structurizr`, `gherkin` and `json` —
   writing each under `<book>/build/<target>/` beside the built site, and refusing a
@@ -45,6 +65,27 @@ Versions match the book-wide changelog.
 
 ### Changed
 
+- `new decision` and `new debt` take their number from everything the remote
+  knows — the default branch, every pushed branch, every draft, every claim —
+  and reserve it under `refs/domainbook/claims/` before the file is written, so
+  two clones that never fetched each other cannot take the same one. `new
+  domain` and `new feature` claim the id the same way and refuse one a peer is
+  already writing, naming who and where to read it. Every `new` then publishes
+  the working tree's book as this branch's draft. With the remote out of reach
+  the number is taken locally, the claim waits under `.git/domainbook/`, and
+  the command says the commit hook refuses the file until the next sync claims
+  it. A repo with no remote, or with `collaboration.enabled: false`, prints
+  exactly what it printed before (`ADR-0015`).
+- `check --staged` refuses a new decision, debt record, feature, or domain
+  whose number or id is claimed by nobody on the remote, after the docs check
+  has spoken. One written by hand is claimed on the spot and the check says so;
+  one a peer claimed meanwhile is refused with the `domainbook sync` that moves
+  it; offline, the commit waits. A `Skip-Docs` trailer does not clear this, and
+  `enforcement.mode: warn` prints the finding and lets the commit through, as
+  it does for stale documentation (`ADR-0015`).
+- The AGENTS.md block `domainbook instructions` writes tells an agent to create
+  every artifact with `domainbook new` rather than by hand, and to run
+  `domainbook status` before deciding in a context.
 - The published CLI no longer installs the website. `@domainbook/site` — and the
   `astro` and `pagefind` it pulls — moved from a dependency to an optional peer,
   so `npx domainbook init`, `validate`, `check`, `new`, and `serve mcp` install

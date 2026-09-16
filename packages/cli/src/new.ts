@@ -3,11 +3,19 @@ import { join } from "node:path";
 import {
   canvas,
   divergence,
+  logDirOf,
   overlong,
   parseFrontmatter,
+  publishDraft,
   slug,
   slugBytes,
+  takeNumber,
+  takeSlug,
   termSlug,
+  whoAmI,
+  type Holder,
+  type Me,
+  type Remote,
 } from "@domainbook/core";
 import {
   entries,
@@ -19,12 +27,20 @@ import {
   today,
   write,
 } from "./files.js";
+import {
+  detachedLine,
+  named,
+  remoteOf,
+  unclaimed,
+  whoOn,
+  writtenBy,
+} from "./remote.js";
 import { refuse, type Result } from "./result.js";
 
 const numbered = /^(\d+)-.*\.md$/;
 const statusLine = /^status:.*$/m;
 
-type Kind = { dir: string; one: string; finish: string };
+type Kind = { dir: "decisions" | "debt"; one: string; finish: string };
 
 const decisionKind: Kind = {
   dir: "decisions",
@@ -37,6 +53,10 @@ const debtKind: Kind = {
   one: "debt record",
   finish: "set the severity and the quadrant, fill in the sections",
 };
+
+type Draft = { remote: Remote; me: Me };
+
+type Held = { said: string[]; draft: Draft | undefined };
 
 export function newDomain(root: string, id: string): Result {
   const dir = join(root, "domains", id);
@@ -52,6 +72,8 @@ export function newDomain(root: string, id: string): Result {
     taken(glossary) ??
     taken(changelog);
   if (wrong !== undefined) return refuse(wrong);
+  const held = hold(root, `domains/${id}/index.md`, `domains/${id}`, id);
+  if (typeof held === "string") return refuse(held);
   const failed =
     write(page, domainPage(id)) ??
     write(glossary, glossaryPage(`${titled(id)} glossary`, context)) ??
@@ -66,6 +88,8 @@ export function newDomain(root: string, id: string): Result {
       `wrote ${relate(
         dir
       )}/ — index.md, glossary.md, changelog.md, features/, decisions/ and debt/`,
+      ...held.said,
+      ...published(held.draft, root),
       `next: set the three classification axes, fill in the eight canvas sections, and replace the placeholder term in glossary.md, then "${rooted(
         "domainbook validate",
         root
@@ -93,12 +117,17 @@ export function newFeature(
     noDomain(root, domain) ??
     taken(path);
   if (wrong !== undefined) return refuse(wrong);
+  const inside = `domains/${domain}/features/${id}`;
+  const held = hold(root, `${inside}.md`, inside, id);
+  if (typeof held === "string") return refuse(held);
   const failed = write(path, featurePage(id));
   if (failed !== undefined) return refuse(failed);
   return {
     code: 0,
     lines: [
       `wrote ${relate(path)}`,
+      ...held.said,
+      ...published(held.draft, root),
       `next: write the story, name the rule, and replace the example, then "${rooted(
         "domainbook validate",
         root
@@ -113,10 +142,17 @@ export function newDecision(
   domain: string | undefined,
   supersedes: string | undefined
 ): Result {
-  const placed = place(root, title, domain, decisionKind);
+  const sited = site(root, title, domain, decisionKind);
+  if (typeof sited === "string") return refuse(sited);
+  const old = supersedes === undefined ? undefined : oldOf(sited, supersedes);
+  if (typeof old === "string") return refuse(old);
+  const placed = number(sited);
   if (typeof placed === "string") return refuse(placed);
-  if (supersedes !== undefined) return supersede(placed, domain, supersedes);
-  return wrote(placed, decisionPage(title));
+  return wrote(
+    placed,
+    decisionPage(title),
+    old === undefined ? undefined : superseding(old, domain, placed.next)
+  );
 }
 
 export function newDebt(
@@ -124,27 +160,90 @@ export function newDebt(
   title: string,
   domain: string | undefined
 ): Result {
-  const placed = place(root, title, domain, debtKind);
+  const sited = site(root, title, domain, debtKind);
+  if (typeof sited === "string") return refuse(sited);
+  const placed = number(sited);
   if (typeof placed === "string") return refuse(placed);
-  return wrote(placed, debtPage(title));
+  return wrote(placed, debtPage(title), undefined);
 }
 
-type Placed = {
+type Sited = {
   root: string;
   dir: string;
+  logDir: string;
+  name: string;
   used: number[];
-  next: number;
-  path: string;
   title: string;
+  kind: Kind;
   after: string;
 };
 
-function place(
+type Placed = Sited & {
+  next: number;
+  path: string;
+  said: string[];
+  draft: Draft | undefined;
+};
+
+type Also = { file: string; text: string; line: string };
+
+type Old = { file: string; head: string; body: string };
+
+function hold(
+  root: string,
+  path: string,
+  key: string,
+  id: string
+): Held | string {
+  const remote = remoteOf(root);
+  if (remote === undefined) return { said: [], draft: undefined };
+  const me = whoAmI(remote);
+  const taken = takeSlug(remote, me, path, key, titled(id));
+  if (taken.kind === "held") return heldBy(root, remote, path, id, taken.by[0]);
+  if (taken.kind === "taken")
+    return heldBy(
+      root,
+      remote,
+      path,
+      id,
+      taken.by === undefined
+        ? undefined
+        : { kind: "claim", email: taken.by.email, branch: taken.by.branch ?? "" }
+    );
+  if (taken.kind === "pending")
+    return { said: [unclaimed(id, remote, root)], draft: undefined };
+  return { said: [], draft: { remote, me } };
+}
+
+function heldBy(
+  root: string,
+  remote: Remote,
+  path: string,
+  id: string,
+  holder: Holder | undefined
+): string {
+  if (holder === undefined)
+    return `${id} is already claimed on ${remote.name} by a peer — pick another id, or run "${rooted(
+      "domainbook status",
+      root
+    )}" to see who is writing it`;
+  if (holder.kind === "default")
+    return `${id} already exists on ${holder.branch} — pull before writing it`;
+  return writtenBy(
+    id,
+    path,
+    whoOn(holder.email, holder.branch),
+    "pick another id or continue on that branch",
+    root
+  );
+}
+
+function site(
   root: string,
   title: string,
   domain: string | undefined,
   kind: Kind
-): Placed | string {
+): Sited | string {
   const wrong =
     noBook(root) ??
     (domain === undefined
@@ -161,19 +260,15 @@ function place(
   const bytes = overlong(name);
   if (bytes !== undefined)
     return `"${title}" gives the filename slug "${name}", which is ${bytes} bytes as UTF-8 — a slug holds at most ${slugBytes} bytes, so that "NNNN-<slug>.md" fits the 255 bytes ext4 and APFS give a filename; write a shorter title`;
-  const dir =
-    domain === undefined
-      ? join(root, kind.dir)
-      : join(root, "domains", domain, kind.dir);
-  const used = numbers(dir);
-  const next = used.length === 0 ? 1 : Math.max(...used) + 1;
+  const logDir = logDirOf(domain, kind.dir);
   return {
     root,
-    dir,
-    used,
-    next,
-    path: join(dir, `${pad(next)}-${name}.md`),
+    dir: join(root, logDir),
+    logDir,
+    name,
+    used: numbers(join(root, logDir)),
     title,
+    kind,
     after: `next: ${kind.finish}, then "${rooted(
       "domainbook validate",
       root
@@ -181,65 +276,109 @@ function place(
   };
 }
 
-function wrote(placed: Placed, page: string): Result {
-  const failed = write(placed.path, page);
-  if (failed !== undefined) return refuse(failed);
+function number(sited: Sited): Placed | string {
+  const { root, logDir, name, used, title, kind } = sited;
+  const remote = remoteOf(root);
+  if (remote === undefined)
+    return placed(sited, used.length === 0 ? 1 : Math.max(...used) + 1, [], undefined);
+  const me = whoAmI(remote);
+  const pathFor = (one: number): string => `${logDir}/${pad(one)}-${name}.md`;
+  const taken = takeNumber(remote, me, logDir, pathFor, title);
+  if (taken.kind === "lost")
+    return `could not claim a ${kind.one} number on ${remote.name} in ${
+      taken.tries
+    } tries — a peer is claiming faster than this clone can fetch; run "${rooted(
+      "domainbook sync",
+      root
+    )}" and try again`;
+  if (taken.kind === "pending")
+    return placed(
+      sited,
+      taken.number,
+      [unclaimed(named(pathFor(taken.number)), remote, root)],
+      undefined
+    );
+  return placed(sited, taken.number, [], { remote, me });
+}
+
+function placed(
+  sited: Sited,
+  next: number,
+  said: string[],
+  draft: Draft | undefined
+): Placed {
   return {
-    code: 0,
-    lines: [`wrote ${relate(placed.path)}`, placed.after],
+    ...sited,
+    next,
+    path: join(sited.dir, `${pad(next)}-${sited.name}.md`),
+    said,
+    draft,
   };
 }
 
-function supersede(
-  placed: Placed,
-  domain: string | undefined,
-  supersedes: string
-): Result {
-  const { root, dir, used, next, path, title, after } = placed;
-  if (!/^\d+$/.test(supersedes))
-    return refuse(
-      `"--supersedes ${supersedes}" is not a decision number — pass the number of the decision this one replaces, as in "--supersedes 3"`
-    );
-  const old = fileOf(dir, Number(supersedes));
-  if (old === undefined)
-    return refuse(
-      `no ADR-${pad(Number(supersedes))} in ${relate(dir)}/ — ${holds(used)}`
-    );
-  const source = readFileSync(old, "utf8");
-  let body;
-  try {
-    body = parseFrontmatter(source).body;
-  } catch {
-    return refuse(
-      `${relate(
-        old
-      )} has frontmatter that does not parse as YAML — run "${rooted(
-        "domainbook validate",
-        root
-      )}" to see what is wrong, fix it, then write the new decision again`
-    );
-  }
-  const head = source.slice(0, source.length - body.length);
-  const log = domain === undefined ? "" : `${domain}/`;
-  const status = `superseded by ${log}ADR-${pad(next)}`;
-  if (!statusLine.test(head))
-    return refuse(
-      `${relate(
-        old
-      )} has no "status:" line to change — add "status: ${status}" to its frontmatter, then write the new decision without --supersedes`
-    );
-
+function wrote(placed: Placed, page: string, also: Also | undefined): Result {
   const failed =
-    write(path, decisionPage(title)) ??
-    write(old, head.replace(statusLine, `status: ${status}`) + body);
+    write(placed.path, page) ??
+    (also === undefined ? undefined : write(also.file, also.text));
   if (failed !== undefined) return refuse(failed);
   return {
     code: 0,
     lines: [
-      `wrote ${relate(path)}`,
-      `${relate(old)} is now "${status}"`,
-      after,
+      `wrote ${relate(placed.path)}`,
+      ...(also === undefined ? [] : [also.line]),
+      ...placed.said,
+      ...published(placed.draft, placed.root),
+      placed.after,
     ],
+  };
+}
+
+function published(draft: Draft | undefined, root: string): string[] {
+  if (draft === undefined) return [];
+  const pushed = publishDraft(draft.remote, draft.me);
+  return pushed.kind === "detached" ? [detachedLine(root)] : [];
+}
+
+function oldOf(sited: Sited, supersedes: string): Old | string {
+  const { root, dir, used } = sited;
+  if (!/^\d+$/.test(supersedes))
+    return `"--supersedes ${supersedes}" is not a decision number — pass the number of the decision this one replaces, as in "--supersedes 3"`;
+  const file = fileOf(dir, Number(supersedes));
+  if (file === undefined)
+    return `no ADR-${pad(Number(supersedes))} in ${relate(dir)}/ — ${holds(
+      used
+    )}`;
+  const source = readFileSync(file, "utf8");
+  let body;
+  try {
+    body = parseFrontmatter(source).body;
+  } catch {
+    return `${relate(
+      file
+    )} has frontmatter that does not parse as YAML — run "${rooted(
+      "domainbook validate",
+      root
+    )}" to see what is wrong, fix it, then write the new decision again`;
+  }
+  const head = source.slice(0, source.length - body.length);
+  if (!statusLine.test(head))
+    return `${relate(
+      file
+    )} has no "status:" line to change — add "status: superseded by ADR-NNNN" to its frontmatter, naming the new decision's number, then write the new decision without --supersedes`;
+  return { file, head, body };
+}
+
+function superseding(
+  old: Old,
+  domain: string | undefined,
+  next: number
+): Also {
+  const log = domain === undefined ? "" : `${domain}/`;
+  const status = `superseded by ${log}ADR-${pad(next)}`;
+  return {
+    file: old.file,
+    text: old.head.replace(statusLine, `status: ${status}`) + old.body,
+    line: `${relate(old.file)} is now "${status}"`,
   };
 }
 

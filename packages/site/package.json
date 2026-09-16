@@ -26,11 +26,11 @@
   },
   "dependencies": {
     "@domainbook/core": "1.0.0",
-    "astro": "7.2.0",
+    "astro": "7.2.10",
     "pagefind": "1.5.2"
   },
   "devDependencies": {
     "@types/node": "^24.9.2",
-    "vitest": "4.1.10"
+    "vitest": "4.1.11"
   }
 }
