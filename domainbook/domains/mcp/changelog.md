@@ -23,8 +23,11 @@ book-wide changelog. Versions match the book-wide changelog.
   will have once merged. A peer's unchanged copy of a merged artifact is never
   repeated. A peer file that cannot be read is counted in one line — `1
   in-progress artifact from <who> on <branch> cannot be read yet` — and never
-  refuses this book. `where_to_document`, `get_domain`, `get_context_map`,
-  `get_changelog` and the resources are unchanged.
+  refuses this book. `get_domain` folds a peer's new debt record into its debt
+  count, marked `N in progress from peers`, so a debt in flight is discoverable
+  from the domain index even though `get_domain` lists no bodies of its own.
+  `where_to_document`, `get_context_map`, `get_changelog` and the resources are
+  unchanged.
 - The server syncs with the remote before every answer, throttled to once a
   minute by core. A remote out of reach dates the answer instead of failing it:
   `peers as of HH:MM — origin not reachable`, or `peers unknown — origin not

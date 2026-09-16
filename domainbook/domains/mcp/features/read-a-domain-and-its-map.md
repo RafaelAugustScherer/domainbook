@@ -42,6 +42,13 @@ Example: What the domain holds comes back as a list, not as bodies
   And it holds none of their bodies
   And it names get_feature, get_decisions and explain_terms as the way to read them
 
+Example: A peer's in-progress debt is counted and marked
+  Given a ticketing domain holding two debt records
+  And a peer is writing one new ticketing debt record on a branch that has not merged
+  When the client calls get_domain with id "ticketing"
+  Then it says there are three open or recorded debt records, one in progress from peers
+  And it names search_book as the way to read them
+
 Example: A domain that is not in the book is answered with the ones that are
   Given a book whose domains are ticketing and billing
   When the client calls get_domain with id "shipping"

@@ -98,7 +98,7 @@ function register(server: McpServer, root: string): void {
       inputSchema: z.object({ id: z.string().describe("the domain id") }),
       annotations: { ...reads, title: "Read a domain" },
     },
-    ({ id }) => answering((book) => getDomain(book, id))()
+    ({ id }) => answering((book, peers) => getDomain(book, id, peers))()
   );
 
   server.registerTool(

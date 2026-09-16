@@ -109,6 +109,9 @@ describe("get_domain", () => {
     const said = textOf(getDomain(book, "ticketing"));
     expect(said).toContain("- Features: hold-seats-during-checkout");
     expect(said).toContain("- 3 decisions — read them with get_decisions");
+    expect(said).toContain(
+      "- 2 open or recorded debt records — read them with search_book"
+    );
     expect(said).toContain("terms — read them with explain_terms");
     expect(said).not.toContain("As a fan buying tickets");
   });

@@ -25,6 +25,7 @@ import {
 import { open } from "../src/book.js";
 import type { Peers } from "../src/peers.js";
 import { getDecisions } from "../src/tools/decisions.js";
+import { getDomain } from "../src/tools/domain.js";
 import { whereToDocument } from "../src/tools/document.js";
 import { getFeature } from "../src/tools/feature.js";
 import { searchBook } from "../src/tools/search.js";
@@ -99,6 +100,38 @@ function writeBobsWork(): void {
       "\n## Chargeback\n\nA sale the fan's bank reversed after the event.\n\n- **Status:** draft\n"
   );
   writeFileSync(join(ticketing, "features", "refund-order.md"), feature());
+  writeFileSync(
+    join(ticketing, "debt", "0003-refund-latency-is-not-tracked.md"),
+    debt()
+  );
+}
+
+function debt(): string {
+  return `---
+status: open
+date: 2026-09-14
+severity: medium
+quadrant: deliberate-prudent
+owners: [bob]
+---
+
+# Refund latency is not tracked
+
+## Debt
+
+Nothing records how long a refund takes from request to money returned, so a
+slow path shows up only when a fan complains.
+
+## Impact
+
+Support cannot tell a normal delay from a stuck one, and there is no number to
+watch after the refund path changes.
+
+## Remedy
+
+Emit a timestamp when a refund is requested and when it settles, and put the gap
+on the canvas as a metric.
+`;
 }
 
 function decision(title: string): string {
@@ -298,6 +331,23 @@ describe("search_book with a peer in progress", () => {
     const said = textOf(searchBook(book, "ten minutes", {}, peers));
     expect(said).toContain("artifacts matched");
     expect(said).not.toContain("in progress");
+  });
+});
+
+describe("get_domain with a peer in progress", () => {
+  it("folds a peer's new debt into the count and marks it in progress", () => {
+    const { book, peers } = opened(alice.root);
+    const said = textOf(getDomain(book, "ticketing", peers));
+    expect(said).toContain(
+      "- 3 open or recorded debt records, 1 in progress from peers — read them with search_book"
+    );
+  });
+
+  it("counts only this book's debt when there are no peers", () => {
+    const { book } = opened(alice.root);
+    expect(textOf(getDomain(book, "ticketing"))).toContain(
+      "- 2 open or recorded debt records — read them with search_book"
+    );
   });
 });
 
