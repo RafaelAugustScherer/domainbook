@@ -277,6 +277,15 @@ the decision it references, not here (`ADR-0006`).
   left as they are. The records exist and can still be read; an accepted record
   is not edited to chase a status change (`format/ADR-0013`).
 
+### Removed
+
+- The MCP server is no longer described for the MCP Registry (`ADR-0016`, which
+  supersedes `ADR-0014`). It never had an entry there; it ships through npm
+  only, as `@domainbook/mcp` and inside the `domainbook` CLI, and is reached
+  through the `.mcp.json` that `init` writes or through `domainbook serve mcp`.
+  `server.json` and the `mcpName` in `@domainbook/mcp` are gone, and a release
+  has no publish step after npm.
+
 ## [0.3.0] - 2026-07-30
 
 ### Added

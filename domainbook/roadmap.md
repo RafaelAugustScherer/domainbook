@@ -428,8 +428,10 @@ Exit: each export validates in its target tool.
   `create-domainbook` wrapper named here was dropped: `npx domainbook init`, which the
   exit criterion already names, is the one-command start, and a second package for the
   `npm create` shorthand did not earn its place (`ADR-0014`).
-- Claude Code plugin published; GitHub Action on the marketplace; `server.json` to the
-  MCP Registry.
+- Claude Code plugin published; GitHub Action on the marketplace. The MCP Registry
+  listing named here was dropped: the server ships through npm and is reached
+  through the `.mcp.json` that `init` writes, and a listing that only adds
+  discovery did not earn a second publish on every release (`ADR-0016`).
 - README, quickstart, and a comparison section with related tools — written in a
   neutral, factual register. The demo is this repo and its published site (Phase 4's
   live demo), not a separate repo.

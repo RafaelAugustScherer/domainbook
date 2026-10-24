@@ -1,7 +1,6 @@
 ---
 paths:
   - "packages/mcp/**"
-  - "server.json"
 ---
 
 # MCP

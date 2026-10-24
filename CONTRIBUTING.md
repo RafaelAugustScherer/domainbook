@@ -178,13 +178,15 @@ per-package `CHANGELOG.md` files are generated, never hand-edited (`ADR-0014`).
   and approve each package with 2FA. That first publish carries no provenance (a
   local publish cannot attest); register the trusted publishers after it, and every
   release from `1.0.1` on runs from CI with provenance.
-- **The server, the Action, and the plugin publish beside npm.** After the npm
-  publish: `mcp-publisher publish` sends `server.json` to the MCP Registry — the
-  `mcpName` in `@domainbook/mcp` must match its `name`, and the npm package must be
-  live first; a GitHub release tagged `vX.Y.Z`, with "Publish this Action to the
-  Marketplace" ticked, lists the root `action.yml`; the Claude Code plugin is
-  already served from `.claude-plugin/marketplace.json`, which a consumer adds
-  with `/plugin marketplace add RafaelAugustScherer/domainbook`.
+- **The Action and the plugin publish beside npm.** The MCP server ships through
+  npm only, with no MCP Registry listing (`ADR-0016`). A GitHub release tagged
+  `vX.Y.Z`, with "Publish this Action to the Marketplace" ticked, lists the root
+  `action.yml`; the Claude Code plugin is served from
+  `.claude-plugin/marketplace.json`, which a consumer adds with `/plugin
+  marketplace add RafaelAugustScherer/domainbook`. Changesets do not move the
+  plugin's version: a change under `integrations/plugin/` bumps `version` in its
+  `.claude-plugin/plugin.json` in the same pull request, or a consumer who already
+  installed the plugin keeps the copy Claude Code cached.
 - **The Action's floating major tag moves itself.** `.github/workflows/major-tag.yml`
   runs on every published release tagged `vX.Y.Z` and force-moves `vX` to it, so
   a consumer can pin `uses: RafaelAugustScherer/domainbook@v1` instead of a full
