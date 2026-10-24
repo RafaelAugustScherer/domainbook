@@ -49,6 +49,7 @@ Example: A changelog at the book root clears nothing
   And domainbook/changelog.md is staged
   When domainbook check --staged runs
   Then it prints the ticketing line and the billing line
+  And it prints: domainbook/changelog.md: a book holds no changelog — run "domainbook validate --fix" to delete it, or move it out of domainbook/ if the project keeps one
   And it exits 1
 ```
 
