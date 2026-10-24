@@ -55,9 +55,8 @@ definition instead of each tool inventing its own.
   that runs them belong to core; the fixtures stay here, because a fixture is a
   worked example of the spec (`ADR-0011`).
 - An artifact adopts an existing standard at a pinned version wherever one
-  exists — MADR 4.0, Bounded Context Canvas V5, Keep a Changelog 1.1.0, Context
-  Mapper relationship vocabulary, Gherkin — and narrowing a standard is recorded,
-  not assumed (`format/ADR-0004`). Two artifacts have none to adopt: the roadmap
+  exists — MADR 4.0, Bounded Context Canvas V5, Context Mapper relationship
+  vocabulary, Gherkin — and narrowing a standard is recorded, not assumed (`format/ADR-0004`). Two artifacts have none to adopt: the roadmap
   is ours (`format/ADR-0009`), and debt is derived from a dormant template rather
   than conformant to it (`ADR-0013`).
 - Frontmatter carries what a machine reads; the body carries what a person reads.

@@ -30,16 +30,22 @@ export const brokenBooks: BrokenBook[] = [
       "domains/ticketing/glossary.md:1: a glossary carries no frontmatter — delete the --- block; a term is an H2 heading with its definition below it",
   },
   {
-    dir: "changelog-has-frontmatter",
-    rule: "L4",
-    expect:
-      'domains/ticketing/changelog.md:1: a changelog carries no frontmatter — delete the --- block; a release is an H2 heading like "## [1.2.0] - 2026-06-30"',
-  },
-  {
     dir: "unknown-file-in-book",
     rule: "L5",
     expect:
-      "domains/ticketing/overview.md: the format does not know this file — a domain folder holds index.md, glossary.md, changelog.md, features/*.md, decisions/*.md, and debt/*.md",
+      "domains/ticketing/overview.md: the format does not know this file — a domain folder holds index.md, glossary.md, features/*.md, decisions/*.md, and debt/*.md",
+  },
+  {
+    dir: "book-root-holds-a-changelog",
+    rule: "L5",
+    expect:
+      'changelog.md: a book holds no changelog — run "domainbook validate --fix packages/core/test/fixtures/broken-books/book-root-holds-a-changelog" to delete it, or move it out of packages/core/test/fixtures/broken-books/book-root-holds-a-changelog/ if the project keeps one',
+  },
+  {
+    dir: "domain-holds-a-changelog",
+    rule: "L5",
+    expect:
+      'domains/ticketing/changelog.md: a book holds no changelog — run "domainbook validate --fix packages/core/test/fixtures/broken-books/domain-holds-a-changelog" to delete it, or move it out of packages/core/test/fixtures/broken-books/domain-holds-a-changelog/ if the project keeps one',
   },
   {
     dir: "domains-holds-only-domains",
@@ -296,66 +302,6 @@ export const brokenBooks: BrokenBook[] = [
     rule: "B5",
     expect:
       "domains/ticketing/features/hold-seats-during-checkout.md:23: gherkin does not parse — unexpected end of file, expected: #DocStringSeparator, #Other",
-  },
-  {
-    dir: "changelog-release-heading-malformed",
-    rule: "B6",
-    expect:
-      'domains/ticketing/changelog.md:7: "1.2.0 - 2026-06-30" is not a release heading — write "## [1.2.0] - 2026-06-30", with " [YANKED]" appended if the release was pulled',
-  },
-  {
-    dir: "changelog-bucket-outside-a-release",
-    rule: "B6",
-    expect:
-      'domains/ticketing/changelog.md:7: "Added" is not part of a release — a changelog is an optional H1 title and intro, then "## [Unreleased]" and one H2 per release',
-  },
-  {
-    dir: "changelog-second-h1",
-    rule: "B6",
-    expect:
-      'domains/ticketing/changelog.md:17: "Before the seat map moved to seating" is a second H1 — a changelog is an optional H1 title and intro, then "## [Unreleased]" and one H2 per release',
-  },
-  {
-    dir: "changelog-bucket-repeated",
-    rule: "B6",
-    expect:
-      'domains/ticketing/changelog.md:17: "Added" appears twice in "[1.2.0] - 2026-06-30" — a release holds Added, Changed, Deprecated, Removed, Fixed, Security as H3s, each a bullet list',
-  },
-  {
-    dir: "changelog-version-malformed",
-    rule: "B6",
-    expect:
-      "domains/ticketing/changelog.md:7 releases[0].version: must be a version with no spaces or brackets",
-  },
-  {
-    dir: "changelog-unreleased-bullet-empty",
-    rule: "B6",
-    expect:
-      "domains/ticketing/changelog.md:9 unreleased.added[0]: is empty — write a value, or remove it",
-  },
-  {
-    dir: "changelog-release-bullet-empty",
-    rule: "B6",
-    expect:
-      "domains/ticketing/changelog.md:13 releases[0].fixed[0]: is empty — write a value, or remove it",
-  },
-  {
-    dir: "changelog-without-a-release",
-    rule: "B6",
-    expect:
-      'domains/ticketing/changelog.md:5: "Added" is not part of a release — a changelog is an optional H1 title and intro, then "## [Unreleased]" and one H2 per release',
-  },
-  {
-    dir: "changelog-out-of-order",
-    rule: "B7",
-    expect:
-      'domains/ticketing/changelog.md:19: releases are out of order — "[1.1.0] - 2026-05-04" comes after "[1.0.0] - 2026-04-02"; a changelog lists releases newest first',
-  },
-  {
-    dir: "changelog-duplicate-version",
-    rule: "B7",
-    expect:
-      "domains/ticketing/changelog.md:17: version 1.1.0 is released twice — merge the two sections; a version appears once in a changelog",
   },
   {
     dir: "decision-sections-out-of-order",

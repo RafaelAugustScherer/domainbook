@@ -2,8 +2,10 @@ import {
   existsSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
   readFileSync,
   rmSync,
+  statSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -40,6 +42,15 @@ function failed(...argv: string[]): string[] {
   const result = run(argv);
   expect(result.code, result.lines.join("\n")).toBe(1);
   return result.lines;
+}
+
+function snapshot(dir: string): Record<string, string> {
+  const pages: Record<string, string> = {};
+  for (const path of readdirSync(dir, { recursive: true, encoding: "utf8" })) {
+    const full = join(dir, path);
+    if (statSync(full).isFile()) pages[path] = readFileSync(full, "utf8");
+  }
+  return pages;
 }
 
 function book(): void {
@@ -208,7 +219,7 @@ describe("what the generators write", () => {
   it("scaffolds a domain as every artifact a domain holds", () => {
     ran("init");
     expect(ran("new", "domain", "ticketing")).toEqual([
-      "wrote domainbook/domains/ticketing/ — index.md, glossary.md, changelog.md, features/, decisions/ and debt/",
+      "wrote domainbook/domains/ticketing/ — index.md, glossary.md, features/, decisions/ and debt/",
       'next: set the three classification axes, fill in the eight canvas sections, and replace the placeholder term in glossary.md, then "domainbook validate"',
     ]);
     expect(ran("validate")).toEqual([
@@ -231,15 +242,10 @@ describe("what the generators write", () => {
     );
   });
 
-  it("scaffolds a changelog that is open and holds no release", () => {
+  it("scaffolds a domain with no changelog", () => {
     ran("init");
     ran("new", "domain", "ticketing");
-    const changelog = readFileSync(
-      "domainbook/domains/ticketing/changelog.md",
-      "utf8"
-    );
-    expect(changelog).toContain('written "## [1.2.0] - 2026-06-30"');
-    expect(changelog).toContain("\n## [Unreleased]\n");
+    expect(existsSync("domainbook/domains/ticketing/changelog.md")).toBe(false);
   });
 
   it("scaffolds log folders that reach the reader who clones", () => {
@@ -252,7 +258,6 @@ describe("what the generators write", () => {
     git("commit", "-m", "the book");
     expect(git("ls-files", "domainbook/domains/ticketing").split("\n")).toEqual(
       [
-        "domainbook/domains/ticketing/changelog.md",
         "domainbook/domains/ticketing/debt/.gitkeep",
         "domainbook/domains/ticketing/decisions/.gitkeep",
         "domainbook/domains/ticketing/features/.gitkeep",
@@ -443,7 +448,7 @@ describe("what the CLI says when it is misused", () => {
   it("refuses to write a book into a root that already holds one", () => {
     ran("init");
     expect(failed("init")).toEqual([
-      '"domainbook" is not empty — it holds "changelog.md"; "domainbook init" writes a new book into an empty folder, so pass another root, or edit the book that is already here',
+      '"domainbook" is not empty — it holds "domainbook.config.yaml"; "domainbook init" writes a new book into an empty folder, so pass another root, or edit the book that is already here',
     ]);
   });
 
@@ -504,13 +509,13 @@ describe("what the CLI says when it is misused", () => {
 
   it("never offers an option to a command that would reject it", () => {
     expect(failed("validate", "--bogus")).toEqual([
-      '"--bogus" is not a domainbook option — "domainbook validate" takes only --help; usage: domainbook validate [root]',
+      '"--bogus" is not a domainbook option — "domainbook validate" takes --fix and --help; usage: domainbook validate [--fix] [root]',
     ]);
     expect(failed("init", "--bogus")).toEqual([
       '"--bogus" is not a domainbook option — "domainbook init" takes only --help; usage: domainbook init [root]',
     ]);
     expect(failed("--bogus")).toEqual([
-      '"--bogus" is not a domainbook option — the options are --domain, --supersedes, --staged, --message-file, --range, --session, --check, --version, and --help; run "domainbook --help" to see which command takes which',
+      '"--bogus" is not a domainbook option — the options are --domain, --supersedes, --staged, --message-file, --range, --session, --check, --fix, --version, and --help; run "domainbook --help" to see which command takes which',
     ]);
   });
 
@@ -547,13 +552,13 @@ describe("what the CLI says when it is misused", () => {
 
   it("rejects an option the command does not take, with its usage", () => {
     expect(failed("validate", "--domain", "ticketing")).toEqual([
-      '"--domain" is not an option here — usage: domainbook validate [root]',
+      '"--domain" is not an option here — usage: domainbook validate [--fix] [root]',
     ]);
   });
 
   it("rejects a positional the command does not take, with its usage", () => {
     expect(failed("validate", "one", "two")).toEqual([
-      '"two" does not belong here — usage: domainbook validate [root]',
+      '"two" does not belong here — usage: domainbook validate [--fix] [root]',
     ]);
   });
 
@@ -731,7 +736,7 @@ describe("--help", () => {
     expect(lines[0]).toBe(
       "domainbook — living documentation for a codebase, enforced from the repo"
     );
-    expect(lines).toContain("  domainbook validate [root]");
+    expect(lines).toContain("  domainbook validate [--fix] [root]");
     expect(lines).toContain("  domainbook init [root]");
     expect(lines).toContain("  domainbook new domain <id> [root]");
     expect(lines).toContain(
@@ -782,3 +787,105 @@ function shipped(): string {
   );
   return (JSON.parse(manifest) as { version: string }).version;
 }
+
+describe("a book that still holds a changelog", () => {
+  const valid =
+    "domainbook is a valid book — 1 domain, 0 features, 0 decisions, 2 terms, 0 debt records";
+  const refusal =
+    'a book holds no changelog — run "domainbook validate --fix" to delete it, or move it out of domainbook/ if the project keeps one';
+
+  beforeEach(() => {
+    ran("init");
+    ran("new", "domain", "ticketing");
+  });
+
+  it("refuses a changelog at the book root, and names the fix", () => {
+    writeFileSync("domainbook/changelog.md", "# Changelog\n");
+    expect(failed("validate")).toEqual([`domainbook/changelog.md: ${refusal}`]);
+  });
+
+  it("refuses a changelog in a domain the same way", () => {
+    writeFileSync("domainbook/domains/ticketing/changelog.md", "# Changelog\n");
+    expect(failed("validate")).toEqual([
+      `domainbook/domains/ticketing/changelog.md: ${refusal}`,
+    ]);
+  });
+
+  it("leaves a changelog outside the book to the project", () => {
+    writeFileSync("CHANGELOG.md", "# Changelog\n");
+    mkdirSync("packages/core", { recursive: true });
+    writeFileSync("packages/core/CHANGELOG.md", "# Changelog\n");
+    expect(ran("validate")).toEqual([valid]);
+    expect(ran("validate", "--fix")).toEqual([valid]);
+    expect(existsSync("CHANGELOG.md")).toBe(true);
+    expect(existsSync("packages/core/CHANGELOG.md")).toBe(true);
+  });
+
+  it("deletes every book changelog with --fix, and the book then validates", () => {
+    writeFileSync("domainbook/changelog.md", "# Changelog\n");
+    writeFileSync("domainbook/domains/ticketing/changelog.md", "# Changelog\n");
+    expect(ran("validate", "--fix")).toEqual([
+      "deleted domainbook/changelog.md",
+      "deleted domainbook/domains/ticketing/changelog.md",
+      valid,
+    ]);
+    expect(existsSync("domainbook/changelog.md")).toBe(false);
+    expect(existsSync("domainbook/domains/ticketing/changelog.md")).toBe(false);
+  });
+
+  it("leaves every other issue for the author when it fixes", () => {
+    ran("new", "feature", "hold-seats", "--domain", "ticketing");
+    const feature = "domainbook/domains/ticketing/features/hold-seats.md";
+    const finished = readFileSync(feature, "utf8").replace(
+      "status: draft",
+      "status: finished"
+    );
+    writeFileSync(feature, finished);
+    writeFileSync("domainbook/changelog.md", "# Changelog\n");
+    const reported = failed("validate").filter(
+      (line) => !line.startsWith("domainbook/changelog.md:")
+    );
+    expect(reported).toHaveLength(1);
+    expect(reported[0]).toContain(`${feature}:`);
+    expect(reported[0]).toContain("status");
+    expect(failed("validate", "--fix")).toEqual([
+      "deleted domainbook/changelog.md",
+      ...reported,
+    ]);
+    expect(readFileSync(feature, "utf8")).toBe(finished);
+  });
+
+  it("changes nothing with --fix when the book holds no changelog", () => {
+    const before = snapshot("domainbook");
+    expect(Object.keys(before).length).toBeGreaterThan(0);
+    expect(ran("validate", "--fix")).toEqual([valid]);
+    expect(snapshot("domainbook")).toEqual(before);
+  });
+
+  it("deletes only a file named exactly changelog.md", () => {
+    writeFileSync("domainbook/CHANGELOG.md", "# Changelog\n");
+    expect(failed("validate", "--fix")).toEqual([
+      "domainbook/CHANGELOG.md: the format does not know this file — a book root holds roadmap.md, glossary.md, domainbook.config.yaml, decisions/*.md, debt/*.md, and domains/ — build/ is written by \"domainbook build\" and read by nothing",
+    ]);
+    expect(readdirSync("domainbook")).toContain("CHANGELOG.md");
+  });
+
+  it("deletes nothing with --fix where there is no book", () => {
+    mkdirSync("notes");
+    writeFileSync("notes/changelog.md", "# Changelog\n");
+    expect(failed("validate", "--fix", "notes")).toEqual(
+      failed("validate", "notes")
+    );
+    expect(existsSync("notes/changelog.md")).toBe(true);
+  });
+
+  it("deletes nothing without --fix", () => {
+    writeFileSync("domainbook/changelog.md", "# Changelog\n");
+    failed("validate");
+    expect(existsSync("domainbook/changelog.md")).toBe(true);
+  });
+
+  it("is never written by init", () => {
+    expect(existsSync("domainbook/changelog.md")).toBe(false);
+  });
+});

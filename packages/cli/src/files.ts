@@ -2,12 +2,13 @@ import {
   existsSync,
   mkdirSync,
   readdirSync,
+  rmSync,
   statSync,
   writeFileSync,
 } from "node:fs";
 import { dirname, relative, resolve } from "node:path";
 
-export { missingBook, pad } from "@domainbook/core";
+export { missingBook, pad, rooted } from "@domainbook/core";
 
 const readAsSomethingElse = new Set([
   "true",
@@ -30,17 +31,21 @@ export function relate(path: string): string {
   return relative(process.cwd(), path) || ".";
 }
 
-export function rooted(command: string, root: string): string {
-  if (root === resolve("domainbook")) return command;
-  const at = relate(root);
-  const argument = /\s/.test(at) ? `'${at}'` : at;
-  return `${command} ${argument}`;
-}
-
 export function quoted(value: string): string {
   if (/^[-+.\d]/.test(value) || readAsSomethingElse.has(value.toLowerCase()))
     return JSON.stringify(value);
   return value;
+}
+
+export function remove(path: string): string | undefined {
+  try {
+    rmSync(path);
+    return undefined;
+  } catch (thrown) {
+    const message = fsRefusal(thrown);
+    if (message === undefined) throw thrown;
+    return message;
+  }
 }
 
 export function write(path: string, text: string): string | undefined {

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by enforcement/ADR-0004
 date: 2026-07-28
 decision-makers: [RafaelAugustScherer]
 ---

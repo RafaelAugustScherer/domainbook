@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { parseChangelog } from "../src/body/changelog.js";
 import { parseDebtBody } from "../src/body/debt.js";
 import { parseDecisionBody } from "../src/body/decision.js";
 import { checkDomainBody } from "../src/body/domain.js";
@@ -95,103 +94,6 @@ describe("the glossary parser", () => {
     expect(issues.map(formatIssue)).toEqual([
       "glossary.md: this glossary defines no terms — a glossary is an optional H1 title and intro, then one H2 per term",
     ]);
-  });
-});
-
-describe("the changelog parser", () => {
-  const parsed = parseChangelog(
-    "changelog.md",
-    fromBook("domains/ticketing/changelog.md")
-  );
-
-  it("reads unreleased and every release, newest first", () => {
-    expect(parsed.issues).toEqual([]);
-    expect(parsed.record.changelog).toEqual({
-      unreleased: {
-        added: [
-          "Queue position for fans whose hold expires on a sold-out event.",
-        ],
-      },
-      releases: [
-        {
-          version: "1.2.0",
-          date: "2026-06-30",
-          yanked: false,
-          added: [
-            "Automatic refund when a payment is captured after the hold expired.",
-          ],
-          changed: [
-            "A hold now lasts ten minutes for every event; the per-venue setting is gone.",
-          ],
-          removed: ["Per-venue hold duration."],
-          fixed: [
-            "Two fans could hold the same seat when a seat map changed mid-checkout.",
-          ],
-        },
-        {
-          version: "1.1.0",
-          date: "2026-05-04",
-          yanked: true,
-          added: ["Per-venue hold duration."],
-          security: [
-            "Hold identifiers are no longer guessable from the seat number.",
-          ],
-        },
-        {
-          version: "1.0.0",
-          date: "2026-04-02",
-          yanked: false,
-          added: [
-            "Holds, payment capture, and ticket issuing for seated events.",
-          ],
-        },
-      ],
-    });
-  });
-
-  it("names a bucket that is not one of the six", () => {
-    const source = read(brokenDir, "changelog-unknown-bucket.md");
-    const issues = parseChangelog(
-      "changelog.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues.map(formatIssue)).toEqual([
-      'changelog.md:19: "Notes" is not a changelog section — a release holds Added, Changed, Deprecated, Removed, Fixed, Security as H3s, each a bullet list',
-    ]);
-  });
-
-  it.each([
-    [
-      "rejects an unreleased section written below a release",
-      "## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n\n## [Unreleased]\n\n### Added\n\n- Queues.\n",
-      'changelog.md:7: "[Unreleased]" comes after a release — an unreleased section comes above every release',
-    ],
-    [
-      "names a bucket that sits above every release",
-      "# Changelog\n\n### Added\n\n- Floating.\n\n## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n",
-      'changelog.md:3: "Added" is not part of a release — a changelog is an optional H1 title and intro, then "## [Unreleased]" and one H2 per release',
-    ],
-    [
-      "rejects a second H1 written between releases",
-      "# Changelog\n\n## [1.0.0] - 2026-04-02\n\n### Added\n\n- Holds.\n\n# Older releases\n\n## [0.9.0] - 2026-03-01\n\n### Added\n\n- Seats.\n",
-      'changelog.md:9: "Older releases" is a second H1 — a changelog is an optional H1 title and intro, then "## [Unreleased]" and one H2 per release',
-    ],
-    [
-      "does not call releases out of order when a date is malformed",
-      "## [1.2.0] - 06-30-2026\n\n### Added\n\n- Refunds.\n\n## [1.1.0] - 2026-05-04\n\n### Added\n\n- Holds.\n",
-      "changelog.md:1 releases[0].date: must be a date as YYYY-MM-DD",
-    ],
-    [
-      "rejects a bucket with no bullets under it",
-      "## [1.0.0] - 2026-04-02\n\n### Added\n\n### Fixed\n\n- A.\n",
-      'changelog.md:3: "Added" lists nothing — write each change as a "- " bullet, or drop the heading',
-    ],
-  ])("%s", (_name, source, expected) => {
-    const issues = parseChangelog(
-      "changelog.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues.map(formatIssue)).toEqual([expected]);
   });
 });
 
@@ -403,7 +305,6 @@ describe("a body written with CRLF line endings", () => {
     "roadmap.md",
     "glossary.md",
     domainPage,
-    "domains/ticketing/changelog.md",
     decisionPage,
     featurePage,
   ])("scans %s into the same nodes as its LF copy", (name) => {

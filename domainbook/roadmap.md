@@ -11,6 +11,7 @@ milestones:
   - { id: phase-6, name: Exports and interop, status: done }
   - { id: phase-7, name: Release and distribution, status: in-progress }
   - { id: phase-8, name: Collaboration through the remote, status: done }
+  - { id: phase-9, name: Drop the changelog, status: in-progress }
 ---
 
 # domainbook roadmap
@@ -36,8 +37,8 @@ commit onward.
   as git commit trailers, permanently auditable.
 - **Standards all the way down**: an artifact adopts an existing versioned format
   wherever one exists (MADR 4.0, Bounded Context Canvas, Context Mapper vocabulary,
-  Gherkin, Keep a Changelog) so data exports field-for-field into existing tools. Two
-  of the seven have no standard to adopt — the roadmap (`format/ADR-0009`) and debt
+  Gherkin) so data exports field-for-field into existing tools. Two of the six have
+  no standard to adopt — the roadmap (`format/ADR-0009`) and debt
   (`ADR-0013`) — and each says so in its own record rather than claiming a lineage.
 - **Free and open** (MIT), including the MCP server.
 
@@ -60,7 +61,7 @@ since are in the same logs and not repeated here.
 | Waiver | `Skip-Docs: <reason>` trailer — agents must justify; humans may skip prose via `SKIP_DOCS=1` (auto-stamped trailer). `enforcement.require_reason: agents \| always` | `enforcement/ADR-0002` |
 | Scenario format | Markdown with Example Mapping structure + fenced ```gherkin blocks | `format/ADR-0008` |
 | Website | Custom Astro app with content collections; the map is drawn as SVG and the derived Mermaid published beside it | `site/ADR-0001`, `site/ADR-0003` |
-| Versioning | Git-native — no snapshot folders; changelog + ADR supersede chains carry history | `ADR-0006` |
+| Versioning | Git-native — no snapshot folders and no changelog; git carries when, ADR supersede chains carry why | `ADR-0017` |
 | Migration | Interview-driven agent skill; CLI only scaffolds and validates | `ADR-0007` |
 | Book root | `domainbook/` at repo root (a tool argument, not a config key) | `format/ADR-0010` |
 | Runtime | ESM-only; `engines: >=24.18.0` as a floor. The release line moves when the previous one goes EOL, not on every new LTS (`ADR-0002`); the patch moves when a security release lands on that line (`ADR-0008`) | `ADR-0002`, `ADR-0008` |
@@ -68,7 +69,7 @@ since are in the same logs and not repeated here.
 | Monorepo layout | 4 packages: `@domainbook/core`, `domainbook` (CLI), `@domainbook/mcp`, `@domainbook/site` | `ADR-0003` |
 | Schema authoring | zod-first; JSON Schema (draft 2020-12) generated from zod and committed | `format/ADR-0001` |
 | MCP SDK | `@modelcontextprotocol/server` v2 | `mcp/ADR-0001` |
-| File naming | Lowercase inside the book (`roadmap.md`, `glossary.md`, `changelog.md`); uppercase reserved for repo-root ecosystem files (`README.md`, `AGENTS.md`, `LICENSE`) | `format/ADR-0003` |
+| File naming | Lowercase inside the book (`roadmap.md`, `glossary.md`); uppercase reserved for repo-root ecosystem files (`README.md`, `AGENTS.md`, `LICENSE`) | `format/ADR-0003` |
 | License | MIT, including the MCP server | `ADR-0001` |
 | Collaboration | Claims and drafts under `refs/domainbook/` on the git remote the team already has; no server, nothing synced enters the working tree | `ADR-0015` |
 
@@ -82,7 +83,6 @@ domainbook/
 ├── domainbook.config.yaml        # schema-validated config (optional)
 ├── roadmap.md                    # milestone index (frontmatter) + prose
 ├── glossary.md                   # shared terms (optional)
-├── changelog.md                  # book-wide changes (optional)
 ├── decisions/                    # cross-domain ADRs (MADR 4.0)
 │   └── 0001-record-title.md
 ├── debt/                         # cross-domain technical debt records
@@ -91,7 +91,6 @@ domainbook/
     └── billing/
         ├── index.md              # bounded context canvas
         ├── glossary.md           # ubiquitous language for this context
-        ├── changelog.md          # Keep a Changelog 1.1.0 format, date-based
         ├── features/
         │   └── refund-order.md   # story + rules + gherkin examples
         ├── decisions/
@@ -167,8 +166,7 @@ A decision records a choice about the software, not about how the people and age
 building it work. Working practice — what earns a record, how a phase is run, which lint
 rules are on — belongs in `CONTRIBUTING.md`, which is living and can be rewritten, rather
 than in a log of immutable records. A record retired for failing that bar reads
-`deprecated` in a sense MADR does not have: the choice stands, the record does not, and
-the changelog carries the dated act.
+`deprecated` in a sense MADR does not have: the choice stands, the record does not.
 
 **Debt (`debt/NNNN-*.md`)** — the decision log's twin, and the one living artifact in
 the book: a known shortcut or gap, with `status: open | accepted | repaid`, `date`,
@@ -180,11 +178,10 @@ maintained spec (`ADR-0013`); the exact schema and body grammar are in
 deleted, gaps allowed since `format/ADR-0021` — but edited in place rather than superseded, and `TDR-NNNN` names one
 in a message rather than in a reference an artifact can carry.
 
-**Changelog (`changelog.md`)** — Keep a Changelog 1.1.0 content format with dated sections
-and the six buckets (Added/Changed/Deprecated/Removed/Fixed/Security). Together with ADR
-chains this carries decision history; git holds the full archive, so there are no
-copy-on-version snapshot folders and none of the duplication and maintenance friction
-they bring.
+**Changelog** — not an artifact. A book held a Keep a Changelog `changelog.md` until
+Phase 9 dropped it: it repeated what the features, decisions and glossary say, and git
+already dates every one of them. A book holds none, and `domainbook validate --fix`
+deletes one left behind (`ADR-0017`).
 
 **Roadmap (`roadmap.md`)** — this file: milestone index in frontmatter
 (`id`, `name`, `status: planned | in-progress | done`), detail per milestone in the body.
@@ -196,8 +193,8 @@ escapes, which JSON Schema does not guarantee — Python's validators fail loudl
 a JavaScript consumer that compiles without the `u` flag fails silently, meaning the
 opposite (`format/ADR-0016`). The
 five artifacts with frontmatter — roadmap, domain, feature, decision, debt — have their
-frontmatter described that way; the glossary and changelog carry none, so their schemas
-describe the parsed body.
+frontmatter described that way; the glossary carries none, so its schema describes the
+parsed body.
 
 ## Architecture
 
@@ -242,7 +239,7 @@ Exit: schemas published internally; domainbook's own book validates against them
 - `@domainbook/core`: parse the book into a typed model graph; resolve references
   (domain ids, term links, ADR links, feature↔term/decision links); validation = schema
   conformance + referential integrity + convention checks (ADR numbering, changelog
-  format, gherkin blocks parse).
+  format — dropped in Phase 9, `ADR-0017` — gherkin blocks parse).
 - `domainbook` CLI: `init` (scaffold book + config into any repo), `validate`,
   `new domain|feature|decision` generators (with `new decision --supersedes N` flow).
 
@@ -312,7 +309,8 @@ The differentiator, shipped before anything visual. Three layers plus a durable 
    with an actionable message naming the stale files. Installed as a `commit-msg` hook
    (`domainbook hooks install`; lefthook config offered for repos that use it).
    A commit touching several domains must update each of their books, or carry one
-   record at the book root — a cross-cutting decision or changelog entry — which clears
+   record at the book root — a cross-cutting decision, or a changelog entry until Phase 9
+   dropped the changelog (`ADR-0017`) — which clears
    all of them, because that is where a change spanning contexts belongs. Staged paths
    matching no domain's globs pass silently and are not reported: a path nothing maps is
    a path nothing claims, and mapping is a deliberate act.
@@ -350,7 +348,8 @@ commit is auto-stamped, and both are queryable from git log.
   dual-era default serves both current and 2026-spec clients), Streamable HTTP later.
 - Tool surface modeled on established docs-serving MCP servers: search-first, get-by-id,
   small tool count — `search_book`, `get_domain`, `get_context_map`, `explain_terms`,
-  `get_feature`, `get_decisions`, `get_changelog`, and `where_to_document` (given changed
+  `get_feature`, `get_decisions`, `get_changelog` (dropped in Phase 9, `ADR-0017`), and
+  `where_to_document` (given changed
   paths, returns which book files need updating — ties MCP into the enforcement loop).
 - Retrieval is scoped: `get_decisions` returns an index — one line per record — scoped to
   a domain or to changed paths, with superseded and rejected records left out and bodies
@@ -378,7 +377,8 @@ features touch it?" via MCP; `where_to_document` returns correct files for a dif
   as SVG at build time, with the Mermaid it derives from published beside it
   (`site/ADR-0003`); searchable glossary; feature browser with highlighted
   Gherkin; decision log with status badges and supersede chains; debt register
-  with severity badges; changelog timeline. Pagefind full-text search.
+  with severity badges; changelog timeline (dropped in Phase 9, `ADR-0017`). Pagefind
+  full-text search.
 - The decision log's status badge had a problem to solve rather than a value to render:
   `deprecated` means both "this decision no longer applies" and "this record was retired
   for failing the bar in `CONTRIBUTING.md` while the choice it describes still holds".
@@ -472,6 +472,32 @@ file the hook refuses to commit until `sync` claims it; a push that fails over
 SSH lands over HTTPS with the remote's URL unchanged; a book with a gap in a log
 validates and a reused number is still refused.
 
+### Phase 9 — Drop the changelog
+
+A book's `changelog.md` repeats what its features, decisions and glossary already
+say, and git already dates every one of them. Nothing depends on it being kept,
+so it is not: this repo held 1.0.0 through 2.0.1 under `[Unreleased]`. Phase 9
+removes the changelog from the book and from every part of domainbook that reads
+it, as 3.0.0 (`ADR-0017`):
+
+- **Validate** — a book `changelog.md`, at the root or in a domain, is refused
+  with a pointer to `domainbook validate --fix`, which deletes it. A project that
+  keeps a changelog keeps it outside the book.
+- **Scaffolding** — `init` and `new domain` write none.
+- **Enforcement** — a changelog no longer clears a domain or the whole book; a
+  change across domains clears with a root decision or an edit in each. The block
+  message, the generated instructions and the skills stop naming it.
+- **Readers** — the MCP server drops `get_changelog` and the changelog from search
+  and resources; the site drops its changelog pages, nav link and search entries;
+  the JSON export and its schema drop the `changelog` field.
+
+Exit: `validate` on a book holding a root and a domain `changelog.md` exits 1
+naming both and `--fix`; `validate --fix` deletes both and the book validates;
+`init` and `new domain` write no changelog; the MCP tool list has no
+`get_changelog`; the built site has no changelog route; a change across two
+domains with only a root decision staged passes the check, and one with only a
+root `changelog.md` staged does not.
+
 ## Risks
 
 - **Stop-hook loops**: block only on a clearable condition (a real diff check), honor
@@ -488,7 +514,8 @@ validates and a reused number is still refused.
 
 The three items Phase 0 was to resolve are resolved: config is schema-validated YAML
 inside the book (`format/ADR-0010`), `domainbook check` demands a changelog entry only
-for user-visible behaviour changes (`enforcement/ADR-0003`), and the roadmap artifact has
+for user-visible behaviour changes (`enforcement/ADR-0003`, retired with the changelog
+in Phase 9 by `ADR-0017`), and the roadmap artifact has
 a schema (`format/ADR-0009`).
 
 What is still open is recorded where it belongs — in the Open Questions section of the

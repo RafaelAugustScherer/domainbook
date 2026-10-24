@@ -31,8 +31,6 @@ format) before any work.
     examples, status).
   - Features: Example Mapping structure (Story, H2 per Rule, fenced ```gherkin
     examples, Open Questions); gherkin blocks must parse with `@cucumber/gherkin`.
-  - Changelog: Keep a Changelog 1.1 — dated sections, buckets Added/Changed/
-    Deprecated/Removed/Fixed/Security.
   - Roadmap: frontmatter milestone index (`id`, `name`, `status: planned |
     in-progress | done`).
 - Verify an external spec's current details online before encoding them — do not trust

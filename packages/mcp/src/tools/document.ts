@@ -4,7 +4,7 @@ import { type Answer, listed, refuse, said } from "../answer.js";
 import { matchable, outsideRepo } from "../files.js";
 
 const writingIn =
-  "the canvas, the glossary, the changelog, a feature, a decision or a debt record";
+  "the canvas, the glossary, a feature, a decision and a debt record";
 
 export function whereToDocument(book: Book, paths: string[]): Answer {
   const wrong = paths.map(outsideRepo).filter((one) => one !== undefined);
@@ -37,9 +37,7 @@ export function whereToDocument(book: Book, paths: string[]): Answer {
       "",
     ]),
     change.stale.length > 1
-      ? `A decision under ${book.root}/decisions/ or an entry in ${
-          book.root
-        }/changelog.md clears ${listed(
+      ? `A decision under ${book.root}/decisions/ clears ${listed(
           change.stale.map((one) => one.id)
         )} at once.`
       : undefined,

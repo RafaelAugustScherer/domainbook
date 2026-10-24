@@ -178,7 +178,7 @@ function body(book: Book, at: string, claiming: DomainRecord[]): string[] {
     `The book under \`${at}/\` documents this codebase, and a commit hook checks it. The rule: changing code a domain claims means updating that domain's book in the same commit, or waiving it with a "${key}: <reason>" trailer.`,
     "",
     ...mapped(at, claiming),
-    `Any file under a domain's folder clears the check for that domain — the canvas, the glossary, the changelog, a feature, a decision, or a debt record. A change across several domains updates each of their books, or carries one record at the book root: a decision under \`${at}/decisions/\` or an entry in \`${at}/changelog.md\`.`,
+    `Any file under a domain's folder clears the check for that domain — the canvas, the glossary, a feature, a decision, or a debt record. A change across several domains updates each of their books, or carries one decision at the book root, under \`${at}/decisions/\`.`,
     "",
     ...vocabulary(at, claiming),
     "Write every decision, debt record, feature, and domain with `domainbook new` rather than by hand — it reserves the number or id on the remote and publishes this branch's draft, so a peer cannot take the same one. Before deciding anything in a context, run `domainbook status` to see what peers have in progress there.",
@@ -250,7 +250,7 @@ function rule(domain: DomainRecord, at: string, key: string): string {
     "",
     `# ${domain.frontmatter?.name ?? domain.id}`,
     "",
-    `Code here is claimed by the ${domain.id} domain. Changing it means updating \`${book}/\` in the same commit, or waiving the commit with a "${key}: <reason>" trailer. Any file under that folder clears the check: the canvas, the glossary, the changelog, a feature, a decision, or a debt record.`,
+    `Code here is claimed by the ${domain.id} domain. Changing it means updating \`${book}/\` in the same commit, or waiving the commit with a "${key}: <reason>" trailer. Any file under that folder clears the check: the canvas, the glossary, a feature, a decision, or a debt record.`,
     "",
     `Before you name anything here, call \`explain_terms\` with the words you are about to use — this context has its own, and they win over the book's. \`${book}/index.md\` holds its canvas.${
       domain.glossary === undefined

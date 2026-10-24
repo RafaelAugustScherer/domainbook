@@ -23,7 +23,7 @@ any work.
 - Tool inputs/outputs are JSON Schema (generated from zod). MCP has no OpenAPI anywhere.
 - Docs-serving servers that work keep the tool count small and search-first. The planned
   surface: `search_book`, `get_domain`, `get_context_map`, `explain_terms`,
-  `get_feature`, `get_decisions`, `get_changelog` (`mcp/ADR-0003`), and
+  `get_feature`, `get_decisions`, and
   `where_to_document` (changed paths in → book files needing updates out — the bridge to
   the enforcement loop). Resist adding tools; extend search instead.
 - Also expose the book as MCP resources (browse/@-mention UX) with cache hints

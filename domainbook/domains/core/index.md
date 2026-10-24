@@ -85,7 +85,7 @@ the CLI is where a person or an agent meets domainbook at all.
   fix (`core/ADR-0003`).
 - One broken file stays one broken file. A domain whose `index.md` cannot be read
   or does not fit the schema keeps the id its folder gives it, and its glossary,
-  changelog, features, decisions and debt load anyway; a log — decisions and debt
+  features, decisions and debt load anyway; a log — decisions and debt
   alike — is numbered over every numbered file in it, not only the ones whose
   frontmatter parsed. Dropping a record makes the records around it look wrong —
   a deleted domain breaks other domains' relationships, a skipped file reads as a

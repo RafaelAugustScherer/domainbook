@@ -1,4 +1,5 @@
 import { matchesGlob } from "node:path";
+import { changelogFile } from "./load/changelog.js";
 import type { Book } from "./model.js";
 import { tdrRef } from "./ref.js";
 
@@ -19,10 +20,8 @@ export function checkChange(
 ): Change {
   const changed = [...new Set(paths)].sort();
   const code = changed.filter((path) => !within(bookPath, path));
-  const crossCutting = changed.some(
-    (path) =>
-      within(`${bookPath}/decisions`, path) ||
-      path === `${bookPath}/changelog.md`
+  const crossCutting = changed.some((path) =>
+    within(`${bookPath}/decisions`, path)
   );
   const checked: string[] = [];
   const stale: StaleDomain[] = [];
@@ -30,9 +29,12 @@ export function checkChange(
     const claimed = matching(domain.frontmatter?.code, code);
     if (claimed.length === 0) continue;
     checked.push(domain.id);
+    const folder = `${bookPath}/domains/${domain.id}`;
     const written =
       crossCutting ||
-      changed.some((path) => within(`${bookPath}/domains/${domain.id}`, path));
+      changed.some(
+        (path) => within(folder, path) && path !== `${folder}/${changelogFile}`
+      );
     if (!written) stale.push({ id: domain.id, paths: claimed });
   }
   return { checked, stale, debt: openDebt(book, code) };

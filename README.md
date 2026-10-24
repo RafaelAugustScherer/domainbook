@@ -34,7 +34,6 @@ so the data exports back into the tools those communities already use:
 | Feature | [Example Mapping](https://cucumber.io/blog/bdd/example-mapping-introduction/) structure with [Gherkin](https://cucumber.io/docs/gherkin/reference/) examples | Cucumber |
 | Decision | [MADR 4.0](https://adr.github.io/madr/) | the MADR project |
 | Debt | derived from [Technical Debt Records](https://github.com/ms1963/TechnicalDebtRecords) + [Fowler's Technical Debt Quadrant](https://martinfowler.com/bliki/TechnicalDebtQuadrant.html) | domainbook — derived, not adopted: the source is dormant and unversioned |
-| Changelog | [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/) | Olivier Lacan and contributors |
 | Roadmap | milestone index in frontmatter | domainbook — no external standard |
 
 Credit where it is due: those projects did the design work, and domainbook's job is to
@@ -50,8 +49,8 @@ script, so its pattern uses Unicode property escapes, which JSON Schema does not
 across implementations — Python's validators reject the schema, and a JavaScript consumer
 compiling the pattern without the `u` flag gets no error and the wrong meaning. Every
 pattern's `description` says so. Roadmap, domain, feature, decision and debt pages carry
-their machine-readable part in frontmatter; the glossary and changelog carry theirs in the
-body, and their schemas describe the parsed result.
+their machine-readable part in frontmatter; the glossary carries its own in the body, and
+its schema describes the parsed result.
 
 ## Packages
 
@@ -122,9 +121,9 @@ bump and one regenerated file, with no backfill.
 
 ## Ask the book over MCP
 
-`domainbook serve mcp` (or the `.mcp.json` that `init` writes) exposes eight read-only
+`domainbook serve mcp` (or the `.mcp.json` that `init` writes) exposes seven read-only
 tools — `search_book`, `get_domain`, `get_context_map`, `explain_terms`, `get_feature`,
-`get_decisions`, `get_changelog`, and `where_to_document` — so an agent answers "what does
+`get_decisions`, and `where_to_document` — so an agent answers "what does
 *settlement* mean and which features touch it?" or "which book files does this diff need?"
 without reading the whole repo. `init` also writes install snippets for Cursor, VS Code,
 Codex, and Gemini CLI.

@@ -56,13 +56,10 @@ Example: A shortcut taken knowingly is a debt record
   Given a change that sweeps expired holds on a timer because the queue is not built yet
   Then the skill writes a debt record naming the shortcut, what it costs and what repayment looks like
 
-Example: A user-visible behaviour change is also a changelog entry
+Example: A user-visible behaviour change is documented in its feature
   Given a change that shortens the hold window a buyer sees
-  Then the skill adds an entry under Changed in the ticketing changelog
-
-Example: A change nobody outside the repo can observe gets no changelog entry
-  Given a change that renames a private helper and alters nothing a user sees
-  Then the skill writes no changelog entry
+  Then the skill updates the scenarios of the feature that covers the behaviour
+  And it writes no changelog entry
 
 Example: A choice with a cost to reverse is handed to the decision procedure
   Given a change that takes a new dependency
@@ -75,7 +72,7 @@ Example: A choice with a cost to reverse is handed to the decision procedure
 ```gherkin
 Example: An unrelated edit is refused even though the check would accept it
   Given a block over src/ticketing/hold.ts
-  And a stale line in domains/ticketing/changelog.md that could be edited to clear the check
+  And a stale line in domains/ticketing/glossary.md that could be edited to clear the check
   Then what the skill writes describes the change to src/ticketing/hold.ts
   And it does not clear the block by editing the unrelated stale line
 

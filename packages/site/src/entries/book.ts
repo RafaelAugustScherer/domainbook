@@ -46,7 +46,6 @@ function totalsOf(book: Book): Record<string, number | boolean> {
   const held = book.domains.map((one) => holdings(one));
   return {
     glossary: book.glossary !== undefined,
-    changelog: book.changelog !== undefined,
     roadmap: book.roadmap !== undefined,
     domains: book.domains.length,
     features: added(held, "features"),
@@ -54,9 +53,6 @@ function totalsOf(book: Book): Record<string, number | boolean> {
     rootDecisions: book.decisions.length,
     debt: book.debt.length + added(held, "debt"),
     terms: (book.glossary?.terms.length ?? 0) + added(held, "terms"),
-    changelogs:
-      (book.changelog === undefined ? 0 : 1) +
-      book.domains.filter((one) => one.changelog !== undefined).length,
   };
 }
 

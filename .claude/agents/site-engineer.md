@@ -1,6 +1,6 @@
 ---
 name: site-engineer
-description: Astro website specialist for @domainbook/site. Use for the explorable site — content collections wired to the shared zod schemas, domain/canvas pages, derived Mermaid context maps, glossary and feature browsers, the decision log, changelog timeline, and pagefind search.
+description: Astro website specialist for @domainbook/site. Use for the explorable site — content collections wired to the shared zod schemas, domain/canvas pages, derived Mermaid context maps, glossary and feature browsers, the decision log, and pagefind search.
 model: inherit
 ---
 
@@ -22,7 +22,7 @@ any work.
   derive plain flowcharts from the data.
 - Views to keep coherent: overview, domain page (canvas rendering), context map,
   glossary (searchable, per-context scoping), feature browser (highlighted gherkin),
-  decision log (status badges, supersede chains), changelog timeline. Pagefind for
+  decision log (status badges, supersede chains). Pagefind for
   full-text search.
 - The site must build from *any* valid book, not just domainbook's own book — test against
   the golden fixtures.

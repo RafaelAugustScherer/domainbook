@@ -20,7 +20,8 @@ type Named =
   | "message-file"
   | "range"
   | "session"
-  | "check";
+  | "check"
+  | "fix";
 
 type Values = {
   help?: boolean;
@@ -32,6 +33,7 @@ type Values = {
   range?: string;
   session?: string;
   check?: boolean;
+  fix?: boolean;
 };
 
 type Command = {
@@ -48,6 +50,7 @@ const named: readonly Named[] = [
   "range",
   "session",
   "check",
+  "fix",
 ];
 
 const options = {
@@ -60,13 +63,14 @@ const options = {
   range: { type: "string" },
   session: { type: "string" },
   check: { type: "boolean" },
+  fix: { type: "boolean" },
 } as const;
 
 const commands = {
   validate: {
     name: "domainbook validate",
-    usage: "domainbook validate [root]",
-    options: [],
+    usage: "domainbook validate [--fix] [root]",
+    options: ["fix"],
   },
   init: {
     name: "domainbook init",
@@ -185,6 +189,7 @@ const help = [
   "  --session <path>        a file of paths an agent session touched",
   "  --check                 say whether the generated files are current, and",
   "                          write nothing",
+  "  --fix                   delete every changelog in the book, then validate",
   "  --domain <domain-id>    the domain a feature, a decision, or a debt record",
   "                          belongs to",
   "  --supersedes <number>   the decision this new one replaces",
@@ -219,7 +224,7 @@ export function run(argv: string[]): Result {
   if (command === "validate")
     return (
       stop(commands.validate, values, positionals, 2) ??
-      validate(bookRoot(second))
+      validate(bookRoot(second), values.fix === true)
     );
   if (command === "init")
     return (

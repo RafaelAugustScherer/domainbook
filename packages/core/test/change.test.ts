@@ -125,7 +125,7 @@ describe("what a change leaves stale", () => {
       book(two),
       "src/ticketing/hold.ts",
       "src/billing/refund.ts",
-      "book/domains/ticketing/changelog.md"
+      "book/domains/ticketing/glossary.md"
     );
     expect(found.stale).toEqual([
       { id: "billing", paths: ["src/billing/refund.ts"] },
@@ -143,14 +143,25 @@ describe("what a change leaves stale", () => {
     expect(found.checked).toEqual(["ticketing", "billing"]);
   });
 
-  it("clears every domain at once for a changelog entry at the book root", () => {
+  it("clears nothing for a changelog at the book root", () => {
     const found = changed(
       book(two),
       "src/ticketing/hold.ts",
       "src/billing/refund.ts",
       "book/changelog.md"
     );
-    expect(found.stale).toEqual([]);
+    expect(found.stale.map((one) => one.id)).toEqual(["ticketing", "billing"]);
+  });
+
+  it("does not clear a domain for a changelog in its folder", () => {
+    const found = changed(
+      book(two),
+      "src/ticketing/hold.ts",
+      "book/domains/ticketing/changelog.md"
+    );
+    expect(found.stale).toEqual([
+      { id: "ticketing", paths: ["src/ticketing/hold.ts"] },
+    ]);
   });
 
   it("does not read another root artifact as a cross-cutting record", () => {
@@ -170,7 +181,7 @@ describe("what a change leaves stale", () => {
         claiming("billing", "src/checkout/**"),
       ]),
       "src/checkout/total.ts",
-      "book/domains/billing/changelog.md"
+      "book/domains/billing/glossary.md"
     );
     expect(found.stale).toEqual([
       { id: "ticketing", paths: ["src/checkout/total.ts"] },
@@ -202,7 +213,7 @@ describe("the debt a change walks into", () => {
         owed(3, "accepted", ["src/ticketing/**"], "ticketing"),
       ]),
       "src/ticketing/hold.ts",
-      "book/domains/ticketing/changelog.md"
+      "book/domains/ticketing/glossary.md"
     );
     expect(found.stale).toEqual([]);
     expect(found.debt).toEqual([

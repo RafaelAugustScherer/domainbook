@@ -9,6 +9,8 @@ export { parseFrontmatter } from "./frontmatter.js";
 export { formatIssue, sortIssues } from "./issue.js";
 export type { Issue } from "./issue.js";
 export { buildDir, configFile, loadBook, missingBook } from "./load.js";
+export { bookChangelogs } from "./load/changelog.js";
+export { rooted } from "./load/disk.js";
 export { contextMap } from "./map.js";
 export type { Context, ContextMap, Edge } from "./map.js";
 export { labelOf, mermaidSource } from "./mermaid.js";
@@ -17,7 +19,6 @@ export { opening, sectionNamed, sectionsOf } from "./read.js";
 export { adrRef, findDecision, live, supersededBy, tdrRef } from "./ref.js";
 export type {
   Book,
-  ChangelogRecord,
   DebtRecord,
   DecisionRecord,
   DomainRecord,
@@ -28,11 +29,6 @@ export type {
   RoadmapRecord,
   TermRecord,
 } from "./model.js";
-export {
-  changelogReleaseSchema,
-  changelogSchema,
-} from "./schemas/changelog.js";
-export type { Changelog, ChangelogRelease } from "./schemas/changelog.js";
 export { decisionRef, people, slug } from "./schemas/common.js";
 export { configSchema } from "./schemas/config.js";
 export type { Config } from "./schemas/config.js";

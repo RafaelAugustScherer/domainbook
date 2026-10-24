@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import {
+  bookChangelogs,
   checkChange,
+  formatIssue,
+  sortIssues,
   validateBook,
   type Book,
   type Change,
@@ -54,7 +57,9 @@ export function check(root: string, source: Source): Result {
   const missing = missingBook(root);
   if (missing !== undefined) return refuse(missing);
   const { book, issues } = validateBook(root);
-  if (issues.length > 0)
+  const changelogs = bookChangelogs(root);
+  const others = issues.filter((issue) => !changelogs.includes(issue.file));
+  if (others.length > 0)
     return refuse(
       `domainbook: this book does not validate, so the code it claims cannot be trusted — run "${rooted(
         "domainbook validate",
@@ -65,12 +70,17 @@ export function check(root: string, source: Source): Result {
   if (typeof read === "string") return refuse(read);
   const bookPath = relative(repo, resolve(root));
   const change = checkChange(book, bookPath, pathsOf(repo, read, bookPath));
+  const stray = sortIssues(
+    issues.filter((issue) => changelogs.includes(issue.file))
+  ).map(formatIssue);
   const docs = report(book, bookPath, change, repo, read);
-  if (read.kind !== "staged") return docs;
+  const code = stray.length > 0 ? 1 : docs.code;
+  const lines = [...docs.lines, ...stray];
+  if (read.kind !== "staged") return { code, lines };
   const claims = claimStaged(root, book, repo, bookPath);
   return {
-    code: Math.max(docs.code, claims.code),
-    lines: [...docs.lines, ...claims.lines],
+    code: Math.max(code, claims.code),
+    lines: [...lines, ...claims.lines],
   };
 }
 
@@ -127,7 +137,7 @@ function report(
   const blocked = change.stale.flatMap((one) => [
     `${one.id}: ${named(one.paths)} changed and ${bookPath}/domains/${
       one.id
-    }/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "${trailer}: <reason>" trailer`,
+    }/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "${trailer}: <reason>" trailer`,
     ...nearMisses(status, `${bookPath}/domains/${one.id}`),
   ]);
   if (waiver.kind === "refused") blocked.push(waiver.line);

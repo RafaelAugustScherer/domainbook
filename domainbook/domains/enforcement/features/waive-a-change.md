@@ -32,7 +32,7 @@ Example: The same words in the middle of the message are not a trailer
   Given src/ticketing/hold.ts is staged and nothing under domainbook/domains/ticketing/ is
   And the commit message body holds the line Skip-Docs: not worth documenting followed by a paragraph of prose
   When domainbook check --staged --message-file .git/COMMIT_EDITMSG runs
-  Then it prints: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
+  Then it prints: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
   And it exits 1
 
 Example: One waiver clears the whole commit, not one domain of it
@@ -97,7 +97,7 @@ Example: Without a message file there is nothing to stamp and nothing to read
   Given the shell exports SKIP_DOCS=1 and no agent marker
   And src/ticketing/hold.ts is staged and nothing under domainbook/domains/ticketing/ is
   When domainbook check --staged runs
-  Then it prints: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
+  Then it prints: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
   And it prints: this run read no commit message, so a waiver on it could not be seen — the commit-msg hook passes one, and "domainbook check --staged --message-file <file>" does too
   And it exits 1
 ```

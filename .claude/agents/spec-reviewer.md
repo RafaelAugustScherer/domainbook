@@ -17,7 +17,7 @@ read-only commands (`git diff`, `git log`, `npm ls`). Start every review by read
    JSON Schema), git-native versioning (no snapshot folders), lowercase filenames inside
    the book.
 2. **Standards fidelity**: spot-check changed artifacts against their adopted spec —
-   MADR 4.0 fields and numbering, Keep a Changelog buckets and dates, canvas frontmatter
+   MADR 4.0 fields and numbering, canvas frontmatter
    vocabulary (relationship types/patterns), gherkin blocks parse, glossary structure.
 3. **Drift**: zod schemas vs committed generated JSON Schema (stale generation?), code
    vs book (does the change alter behavior/terminology the book documents — was

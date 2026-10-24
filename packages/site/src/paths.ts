@@ -32,10 +32,6 @@ export function termPath(domain: string | undefined, slug: string): string {
   return `${at}glossary/${encodeURIComponent(slug)}/`;
 }
 
-export function changelogPath(domain: string | undefined): string {
-  return `${domain === undefined ? "/" : domainPath(domain)}changelog/`;
-}
-
 export function glossaryPath(domain: string | undefined): string {
   return `${domain === undefined ? "/" : domainPath(domain)}glossary/`;
 }

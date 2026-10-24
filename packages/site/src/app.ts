@@ -1,6 +1,5 @@
 export { fromBook, type Kind } from "./loader.js";
 export {
-  changelogPath,
   debtPath,
   decisionPath,
   domainPath,

@@ -1,6 +1,5 @@
 import { getCollection, getEntry } from "astro:content";
 export {
-  changelogPath,
   dashedMeans,
   debtBadge,
   debtPath,
@@ -27,8 +26,7 @@ export type Kind =
   | "features"
   | "decisions"
   | "debt"
-  | "terms"
-  | "changelogs";
+  | "terms";
 
 export type Held = { id: string; data: Record<string, unknown> };
 
@@ -42,8 +40,4 @@ export async function collected(kind: Kind): Promise<Held[]> {
 export function href(path: string): string {
   const base = import.meta.env.BASE_URL;
   return `${base.replace(/\/$/, "")}${path}`;
-}
-
-export function titled(text: string): string {
-  return text.charAt(0).toUpperCase() + text.slice(1);
 }

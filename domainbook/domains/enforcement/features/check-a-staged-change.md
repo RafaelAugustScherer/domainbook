@@ -21,13 +21,13 @@ Example: One domain's code changed and its book did not
   And src/ticketing/hold.ts is staged
   And nothing under domainbook/domains/ticketing/ is staged
   When domainbook check --staged runs
-  Then it prints: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
+  Then it prints: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
   And it exits 1
 
 Example: The same change with the domain's book staged passes
   Given a book whose ticketing domain claims src/ticketing/**
   And src/ticketing/hold.ts is staged
-  And domainbook/domains/ticketing/changelog.md is staged
+  And domainbook/domains/ticketing/glossary.md is staged
   When domainbook check --staged runs
   Then it prints: domainbook: 1 domain checked, nothing stale
   And it exits 0
@@ -42,10 +42,10 @@ Example: Any file under the domain's folder clears it, not one named file
 Example: A book edit that was written but never staged is named as the near miss
   Given a book whose ticketing domain claims src/ticketing/**
   And src/ticketing/hold.ts is staged
-  And domainbook/domains/ticketing/changelog.md is edited in the working tree and not staged
+  And domainbook/domains/ticketing/glossary.md is edited in the working tree and not staged
   When domainbook check --staged runs
   Then it prints the ticketing line
-  And it prints: domainbook/domains/ticketing/changelog.md is edited but not staged — "git add domainbook/domains/ticketing/changelog.md" clears this
+  And it prints: domainbook/domains/ticketing/glossary.md is edited but not staged — "git add domainbook/domains/ticketing/glossary.md" clears this
   And it exits 1
 
 Example: Three or more stale files are named to three and counted after that
@@ -53,7 +53,7 @@ Example: Three or more stale files are named to three and counted after that
   And src/ticketing/hold.ts, src/ticketing/expiry.ts, src/ticketing/seat.ts and src/ticketing/row.ts are staged
   And nothing under domainbook/domains/ticketing/ is staged
   When domainbook check --staged runs
-  Then the line reads: ticketing: src/ticketing/expiry.ts, src/ticketing/hold.ts, src/ticketing/row.ts and 1 more changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
+  Then the line reads: ticketing: src/ticketing/expiry.ts, src/ticketing/hold.ts, src/ticketing/row.ts and 1 more changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
 ```
 
 ## Rule: A path no domain claims is not the check's business
@@ -87,7 +87,7 @@ Example: The book itself is not code
 Example: Two domains changed and one book updated blocks on the other
   Given a book whose ticketing domain claims src/ticketing/** and whose billing domain claims src/billing/**
   And src/ticketing/hold.ts and src/billing/refund.ts are staged
-  And domainbook/domains/ticketing/changelog.md is staged
+  And domainbook/domains/ticketing/glossary.md is staged
   When domainbook check --staged runs
   Then it prints exactly one line
   And the line begins: billing: src/billing/refund.ts changed and domainbook/domains/billing/ did not
@@ -97,13 +97,6 @@ Example: A decision at the book root clears every domain at once
   Given a book whose ticketing domain claims src/ticketing/** and whose billing domain claims src/billing/**
   And src/ticketing/hold.ts and src/billing/refund.ts are staged
   And domainbook/decisions/0014-charge-on-capture.md is staged
-  When domainbook check --staged runs
-  Then it exits 0
-
-Example: A changelog entry at the book root clears every domain at once
-  Given a book whose ticketing domain claims src/ticketing/** and whose billing domain claims src/billing/**
-  And src/ticketing/hold.ts and src/billing/refund.ts are staged
-  And domainbook/changelog.md is staged
   When domainbook check --staged runs
   Then it exits 0
 
@@ -126,7 +119,7 @@ Example: A file renamed out of one domain and into another is a change to both
 Example: One path claimed by two domains needs both of their books
   Given a book whose ticketing domain claims src/checkout/** and whose billing domain claims src/checkout/**
   And src/checkout/total.ts is staged
-  And domainbook/domains/billing/changelog.md is staged
+  And domainbook/domains/billing/glossary.md is staged
   When domainbook check --staged runs
   Then it prints exactly one line
   And the line begins: ticketing: src/checkout/total.ts changed and domainbook/domains/ticketing/ did not
@@ -151,7 +144,7 @@ Example: warn prints the block it would have made and exits 0
 Example: A passing commit still hears about the debt it is walking into
   Given a book whose ticketing domain claims src/ticketing/**
   And TDR-0002 in domains/ticketing/debt/ is open and claims src/ticketing/**
-  And src/ticketing/hold.ts and domainbook/domains/ticketing/changelog.md are staged
+  And src/ticketing/hold.ts and domainbook/domains/ticketing/glossary.md are staged
   When domainbook check --staged runs
   Then it prints: TDR-0002 is open over src/ticketing/hold.ts — read domainbook/domains/ticketing/debt/0002-holds-are-swept-by-hand.md before you change this
   And it exits 0
@@ -160,7 +153,7 @@ Example: Debt that is accepted or repaid is not raised
   Given a book whose ticketing domain claims src/ticketing/**
   And TDR-0001 in domains/ticketing/debt/ is repaid and claims src/ticketing/**
   And TDR-0003 in domains/ticketing/debt/ is accepted and claims src/ticketing/**
-  And src/ticketing/hold.ts and domainbook/domains/ticketing/changelog.md are staged
+  And src/ticketing/hold.ts and domainbook/domains/ticketing/glossary.md are staged
   When domainbook check --staged runs
   Then no line names TDR-0001 or TDR-0003
 

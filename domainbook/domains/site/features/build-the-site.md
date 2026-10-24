@@ -27,7 +27,7 @@ Example: Every artifact in the book has a page in the output
   Given a book holding two domains, seven features, twelve decisions, three debt records and a glossary
   When domainbook build runs
   Then domainbook/build/site holds a page for each of those artifacts
-  And it holds the overview, the context map, the glossary and the changelog
+  And it holds the overview, the context map and the glossary
 
 Example: A book somewhere else builds inside itself, wherever it is
   Given a git repo with a book at docs/book

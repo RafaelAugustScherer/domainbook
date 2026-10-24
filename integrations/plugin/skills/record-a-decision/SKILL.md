@@ -44,9 +44,8 @@ this choice:
 Write with `domainbook new decision "<title>" [--domain <id>]`. An accepted record
 is immutable: to change course, run it again with `--supersedes <n>` rather than
 editing the old one's Decision Outcome. A record retired for failing the bar
-(it turned out to be working practice) has its `status` set to `deprecated`, the
-dated act written in the changelog, and the choice itself moved to
-`CONTRIBUTING.md` rather than lost.
+(it turned out to be working practice) has its `status` set to `deprecated` and
+the choice itself moved to `CONTRIBUTING.md` rather than lost.
 
 ## 5. Put it in the log that owns the choice
 

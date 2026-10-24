@@ -1,7 +1,6 @@
 import { loadBook, type Book, type Issue } from "@domainbook/core";
 import type { Loader } from "astro/loaders";
 import { bookEntry } from "./entries/book.js";
-import { changelogEntries } from "./entries/changelog.js";
 import { domainEntries } from "./entries/domain.js";
 import { featureEntries } from "./entries/feature.js";
 import { debtEntries, decisionEntries } from "./entries/log.js";
@@ -17,8 +16,7 @@ export type Kind =
   | "features"
   | "decisions"
   | "debt"
-  | "terms"
-  | "changelogs";
+  | "terms";
 
 export function fromBook(root: string, base: string, kind: Kind): Loader {
   return {
@@ -51,6 +49,5 @@ async function entriesOf(
   if (kind === "features") return featureEntries(book, render);
   if (kind === "decisions") return decisionEntries(book, render);
   if (kind === "debt") return debtEntries(book, render);
-  if (kind === "terms") return termEntries(book, render);
-  return changelogEntries(book, render);
+  return termEntries(book, render);
 }

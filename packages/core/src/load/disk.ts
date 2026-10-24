@@ -1,5 +1,5 @@
 import { readdirSync, readFileSync, statSync } from "node:fs";
-import { join, relative } from "node:path";
+import { join, relative, resolve } from "node:path";
 import type { Issue } from "../issue.js";
 
 export function entries(dir: string) {
@@ -52,4 +52,11 @@ export function strange(
 
 export function relate(path: string): string {
   return relative(process.cwd(), path) || ".";
+}
+
+export function rooted(command: string, root: string): string {
+  if (resolve(root) === resolve("domainbook")) return command;
+  const at = relate(resolve(root));
+  const argument = /\s/.test(at) ? `'${at}'` : at;
+  return `${command} ${argument}`;
 }

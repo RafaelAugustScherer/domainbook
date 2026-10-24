@@ -23,8 +23,6 @@ documented before writing anything.
 - A new word the code now uses → a term in that context's glossary.
 - A shortcut taken knowingly → a debt record naming the shortcut, its cost, and
   what repayment looks like.
-- A user-visible behaviour change → an entry under the right bucket in that
-  context's changelog. A change nobody outside the repo can observe gets none.
 - A choice with a cost to reverse → hand it to `record-a-decision`; do not write
   the decision here.
 

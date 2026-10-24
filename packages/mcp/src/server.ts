@@ -5,7 +5,6 @@ import { type Answer, refuse } from "./answer.js";
 import { open } from "./book.js";
 import type { Peers } from "./peers.js";
 import { listing, read, scheme } from "./resources.js";
-import { getChangelog } from "./tools/changelog.js";
 import { getDecisions } from "./tools/decisions.js";
 import { getContextMap, getDomain } from "./tools/domain.js";
 import { whereToDocument } from "./tools/document.js";
@@ -16,7 +15,6 @@ import { explainTerms } from "./tools/terms.js";
 const kinds = [
   "roadmap",
   "glossary",
-  "changelog",
   "domain",
   "feature",
   "decision",
@@ -157,35 +155,6 @@ function register(server: McpServer, root: string): void {
       annotations: { ...reads, title: "Ask what was decided" },
     },
     (asked) => answering((book, peers) => getDecisions(book, asked, peers))()
-  );
-
-  server.registerTool(
-    "get_changelog",
-    {
-      description:
-        "What changed, newest release first, as written. Scope it to a domain or to the paths you are changing; name a version or a date to reach older releases.",
-      inputSchema: z.object({
-        domain: z
-          .string()
-          .optional()
-          .describe("scope to one context's changelog"),
-        paths: z
-          .array(z.string())
-          .optional()
-          .describe("scope to the contexts claiming these repo-relative paths"),
-        version: z.string().optional().describe("read this release instead"),
-        since: z
-          .string()
-          .optional()
-          .describe("read every release dated on or after this YYYY-MM-DD"),
-        all: z
-          .boolean()
-          .optional()
-          .describe("read every changelog in the book"),
-      }),
-      annotations: { ...reads, title: "Ask what changed" },
-    },
-    (asked) => answering((book) => getChangelog(book, asked))()
   );
 
   server.registerTool(

@@ -16,10 +16,10 @@ So that the first thing I edit is already the right shape and already validates
 ## Rule: A book written by init validates before anything is edited
 
 ```gherkin
-Example: init writes a roadmap, a glossary, a changelog and a config, and the book is valid
+Example: init writes a roadmap, a glossary and a config, and the book is valid
   Given a repo with no book
   When domainbook init runs
-  Then it prints: wrote domainbook/roadmap.md, domainbook/glossary.md, domainbook/changelog.md, domainbook/domainbook.config.yaml and .mcp.json
+  Then it prints: wrote domainbook/roadmap.md, domainbook/glossary.md, domainbook/domainbook.config.yaml and .mcp.json
   And domainbook validate prints: domainbook is a valid book — 0 domains, 0 features, 0 decisions, 1 term, 0 debt records
 
 Example: The book root is the last argument, and it defaults to domainbook
@@ -43,10 +43,10 @@ Example: A domain, a feature and a decision written one after another
 ## Rule: A new domain is scaffolded as every artifact a domain holds
 
 ```gherkin
-Example: new domain writes the canvas, the glossary, the changelog and the three logs
+Example: new domain writes the canvas, the glossary and the three logs
   Given a book written by domainbook init
   When domainbook new domain ticketing runs
-  Then it prints: wrote domainbook/domains/ticketing/ — index.md, glossary.md, changelog.md, features/, decisions/ and debt/
+  Then it prints: wrote domainbook/domains/ticketing/ — index.md, glossary.md, features/, decisions/ and debt/
   And it prints: next: set the three classification axes, fill in the eight canvas sections, and replace the placeholder term in glossary.md, then "domainbook validate"
   And domainbook validate prints: domainbook is a valid book — 1 domain, 0 features, 0 decisions, 2 terms, 0 debt records
 
@@ -55,11 +55,6 @@ Example: The scaffolded glossary carries one term, because a glossary with none 
   Then domainbook/domains/ticketing/glossary.md has one H2, reading: ## <Term>
   And that term carries: - **Status:** draft
   And the prose above it names the other two statuses, validated and deprecated
-
-Example: The scaffolded changelog is open and holds no release
-  Given domainbook new domain ticketing has run
-  Then domainbook/domains/ticketing/changelog.md has one H2, reading: ## [Unreleased]
-  And the prose above it shows a release heading, written: "## [1.2.0] - 2026-06-30"
 
 Example: The three log folders reach the reader who clones rather than the one who scaffolded
   Given domainbook new domain ticketing has run
@@ -95,7 +90,7 @@ Example: An ordinary id is written bare
 Example: A second init names what is already there
   Given a book already written at domainbook
   When domainbook init runs again
-  Then it refuses with: "domainbook" is not empty — it holds "changelog.md"; "domainbook init" writes a new book into an empty folder, so pass another root, or edit the book that is already here
+  Then it refuses with: "domainbook" is not empty — it holds "domainbook.config.yaml"; "domainbook init" writes a new book into an empty folder, so pass another root, or edit the book that is already here
   And it exits 1
 
 Example: A file where a book root should be

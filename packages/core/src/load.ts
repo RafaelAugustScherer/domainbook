@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { formatIssue, type Issue } from "./issue.js";
-import { loadChangelog } from "./load/changelog.js";
+import { isChangelog, noChangelog } from "./load/changelog.js";
 import { configFile, loadConfig } from "./load/config.js";
 import { entries, isFile, relate, strange } from "./load/disk.js";
 import { loadDomain } from "./load/domain.js";
@@ -16,7 +16,7 @@ export { configFile } from "./load/config.js";
 
 export const buildDir = "build";
 
-const rootHolds = `a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — ${buildDir}/ is written by "domainbook build" and read by nothing`;
+const rootHolds = `a book root holds roadmap.md, glossary.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — ${buildDir}/ is written by "domainbook build" and read by nothing`;
 const domainsHold = "domains/ holds one folder per domain and nothing else";
 const notAFolder = "a book root is a folder, and this path is a file";
 
@@ -57,10 +57,12 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
     return { book, issues };
   }
 
-  const known = ["roadmap.md", "glossary.md", "changelog.md", configFile];
+  const known = ["roadmap.md", "glossary.md", configFile];
   const rootFolders = ["decisions", "debt", "domains", buildDir];
   for (const entry of entries(dir))
-    if (
+    if (isChangelog(entry))
+      issues.push(noChangelog(join(dir, entry.name), book.root));
+    else if (
       entry.isDirectory()
         ? !rootFolders.includes(entry.name)
         : !known.includes(entry.name)
@@ -79,10 +81,6 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
   book.glossary = glossary.record;
   issues.push(...glossary.issues);
 
-  const changelog = loadChangelog(dir);
-  book.changelog = changelog.record;
-  issues.push(...changelog.issues);
-
   const log = loadLog(dir, undefined, decisionLog);
   book.decisions = log.records;
   book.decisionFiles = log.files;
@@ -99,7 +97,11 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
       issues.push(strange(domains, entry, domainsHold));
       continue;
     }
-    const domain = loadDomain(join(domains, entry.name), entry.name);
+    const domain = loadDomain(
+      join(domains, entry.name),
+      entry.name,
+      book.root
+    );
     issues.push(...domain.issues);
     book.domains.push(domain.record);
   }

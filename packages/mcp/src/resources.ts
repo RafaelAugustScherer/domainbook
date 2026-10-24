@@ -65,15 +65,6 @@ function offered(book: Book): Offered[] {
             description: "the words every context in this book shares",
           },
         ]),
-    ...(book.changelog === undefined
-      ? []
-      : [
-          {
-            file: book.changelog.file,
-            title: "Changelog",
-            description: "what changed across the whole book",
-          },
-        ]),
     ...book.decisions.filter(live).map((one) => ({
       file: one.file,
       title: one.title,
@@ -103,15 +94,6 @@ function artifactsOf(domain: DomainRecord): Offered[] {
             file: domain.glossary.file,
             title: `${name} — glossary`,
             description: `glossary — the ubiquitous language of ${domain.id}`,
-          },
-        ]),
-    ...(domain.changelog === undefined
-      ? []
-      : [
-          {
-            file: domain.changelog.file,
-            title: `${name} — changelog`,
-            description: `changelog — what changed in ${domain.id}`,
           },
         ]),
     ...domain.features.map((one) => ({

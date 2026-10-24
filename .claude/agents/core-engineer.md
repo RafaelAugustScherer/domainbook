@@ -20,8 +20,7 @@ decisions, Architecture, Phases 1–2) before any work.
 
 - Validation has three layers, all in core: schema conformance (zod, from
   format-engineer's definitions), referential integrity (every reference resolves),
-  convention checks (ADR numbering gaps/duplicates, changelog structure, gherkin blocks
-  parse).
+  convention checks (ADR numbering gaps/duplicates, gherkin blocks parse).
 - **Error messages are the product's voice.** Every failure names the file, the field or
   reference at fault, and what a fix looks like. An agent must be able to act on the
   message without asking questions. Test error messages, not just error presence.

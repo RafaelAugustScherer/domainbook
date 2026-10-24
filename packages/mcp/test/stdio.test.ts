@@ -51,11 +51,10 @@ describe("a real client over real stdio", () => {
     expect(client.getServerVersion()?.name).toBe("domainbook");
   });
 
-  it("is offered the eight tools, every one of them read-only", async () => {
+  it("is offered the seven tools, every one of them read-only", async () => {
     const { tools } = await client.listTools();
     expect(tools.map((one) => one.name).sort()).toEqual([
       "explain_terms",
-      "get_changelog",
       "get_context_map",
       "get_decisions",
       "get_domain",
@@ -67,6 +66,28 @@ describe("a real client over real stdio", () => {
       true
     );
     expect(tools.every((one) => (one.description ?? "").length > 0)).toBe(true);
+  });
+
+  it("answers a call to get_changelog as a tool it does not offer", async () => {
+    await expect(
+      client.callTool({
+        name: "get_changelog",
+        arguments: { domain: "ticketing" },
+      })
+    ).rejects.toThrow("Tool get_changelog not found");
+  });
+
+  it("refuses a search narrowed to a changelog, naming the kinds it searches", async () => {
+    const answer = await client.callTool({
+      name: "search_book",
+      arguments: { query: "hold", kind: "changelog" },
+    });
+    expect(answer.isError).toBe(true);
+    const said = textOf(answer);
+    expect(said).toContain(
+      'expected one of "roadmap"|"glossary"|"domain"|"feature"|"decision"|"debt"'
+    );
+    expect(said).not.toContain('"changelog"');
   });
 
   it("answers what a term means and which features touch it", async () => {
@@ -107,6 +128,7 @@ describe("a real client over real stdio", () => {
     const uris = resources.map((one) => one.uri);
     expect(uris).toContain("domainbook://domains/ticketing/index.md");
     expect(uris).toContain("domainbook://glossary.md");
+    expect(uris.filter((uri) => uri.includes("changelog"))).toEqual([]);
     expect(uris).not.toContain(
       "domainbook://domains/ticketing/decisions/0002-reject-a-capture-that-lands-after-the-hold-expired.md"
     );

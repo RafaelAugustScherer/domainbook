@@ -41,8 +41,7 @@ the fee is cheaper than the support call it replaces.
 
 ### Confirmation
 
-The feature `hold-seats-during-checkout` carries the late capture as an example,
-and the refund is in the ticketing changelog for 1.2.0.
+The feature `hold-seats-during-checkout` carries the late capture as an example.
 
 ## More Information
 

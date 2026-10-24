@@ -22,7 +22,7 @@ for read-only queries only (`npm view`, `gh api`, `git log`).
 
 ## For every spec/format question
 
-Fetch the current spec revision (MADR, Keep a Changelog, Gherkin, MCP, Context Mapper,
+Fetch the current spec revision (MADR, Gherkin, MCP, Context Mapper,
 Contextive…), quote the exact field names and allowed values, and note the revision/date
 you read. Flag anything that contradicts what the roadmap or an agent brief currently
 states.

@@ -38,7 +38,6 @@ agent reading the whole repo.
 | `explain_terms`     | MCP client   | Query |
 | `get_feature`       | MCP client   | Query |
 | `get_decisions`     | MCP client   | Query |
-| `get_changelog`     | MCP client   | Query |
 | `where_to_document` | MCP client   | Query |
 | `ReadResource`      | MCP client   | Query |
 
@@ -69,9 +68,8 @@ agent reading the whole repo.
   MCP server and a hook blocking a commit can never disagree about which files
   are stale. The rule being applied is enforcement's; only the implementation is
   shared (`ADR-0011`).
-- Changelog retrieval is scoped the same way and bounded by release rather than
-  by entry count: the newest release in scope plus `[Unreleased]`, with older
-  releases reached by naming a version or a date (`mcp/ADR-0003`).
+- The server serves no changelog: the book holds none, and what changed is the
+  decisions dated since then and `git log` over the book (`ADR-0017`).
 - A path-scoped answer holds the owning contexts' logs and not the book's own.
   A root record binds every context, which in the commit check is what makes it
   clear every domain at once — but in retrieval that same breadth is what makes

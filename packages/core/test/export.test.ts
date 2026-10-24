@@ -4,6 +4,7 @@ import {
   Parser,
 } from "@cucumber/gherkin";
 import { IdGenerator } from "@cucumber/messages";
+import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parse as parseYaml } from "yaml";
 import type { ExportFile } from "../src/index.js";
@@ -210,7 +211,6 @@ describe("export json", () => {
       "root",
       "roadmap",
       "glossary",
-      "changelog",
       "decisions",
       "debt",
       "domains",
@@ -219,6 +219,18 @@ describe("export json", () => {
 
   it("validates against the model schema", () => {
     expect(modelSchema.safeParse(model).success).toBe(true);
+  });
+
+  it("holds no changelog, in the book or in any domain", () => {
+    expect(model.domains.length).toBeGreaterThan(0);
+    for (const domain of model.domains)
+      expect(Object.keys(domain)).not.toContain("changelog");
+    expect(
+      readFileSync(
+        new URL("../schema/model.schema.json", import.meta.url),
+        "utf8"
+      )
+    ).not.toMatch(/changelog/i);
   });
 
   it("resolves a feature's decision references to entries in the document", () => {

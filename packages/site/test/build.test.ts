@@ -31,7 +31,6 @@ describe("the site a valid book builds into", () => {
       "domains/ticketing/features/hold-seats-during-checkout",
       "domains/ticketing/decisions/0001",
       "domains/ticketing/debt/0001",
-      "domains/ticketing/changelog",
       "domains/seating/glossary",
     ])
       expect(existsSync(join(out, at, "index.html")), at).toBe(true);
@@ -146,6 +145,33 @@ describe("the site a valid book builds into", () => {
   it("draws a pattern on the end of the edge that declared it", () => {
     expect(page("map")).toContain('class="edge-pattern">ACL<');
   });
+
+  it("writes no changelog route", () => {
+    for (const at of ["changelog", "domains/ticketing/changelog"])
+      expect(existsSync(join(out, at)), at).toBe(false);
+  });
+
+  it("offers no changelog link in the navigation", () => {
+    for (const at of ["", "map", "glossary", "domains/ticketing"]) {
+      expect(page(at), at).toContain('aria-label="The book"');
+      expect(page(at), at).not.toMatch(/>\s*Changelog\s*</);
+      expect(page(at), at).not.toMatch(/href="[^"]*changelog\//);
+    }
+  });
+
+  it("has no section on what changed in a domain", () => {
+    expect(page("domains/ticketing")).toContain("Ubiquitous Language");
+    expect(page("domains/ticketing")).not.toContain("What has changed in");
+  });
+
+  it("finds features and decisions for a search, and never a changelog", () => {
+    const kinds = indexed(out)
+      .filter((one) => one.content.toLowerCase().includes("hold"))
+      .map((one) => one.meta.kind);
+    expect(kinds).toContain("feature");
+    expect(kinds).toContain("decision");
+    expect(kinds).not.toContain("changelog");
+  });
 });
 
 describe("the site a book published under a path builds into", () => {
@@ -171,18 +197,19 @@ describe("the site a book published under a path builds into", () => {
   });
 
   it("leaves that path out of the search index, so pagefind adds it once", () => {
-    const urls = indexedUrls(under);
+    const urls = indexed(under).map((one) => one.url);
     expect(urls.length).toBeGreaterThan(0);
     for (const url of urls) expect(url.startsWith("/book/")).toBe(false);
     expect(urls).toContain("/domains/ticketing/");
   });
 });
 
-function indexedUrls(root: string): string[] {
+type Fragment = { url: string; content: string; meta: { kind: string } };
+
+function indexed(root: string): Fragment[] {
   const dir = join(root, "pagefind", "fragment");
   return readdirSync(dir).map((name) => {
     const raw = gunzipSync(readFileSync(join(dir, name))).toString("utf8");
-    const json = raw.slice(raw.indexOf("{"));
-    return (JSON.parse(json) as { url: string }).url;
+    return JSON.parse(raw.slice(raw.indexOf("{"))) as Fragment;
   });
 }

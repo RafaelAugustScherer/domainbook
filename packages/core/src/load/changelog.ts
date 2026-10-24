@@ -1,20 +1,35 @@
-import { parseChangelog } from "../body/changelog.js";
+import { join, resolve } from "node:path";
 import type { Issue } from "../issue.js";
-import type { ChangelogRecord } from "../model.js";
-import { readBody } from "./artifact.js";
+import { entries, relate, rooted } from "./disk.js";
 
-export function loadChangelog(dir: string): {
-  record?: ChangelogRecord;
-  issues: Issue[];
-} {
-  const read = readBody(
-    dir,
-    "changelog.md",
-    "changelog",
-    'a release is an H2 heading like "## [1.2.0] - 2026-06-30"'
+export const changelogFile = "changelog.md";
+
+export function isChangelog(entry: {
+  name: string;
+  isDirectory: () => boolean;
+}): boolean {
+  return !entry.isDirectory() && entry.name === changelogFile;
+}
+
+export function noChangelog(path: string, root: string): Issue {
+  return {
+    file: relate(path),
+    message: `a book holds no changelog — run "${rooted(
+      "domainbook validate --fix",
+      root
+    )}" to delete it, or move it out of ${root}/ if the project keeps one`,
+  };
+}
+
+export function bookChangelogs(root: string): string[] {
+  const dir = resolve(root);
+  const domains = join(dir, "domains");
+  const folders = entries(domains)
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => join(domains, entry.name));
+  return [dir, ...folders].flatMap((folder) =>
+    entries(folder)
+      .filter(isChangelog)
+      .map((entry) => relate(join(folder, entry.name)))
   );
-  if (read === undefined) return { issues: [] };
-  if (!read.readable) return { issues: read.issues };
-  const parsed = parseChangelog(read.file, read.nodes);
-  return { record: parsed.record, issues: [...read.issues, ...parsed.issues] };
 }

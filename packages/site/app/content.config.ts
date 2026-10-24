@@ -30,5 +30,4 @@ export const collections = {
     schema: z.looseObject({ frontmatter: debtSchema }),
   }),
   terms: defineCollection({ loader: fromBook(root, base, "terms") }),
-  changelogs: defineCollection({ loader: fromBook(root, base, "changelogs") }),
 };

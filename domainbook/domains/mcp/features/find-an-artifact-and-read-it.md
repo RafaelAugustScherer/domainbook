@@ -41,7 +41,7 @@ Example: Nothing found is said plainly
 
 ```gherkin
 Example: Every type is searched by default
-  Given a book whose roadmap, glossary, changelog, canvas, feature, decision and debt record all hold the word settlement
+  Given a book whose roadmap, glossary, canvas, feature, decision and debt record all hold the word settlement
   When the client calls search_book with query "settlement"
   Then the answer holds a hit of each of those seven types
 

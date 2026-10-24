@@ -39,7 +39,7 @@ Example: The installed hook blocks the commit the check blocks
   And src/ticketing/hold.ts is staged and nothing under domainbook/domains/ticketing/ is
   When git commit -m "Move the hold sweeper" runs
   Then the commit does not happen
-  And git prints: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
+  And git prints: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
 
 Example: A domainbook installed only as a dependency is the one the hook runs
   Given a repo whose only domainbook is the one under node_modules

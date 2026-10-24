@@ -7,7 +7,6 @@ import {
 } from "@domainbook/core";
 import { bodyOf } from "./body.js";
 import {
-  changelogPath,
   debtPath,
   decisionPath,
   domainPath,
@@ -56,7 +55,6 @@ function ofDomain(domain: DomainRecord): Indexed[] {
     ...ofLog(domain.decisions, "decision", context, domain.id),
     ...ofLog(domain.debt, "debt record", context, domain.id),
     ...ofGlossary(domain.glossary, context, domain.id),
-    ...ofChangelog(domain.changelog?.file, context, domain.id),
   ];
 }
 
@@ -66,7 +64,6 @@ function ofBook(book: Book): Indexed[] {
     ...ofLog(book.decisions, "decision", shared, undefined),
     ...ofLog(book.debt, "debt record", shared, undefined),
     ...ofGlossary(book.glossary, shared, undefined),
-    ...ofChangelog(book.changelog?.file, shared, undefined),
     ...(roadmap === undefined
       ? []
       : [
@@ -109,23 +106,6 @@ function ofGlossary(
     context,
     content: [term.name, ...(term.aliases ?? []), term.definition].join("\n"),
   }));
-}
-
-function ofChangelog(
-  file: string | undefined,
-  context: string,
-  domain: string | undefined
-): Indexed[] {
-  if (file === undefined) return [];
-  return [
-    {
-      url: changelogPath(domain),
-      title: domain === undefined ? "Changelog" : `${context} changelog`,
-      kind: "changelog",
-      context,
-      content: bodyOf(file),
-    },
-  ];
 }
 
 export async function buildIndex(

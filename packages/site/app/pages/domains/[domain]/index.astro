@@ -6,7 +6,7 @@ import DecisionRows from "../../../components/DecisionRows.astro";
 import Issues from "../../../components/Issues.astro";
 import Page from "../../../layouts/Page.astro";
 import Badge from "../../../components/Badge.astro";
-import { changelogPath, collected, domainPath, featureBadge, featurePath, glossaryPath, href, labelOf, termPath } from "../../../lib.ts";
+import { collected, domainPath, featureBadge, featurePath, glossaryPath, href, labelOf, termPath } from "../../../lib.ts";
 
 export async function getStaticPaths() {
   const domains = await collected("domains");
@@ -158,14 +158,6 @@ const name = front?.name ?? domain;
         <DebtRows records={one.debt.map((d: any) => ({ ...d, frontmatter: { status: d.status, severity: d.severity, quadrant: d.quadrant, date: d.date }, domain }))} empty="" />
         <p class="note"><a href={href(`${domainPath(domain!)}debt/`)}>{domain}'s debt on its own</a></p>
       </>
-    ) : null
-  }
-
-  {
-    one.hasChangelog ? (
-      <p class="note">
-        <a href={href(changelogPath(domain))}>What has changed in {domain}</a>
-      </p>
     ) : null
   }
 </Page>

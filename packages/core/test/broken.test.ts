@@ -2,7 +2,6 @@ import { readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import { parse } from "yaml";
 import type { ZodType } from "zod";
-import { parseChangelog } from "../src/body/changelog.js";
 import { parseFeatureBody } from "../src/body/feature.js";
 import { parseGlossary } from "../src/body/glossary.js";
 import { parseMarkdown } from "../src/body/markdown.js";
@@ -52,7 +51,6 @@ const frontmatterFixtures = [
 ];
 
 const bodyFixtures = [
-  "changelog-unknown-bucket.md",
   "glossary-unknown-term-status.md",
   "feature-malformed-gherkin.md",
   "feature-gherkin-fence-with-info.md",
@@ -331,17 +329,6 @@ describe("what a schema issue reads like on the page", () => {
 });
 
 describe("broken body fixtures", () => {
-  it("changelog-unknown-bucket names the bucket that is not one of the six", () => {
-    const source = read(brokenDir, "changelog-unknown-bucket.md");
-    expect(parseFrontmatter(source).data).toBeUndefined();
-    const issues = parseChangelog(
-      "changelog.md",
-      parseMarkdown(source, 1)
-    ).issues;
-    expect(issues).toHaveLength(1);
-    expect(issues[0]?.message).toContain('"Notes" is not a changelog section');
-  });
-
   it("glossary-unknown-term-status points at the term's status", () => {
     const source = read(brokenDir, "glossary-unknown-term-status.md");
     expect(parseFrontmatter(source).data).toBeUndefined();
@@ -417,8 +404,6 @@ describe("the broken book set", () => {
       "B3",
       "B4",
       "B5",
-      "B6",
-      "B7",
       "B8",
       "B9",
       "C1",

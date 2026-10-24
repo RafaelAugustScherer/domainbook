@@ -103,9 +103,6 @@ function holdings(domain: DomainRecord, unmerged: number): string[] {
     terms === 0
       ? "- No glossary"
       : `- ${terms} terms — read them with explain_terms`,
-    domain.changelog === undefined
-      ? "- No changelog"
-      : "- A changelog — read it with get_changelog",
   ];
 }
 
