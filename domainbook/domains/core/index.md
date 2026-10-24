@@ -114,9 +114,8 @@ the CLI is where a person or an agent meets domainbook at all.
   next command then rejects.
 - Generated YAML quotes any scalar a parser could read as something else, so a
   legal id like `9` or `no` survives the round trip (`core/ADR-0005`).
-- Release and packaging config — the manifests, `.changeset/`, the workflows,
-  `server.json` — belongs to no context and is recorded at the book root, not
-  here (`ADR-0014`).
+- Release and packaging config — the manifests, `.changeset/`, the workflows —
+  belongs to no context and is recorded at the book root, not here (`ADR-0016`).
 - Peers share numbers and in-progress artifacts through the git remote's ref
   namespace, with no server: `new` claims a number or id under
   `refs/domainbook/claims/` before it writes and publishes the branch's book

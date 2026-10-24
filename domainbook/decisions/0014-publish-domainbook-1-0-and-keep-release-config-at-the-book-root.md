@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by ADR-0016
 date: 2026-08-15
 decision-makers: [RafaelAugustScherer]
 ---
