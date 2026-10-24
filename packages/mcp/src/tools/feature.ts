@@ -1,9 +1,8 @@
 import type { Book, FeatureRecord } from "@domainbook/core";
 import { inProgress, sectionNamed } from "@domainbook/core";
-import { type Answer, listed, refuse, said } from "../answer.js";
+import { type Answer, listed, noDomain, refuse, said } from "../answer.js";
 import { text } from "../files.js";
 import { alone, drafted, footer, home, type Peers } from "../peers.js";
-import { noDomain } from "../scope.js";
 
 export function getFeature(
   book: Book,

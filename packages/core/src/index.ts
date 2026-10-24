@@ -8,9 +8,13 @@ export type { Export, ExportFile, ExportTarget } from "./export/index.js";
 export { parseFrontmatter } from "./frontmatter.js";
 export { formatIssue, sortIssues } from "./issue.js";
 export type { Issue } from "./issue.js";
-export { buildDir, configFile, loadBook, missingBook } from "./load.js";
-export { bookChangelogs } from "./load/changelog.js";
-export { rooted } from "./load/disk.js";
+export {
+  buildDir,
+  configFile,
+  loadBook,
+  missingBook,
+  rooted,
+} from "./load.js";
 export { contextMap } from "./map.js";
 export type { Context, ContextMap, Edge } from "./map.js";
 export { labelOf, mermaidSource } from "./mermaid.js";

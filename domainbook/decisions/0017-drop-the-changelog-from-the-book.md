@@ -88,8 +88,9 @@ question `git log` already answers.
   changelog entry used to clear every domain, and now it takes a decision, an
   edit in each domain, or a waiver.
 - Bad, because it breaks callers of `get_changelog`, of the changelog schema and
-  of the JSON export's `changelog` field, so it ships as 3.0.0 under the promise
-  `ADR-0014` made and `ADR-0016` carried over.
+  of the JSON export's `changelog` field, so every package takes a major version
+  — `domainbook` 3.0.0 — under the promise `ADR-0014` made and `ADR-0016` carried
+  over.
 
 ### Confirmation
 

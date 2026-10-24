@@ -1,6 +1,6 @@
 import {
-  bookChangelogs,
   formatIssue,
+  loadBook,
   sortIssues,
   validateBook,
 } from "@domainbook/core";
@@ -10,7 +10,7 @@ import type { Result } from "./result.js";
 export function validate(root: string, fix: boolean): Result {
   const deleted: string[] = [];
   if (fix && missingBook(root) === undefined) {
-    for (const file of bookChangelogs(root)) {
+    for (const file of loadBook(root).changelogs) {
       const failed = remove(file);
       if (failed !== undefined)
         return { code: 1, lines: [...deleted, failed] };

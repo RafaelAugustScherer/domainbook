@@ -5,7 +5,7 @@ import { debtLog, decisionLog } from "../log.js";
 import type { DomainRecord, FieldLines } from "../model.js";
 import { type Domain, domainSchema } from "../schemas/domain.js";
 import { frontmatterOf, readArtifact } from "./artifact.js";
-import { isChangelog, noChangelog } from "./changelog.js";
+import { isChangelog } from "./changelog.js";
 import { entries, isFile, relate, strange } from "./disk.js";
 import { loadFeatures } from "./feature.js";
 import { loadGlossary } from "./glossary.js";
@@ -16,15 +16,14 @@ const domainHolds =
 
 export function loadDomain(
   dir: string,
-  id: string,
-  root: string
-): { record: DomainRecord; issues: Issue[] } {
+  id: string
+): { record: DomainRecord; issues: Issue[]; changelogs: string[] } {
   const issues: Issue[] = [];
+  const changelogs: string[] = [];
   const known = ["index.md", "glossary.md"];
   const domainFolders = ["features", "decisions", "debt"];
   for (const entry of entries(dir))
-    if (isChangelog(entry))
-      issues.push(noChangelog(join(dir, entry.name), root));
+    if (isChangelog(entry)) changelogs.push(relate(join(dir, entry.name)));
     else if (
       entry.isDirectory()
         ? !domainFolders.includes(entry.name)
@@ -58,6 +57,7 @@ export function loadDomain(
       ...log.issues,
       ...debt.issues,
     ],
+    changelogs,
   };
 }
 

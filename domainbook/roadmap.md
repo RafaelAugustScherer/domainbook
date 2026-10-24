@@ -478,7 +478,7 @@ A book's `changelog.md` repeats what its features, decisions and glossary alread
 say, and git already dates every one of them. Nothing depends on it being kept,
 so it is not: this repo held 1.0.0 through 2.0.1 under `[Unreleased]`. Phase 9
 removes the changelog from the book and from every part of domainbook that reads
-it, as 3.0.0 (`ADR-0017`):
+it, as a major release of every package — `domainbook` 3.0.0 (`ADR-0017`):
 
 - **Validate** — a book `changelog.md`, at the root or in a domain, is refused
   with a pointer to `domainbook validate --fix`, which deletes it. A project that

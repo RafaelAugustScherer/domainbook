@@ -9,7 +9,6 @@ import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
 import {
-  bookChangelogs,
   buildDir,
   configFile,
   formatIssue,
@@ -231,7 +230,7 @@ name: Ticketing
       `${join(at, "changelog.md")}: ${refusal}`,
       `${join(at, "domains/ticketing/changelog.md")}: ${refusal}`,
     ]);
-    expect(bookChangelogs(root)).toEqual([
+    expect(loadBook(root).changelogs).toEqual([
       join(at, "changelog.md"),
       join(at, "domains/ticketing/changelog.md"),
     ]);
@@ -258,7 +257,18 @@ name: Ticketing
       "domainbook/roadmap.md": milestones,
     });
     expect(messages(join(root, "domainbook"))).toEqual([]);
-    expect(bookChangelogs(join(root, "domainbook"))).toEqual([]);
+    expect(loadBook(join(root, "domainbook")).changelogs).toEqual([]);
+  });
+
+  it("reports only a file named exactly changelog.md", () => {
+    const root = temporary({
+      "roadmap.md": milestones,
+      "CHANGELOG.md": "# Changelog\n",
+    });
+    expect(loadBook(root).changelogs).toEqual([]);
+    expect(messages(root)).toEqual([
+      `the format does not know this file — a book root holds roadmap.md, glossary.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
+    ]);
   });
 
   it("reads a folder named changelog.md as a folder the format does not know", () => {
@@ -267,7 +277,7 @@ name: Ticketing
     expect(messages(root)).toEqual([
       `the format does not know this folder — a book root holds roadmap.md, glossary.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
     ]);
-    expect(bookChangelogs(root)).toEqual([]);
+    expect(loadBook(root).changelogs).toEqual([]);
   });
 });
 

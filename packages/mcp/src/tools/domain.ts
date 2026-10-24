@@ -6,9 +6,8 @@ import type {
   Edge,
 } from "@domainbook/core";
 import { contextMap, sectionsOf, tdrRef } from "@domainbook/core";
-import { type Answer, listed, refuse, said } from "../answer.js";
+import { type Answer, listed, noDomain, refuse, said } from "../answer.js";
 import { alone, drafted, type Peers } from "../peers.js";
-import { noDomain } from "../scope.js";
 
 export function getDomain(book: Book, id: string, peers: Peers = alone): Answer {
   const domain = book.domains.find((one) => one.id === id);

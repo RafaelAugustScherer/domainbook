@@ -154,6 +154,32 @@ describe("what the check says about a changelog in the book", () => {
     ]);
   });
 
+  it("prints no summary beside a changelog when nothing a domain claims is staged", () => {
+    wrote("domainbook/changelog.md", "# Changelog\n");
+    staging("README.md");
+    wroteMessage("Note the release");
+    expect(failed("check", "--staged", "--message-file", message)).toEqual([
+      `domainbook/changelog.md: ${refusal}`,
+    ]);
+  });
+
+  it("prints no summary beside a changelog when every domain is current", () => {
+    const glossary = "domainbook/domains/ticketing/glossary.md";
+    wrote(
+      glossary,
+      readFileSync(glossary, "utf8").replace(
+        "- **Status:** draft",
+        "- **Status:** validated"
+      )
+    );
+    wrote("domainbook/changelog.md", "# Changelog\n");
+    staging("src/ticketing/hold.ts");
+    wroteMessage("Move the hold sweeper");
+    expect(failed("check", "--staged", "--message-file", message)).toEqual([
+      `domainbook/changelog.md: ${refusal}`,
+    ]);
+  });
+
   it("clears every domain at once for a decision at the book root", () => {
     claims("billing", "src/billing/**");
     committed("Add billing");

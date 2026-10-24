@@ -1,18 +1,26 @@
 import type { Book, DecisionRecord, PeerWork } from "@domainbook/core";
 import {
   adrRef,
+  checkChange,
   findDecision,
   inProgress,
   live,
   opening,
   sectionNamed,
 } from "@domainbook/core";
-import { type Answer, refuse, said } from "../answer.js";
-import { text } from "../files.js";
+import { type Answer, noDomain, refuse, said } from "../answer.js";
+import { matchable, text } from "../files.js";
 import { alone, drafted, footer, type Peers } from "../peers.js";
-import { type Asked, scoped } from "../scope.js";
 
 type Drafted = { record: DecisionRecord; peer: PeerWork };
+
+type Asked = { domain?: string; paths?: string[]; all?: boolean };
+
+const unscoped =
+  "name a domain, the paths you are changing, or the ids you want — or pass all to read every decision in the book";
+
+const unclaimed =
+  "no domain claims those paths — name a domain instead, or pass all to read the whole book";
 
 export function getDecisions(
   book: Book,
@@ -48,13 +56,31 @@ function scope(
   book: Book,
   asked: Asked
 ): { records: DecisionRecord[] } | { refusal: string } {
-  return scoped(
-    book,
-    asked,
-    (domain) => domain.decisions,
-    book.decisions,
-    "name a domain, the paths you are changing, or the ids you want — or pass all to read every decision in the book"
-  );
+  if (asked.all === true)
+    return {
+      records: [
+        ...book.decisions,
+        ...book.domains.flatMap((one) => one.decisions),
+      ],
+    };
+  if (asked.domain !== undefined) {
+    const id = asked.domain;
+    const domain = book.domains.find((one) => one.id === id);
+    if (domain === undefined) return { refusal: noDomain(book, id) };
+    return { records: domain.decisions };
+  }
+  if (asked.paths !== undefined && asked.paths.length > 0) {
+    const within = new Set(
+      checkChange(book, book.root, matchable(asked.paths)).checked
+    );
+    if (within.size === 0) return { refusal: unclaimed };
+    return {
+      records: book.domains
+        .filter((one) => within.has(one.id))
+        .flatMap((one) => one.decisions),
+    };
+  }
+  return { refusal: unscoped };
 }
 
 function fromPeers(peers: Peers, asked: Asked): Drafted[] {

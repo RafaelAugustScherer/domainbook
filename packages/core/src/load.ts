@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { formatIssue, type Issue } from "./issue.js";
-import { isChangelog, noChangelog } from "./load/changelog.js";
+import { isChangelog } from "./load/changelog.js";
 import { configFile, loadConfig } from "./load/config.js";
 import { entries, isFile, relate, strange } from "./load/disk.js";
 import { loadDomain } from "./load/domain.js";
@@ -27,6 +27,23 @@ function noBook(root: string): Issue {
   };
 }
 
+function noChangelog(file: string, root: string): Issue {
+  return {
+    file,
+    message: `a book holds no changelog — run "${rooted(
+      "domainbook validate --fix",
+      root
+    )}" to delete it, or move it out of ${root}/ if the project keeps one`,
+  };
+}
+
+export function rooted(command: string, root: string): string {
+  if (resolve(root) === resolve("domainbook")) return command;
+  const at = relate(resolve(root));
+  const argument = /\s/.test(at) ? `'${at}'` : at;
+  return `${command} ${argument}`;
+}
+
 export function missingBook(root: string): string | undefined {
   const dir = resolve(root);
   if (existsSync(dir) && !statSync(dir).isDirectory())
@@ -35,9 +52,12 @@ export function missingBook(root: string): string | undefined {
   return formatIssue(noBook(relate(dir)));
 }
 
-export function loadBook(root: string): { book: Book; issues: Issue[] } {
+export type Loaded = { book: Book; issues: Issue[]; changelogs: string[] };
+
+export function loadBook(root: string): Loaded {
   const dir = resolve(root);
   const issues: Issue[] = [];
+  const changelogs: string[] = [];
   const book: Book = {
     root: relate(dir),
     config: configSchema.parse({}),
@@ -50,18 +70,17 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
 
   if (!existsSync(dir)) {
     issues.push(noBook(book.root));
-    return { book, issues };
+    return { book, issues, changelogs };
   }
   if (!statSync(dir).isDirectory()) {
     issues.push({ file: book.root, message: notAFolder });
-    return { book, issues };
+    return { book, issues, changelogs };
   }
 
   const known = ["roadmap.md", "glossary.md", configFile];
   const rootFolders = ["decisions", "debt", "domains", buildDir];
   for (const entry of entries(dir))
-    if (isChangelog(entry))
-      issues.push(noChangelog(join(dir, entry.name), book.root));
+    if (isChangelog(entry)) changelogs.push(relate(join(dir, entry.name)));
     else if (
       entry.isDirectory()
         ? !rootFolders.includes(entry.name)
@@ -97,14 +116,12 @@ export function loadBook(root: string): { book: Book; issues: Issue[] } {
       issues.push(strange(domains, entry, domainsHold));
       continue;
     }
-    const domain = loadDomain(
-      join(domains, entry.name),
-      entry.name,
-      book.root
-    );
+    const domain = loadDomain(join(domains, entry.name), entry.name);
     issues.push(...domain.issues);
+    changelogs.push(...domain.changelogs);
     book.domains.push(domain.record);
   }
 
-  return { book, issues };
+  for (const file of changelogs) issues.push(noChangelog(file, book.root));
+  return { book, issues, changelogs };
 }
