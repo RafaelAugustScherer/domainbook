@@ -1,5 +1,12 @@
 # domainbook
 
+## 2.0.2
+
+### Patch Changes
+
+- Updated dependencies [9469db5]
+  - @domainbook/mcp@2.0.2
+
 ## 2.0.1
 
 ### Patch Changes
