@@ -28,10 +28,10 @@
     "@cucumber/gherkin": "42.0.0",
     "@cucumber/messages": "34.2.0",
     "yaml": "2.9.0",
-    "zod": "4.4.3"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "^24.9.2",
-    "vitest": "4.1.11"
+    "vitest": "4.1.12"
   }
 }
