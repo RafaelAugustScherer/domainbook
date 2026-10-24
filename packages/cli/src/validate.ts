@@ -1,7 +1,27 @@
-import { formatIssue, sortIssues, validateBook } from "@domainbook/core";
+import {
+  formatIssue,
+  loadBook,
+  sortIssues,
+  validateBook,
+} from "@domainbook/core";
+import { missingBook, remove } from "./files.js";
 import type { Result } from "./result.js";
 
-export function validate(root: string): Result {
+export function validate(root: string, fix: boolean): Result {
+  const deleted: string[] = [];
+  if (fix && missingBook(root) === undefined) {
+    for (const file of loadBook(root).changelogs) {
+      const failed = remove(file);
+      if (failed !== undefined)
+        return { code: 1, lines: [...deleted, failed] };
+      deleted.push(`deleted ${file}`);
+    }
+  }
+  const checked = validated(root);
+  return { code: checked.code, lines: [...deleted, ...checked.lines] };
+}
+
+function validated(root: string): Result {
   const { book, issues } = validateBook(root);
   if (issues.length > 0)
     return { code: 1, lines: sortIssues(issues).map(formatIssue) };

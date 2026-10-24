@@ -1,5 +1,4 @@
 import type { ParsedRule } from "./body/feature.js";
-import type { Changelog } from "./schemas/changelog.js";
 import { slugSource } from "./schemas/common.js";
 import type { Config } from "./schemas/config.js";
 import type { Debt } from "./schemas/debt.js";
@@ -14,8 +13,6 @@ export type FieldLines = Record<string, number>;
 export type TermRecord = GlossaryTerm & { slug: string; line: number };
 
 export type GlossaryRecord = { file: string; terms: TermRecord[] };
-
-export type ChangelogRecord = { file: string; changelog: Changelog };
 
 export type RoadmapRecord = {
   file: string;
@@ -53,7 +50,6 @@ export type DomainRecord = {
   frontmatter?: Domain;
   lines: FieldLines;
   glossary?: GlossaryRecord;
-  changelog?: ChangelogRecord;
   features: FeatureRecord[];
   decisions: DecisionRecord[];
   decisionFiles: LogFile[];
@@ -66,7 +62,6 @@ export type Book = {
   config: Config;
   roadmap?: RoadmapRecord;
   glossary?: GlossaryRecord;
-  changelog?: ChangelogRecord;
   decisions: DecisionRecord[];
   decisionFiles: LogFile[];
   debt: DebtRecord[];

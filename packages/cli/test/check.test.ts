@@ -14,7 +14,7 @@ import {
 const message = ".git/COMMIT_EDITMSG";
 
 const stale =
-  'ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain\'s book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer';
+  'ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain\'s book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer';
 
 beforeEach(() => {
   vi.stubEnv("CLAUDECODE", undefined);
@@ -36,6 +36,11 @@ function staging(...paths: string[]): void {
   edits += 1;
   for (const path of paths) wrote(path, `export const one = ${edits}\n`);
   git("add", "-A");
+}
+
+function canvasEdited(): void {
+  const page = "domainbook/domains/ticketing/index.md";
+  wrote(page, `${readFileSync(page, "utf8")}\nA hold lasts ten minutes.\n`);
 }
 
 function wroteMessage(...lines: string[]): void {
@@ -75,11 +80,11 @@ describe("what the check says about a staged change", () => {
 
   it("names a book edit that was written and never staged", () => {
     staging("src/ticketing/hold.ts");
-    wrote("domainbook/domains/ticketing/changelog.md", "# Changelog\n");
+    canvasEdited();
     wroteMessage("Move the hold sweeper");
     expect(failed("check", "--staged", "--message-file", message)).toEqual([
       stale,
-      'domainbook/domains/ticketing/changelog.md is edited but not staged — "git add domainbook/domains/ticketing/changelog.md" clears this',
+      'domainbook/domains/ticketing/index.md is edited but not staged — "git add domainbook/domains/ticketing/index.md" clears this',
     ]);
   });
 
@@ -129,6 +134,74 @@ describe("what the check says about a staged change", () => {
     staging("src/ticketing/hold.ts");
     expect(failed("check", "--staged", "docs/book")).toEqual([
       'docs/book: no book here — run "domainbook init docs/book" to write one',
+    ]);
+  });
+});
+
+describe("what the check says about a changelog in the book", () => {
+  const refusal =
+    'a book holds no changelog — run "domainbook validate --fix" to delete it, or move it out of domainbook/ if the project keeps one';
+  const billing =
+    'billing: src/billing/refund.ts changed and domainbook/domains/billing/ did not — update that domain\'s book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer';
+
+  it("does not clear a domain for a changelog staged in its folder", () => {
+    wrote("domainbook/domains/ticketing/changelog.md", "# Changelog\n");
+    staging("src/ticketing/hold.ts");
+    wroteMessage("Move the hold sweeper");
+    expect(failed("check", "--staged", "--message-file", message)).toEqual([
+      stale,
+      `domainbook/domains/ticketing/changelog.md: ${refusal}`,
+    ]);
+  });
+
+  it("prints no summary beside a changelog when nothing a domain claims is staged", () => {
+    wrote("domainbook/changelog.md", "# Changelog\n");
+    staging("README.md");
+    wroteMessage("Note the release");
+    expect(failed("check", "--staged", "--message-file", message)).toEqual([
+      `domainbook/changelog.md: ${refusal}`,
+    ]);
+  });
+
+  it("prints no summary beside a changelog when every domain is current", () => {
+    const glossary = "domainbook/domains/ticketing/glossary.md";
+    wrote(
+      glossary,
+      readFileSync(glossary, "utf8").replace(
+        "- **Status:** draft",
+        "- **Status:** validated"
+      )
+    );
+    wrote("domainbook/changelog.md", "# Changelog\n");
+    staging("src/ticketing/hold.ts");
+    wroteMessage("Move the hold sweeper");
+    expect(failed("check", "--staged", "--message-file", message)).toEqual([
+      `domainbook/changelog.md: ${refusal}`,
+    ]);
+  });
+
+  it("clears every domain at once for a decision at the book root", () => {
+    claims("billing", "src/billing/**");
+    committed("Add billing");
+    staging("src/ticketing/hold.ts", "src/billing/refund.ts");
+    ran("new", "decision", "Charge on capture");
+    git("add", "-A");
+    wroteMessage("Charge on capture");
+    expect(ran("check", "--staged", "--message-file", message)).toEqual([
+      "domainbook: 2 domains checked, nothing stale",
+    ]);
+  });
+
+  it("clears nothing for a changelog at the book root", () => {
+    claims("billing", "src/billing/**");
+    committed("Add billing");
+    wrote("domainbook/changelog.md", "# Changelog\n");
+    staging("src/ticketing/hold.ts", "src/billing/refund.ts");
+    wroteMessage("Charge on capture");
+    expect(failed("check", "--staged", "--message-file", message)).toEqual([
+      billing,
+      stale,
+      `domainbook/changelog.md: ${refusal}`,
     ]);
   });
 });
@@ -243,7 +316,7 @@ describe("what the check says about a branch", () => {
     staging("src/ticketing/hold.ts");
     committed("Move the hold sweeper");
     expect(failed("check", "--range", `${base}..HEAD`)).toEqual([stale]);
-    wrote("domainbook/domains/ticketing/changelog.md", "# Changelog\n");
+    canvasEdited();
     committed("Document the sweeper");
     expect(ran("check", "--range", `${base}..HEAD`)).toEqual([
       "domainbook: 1 domain checked, nothing stale",

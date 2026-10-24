@@ -45,7 +45,6 @@ async function entryOf(
       sections,
       map: contextMap(book, domain.id),
       hasGlossary: domain.glossary !== undefined,
-      hasChangelog: domain.changelog !== undefined,
       terms: (domain.glossary?.terms ?? []).map((one) => ({
         slug: one.slug,
         name: one.name,

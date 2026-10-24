@@ -98,7 +98,6 @@ Example: Changing course goes through new decision --supersedes
 Example: A record retired for failing the bar is deprecated, not deleted
   Given an accepted record the bar now reads as working practice
   Then the skill sets its status to deprecated
-  And it writes the dated act in the changelog
   And the choice itself is moved to CONTRIBUTING.md rather than lost
 ```
 

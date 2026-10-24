@@ -5,24 +5,26 @@ import { debtLog, decisionLog } from "../log.js";
 import type { DomainRecord, FieldLines } from "../model.js";
 import { type Domain, domainSchema } from "../schemas/domain.js";
 import { frontmatterOf, readArtifact } from "./artifact.js";
-import { loadChangelog } from "./changelog.js";
+import { isChangelog } from "./changelog.js";
 import { entries, isFile, relate, strange } from "./disk.js";
 import { loadFeatures } from "./feature.js";
 import { loadGlossary } from "./glossary.js";
 import { loadLog } from "./log.js";
 
 const domainHolds =
-  "a domain folder holds index.md, glossary.md, changelog.md, features/*.md, decisions/*.md, and debt/*.md";
+  "a domain folder holds index.md, glossary.md, features/*.md, decisions/*.md, and debt/*.md";
 
 export function loadDomain(
   dir: string,
   id: string
-): { record: DomainRecord; issues: Issue[] } {
+): { record: DomainRecord; issues: Issue[]; changelogs: string[] } {
   const issues: Issue[] = [];
-  const known = ["index.md", "glossary.md", "changelog.md"];
+  const changelogs: string[] = [];
+  const known = ["index.md", "glossary.md"];
   const domainFolders = ["features", "decisions", "debt"];
   for (const entry of entries(dir))
-    if (
+    if (isChangelog(entry)) changelogs.push(relate(join(dir, entry.name)));
+    else if (
       entry.isDirectory()
         ? !domainFolders.includes(entry.name)
         : !known.includes(entry.name)
@@ -31,7 +33,6 @@ export function loadDomain(
 
   const canvas = loadCanvas(dir, id);
   const glossary = loadGlossary(dir);
-  const changelog = loadChangelog(dir);
   const log = loadLog(dir, id, decisionLog);
   const debt = loadLog(dir, id, debtLog);
   const features = loadFeatures(join(dir, "features"), id);
@@ -42,7 +43,6 @@ export function loadDomain(
       frontmatter: canvas.frontmatter,
       lines: canvas.lines,
       glossary: glossary.record,
-      changelog: changelog.record,
       features: features.records,
       decisions: log.records,
       decisionFiles: log.files,
@@ -53,11 +53,11 @@ export function loadDomain(
       ...issues,
       ...canvas.issues,
       ...glossary.issues,
-      ...changelog.issues,
       ...features.issues,
       ...log.issues,
       ...debt.issues,
     ],
+    changelogs,
   };
 }
 

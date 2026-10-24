@@ -43,8 +43,8 @@ instruction.
 
 ## Remedy
 
-Repaid. `domainbook new domain` writes `glossary.md` and `changelog.md`
-alongside `index.md`, and `features/`, `decisions/` and `debt/` each holding a
+Repaid. `domainbook new domain` writes `glossary.md` — and `changelog.md`, until
+`ADR-0017` dropped it — alongside `index.md`, and `features/`, `decisions/` and `debt/` each holding a
 `.gitkeep`. Each page carries an instructive placeholder: the fields it takes,
 the values each field accepts, and a sentence saying what belongs there, so the
 first agent to open one can fill it in without reading a schema. `init` writes

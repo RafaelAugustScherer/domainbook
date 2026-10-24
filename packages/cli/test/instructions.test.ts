@@ -112,6 +112,18 @@ describe("what instructions writes", () => {
     );
   });
 
+  it("names the pages that clear a domain, and no changelog", () => {
+    ran("instructions");
+    expect(held("AGENTS.md")).toContain(
+      "Any file under a domain's folder clears the check for that domain — the canvas, the glossary, a feature, a decision, or a debt record. A change across several domains updates each of their books, or carries one decision at the book root, under `domainbook/decisions/`."
+    );
+    expect(held(rule)).toContain(
+      "Any file under that folder clears the check: the canvas, the glossary, a feature, a decision, or a debt record."
+    );
+    for (const file of ["AGENTS.md", "CLAUDE.md", rule, ".mcp.json"])
+      expect(held(file)).not.toMatch(/changelog/i);
+  });
+
   it("gives a domain that claims nothing no rule file", () => {
     claims("reporting", "src/reporting/**");
     wrote(
@@ -171,6 +183,20 @@ describe("what --check says", () => {
     ran("instructions");
     expect(ran("instructions", "--check")).toEqual([
       "AGENTS.md, CLAUDE.md, 1 rule file and .mcp.json are up to date",
+    ]);
+  });
+
+  it("calls AGENTS.md stale while it still names the changelog", () => {
+    ran("instructions");
+    wrote(
+      "AGENTS.md",
+      held("AGENTS.md").replace(
+        "the canvas, the glossary, a feature,",
+        "the canvas, the glossary, the changelog, a feature,"
+      )
+    );
+    expect(failed("instructions", "--check")).toEqual([
+      'AGENTS.md is out of date — run "domainbook instructions" to write it again',
     ]);
   });
 

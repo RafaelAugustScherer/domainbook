@@ -131,7 +131,6 @@ describe("loadBook over the golden fixture book", () => {
     ]);
     expect(loaded.book.roadmap?.frontmatter.id).toBe("boxoffice");
     expect(loaded.book.glossary?.terms).toHaveLength(3);
-    expect(ticketing?.changelog?.changelog.releases).toHaveLength(3);
   });
 
   it("takes a decision's title from its H1", () => {
@@ -208,11 +207,85 @@ describe("missingBook on what is and is not a book", () => {
   });
 });
 
+describe("a book holds no changelog", () => {
+  const canvas = `---
+id: ticketing
+name: Ticketing
+---
+`;
+
+  it("names the root and every domain changelog, and the fix", () => {
+    const root = temporary({
+      "roadmap.md": milestones,
+      "changelog.md": "# Changelog\n",
+      "domains/ticketing/changelog.md": "# Changelog\n",
+      "domains/ticketing/index.md": canvas,
+    });
+    const at = relative(process.cwd(), root);
+    const refusal = `a book holds no changelog — run "domainbook validate --fix ${at}" to delete it, or move it out of ${at}/ if the project keeps one`;
+    const changelogs = sortIssues(loadBook(root).issues).filter((issue) =>
+      issue.message.startsWith("a book holds no changelog")
+    );
+    expect(changelogs.map(formatIssue)).toEqual([
+      `${join(at, "changelog.md")}: ${refusal}`,
+      `${join(at, "domains/ticketing/changelog.md")}: ${refusal}`,
+    ]);
+    expect(loadBook(root).changelogs).toEqual([
+      join(at, "changelog.md"),
+      join(at, "domains/ticketing/changelog.md"),
+    ]);
+  });
+
+  it("names the plain fix for the default root", () => {
+    const root = temporary({ "domainbook/roadmap.md": milestones });
+    writeFileSync(join(root, "domainbook/changelog.md"), "# Changelog\n");
+    const cwd = process.cwd();
+    process.chdir(root);
+    try {
+      expect(loadBook("domainbook").issues.map(formatIssue)).toEqual([
+        'domainbook/changelog.md: a book holds no changelog — run "domainbook validate --fix" to delete it, or move it out of domainbook/ if the project keeps one',
+      ]);
+    } finally {
+      process.chdir(cwd);
+    }
+  });
+
+  it("leaves a changelog outside the book alone", () => {
+    const root = temporary({
+      "CHANGELOG.md": "# Changelog\n",
+      "packages/core/CHANGELOG.md": "# Changelog\n",
+      "domainbook/roadmap.md": milestones,
+    });
+    expect(messages(join(root, "domainbook"))).toEqual([]);
+    expect(loadBook(join(root, "domainbook")).changelogs).toEqual([]);
+  });
+
+  it("reports only a file named exactly changelog.md", () => {
+    const root = temporary({
+      "roadmap.md": milestones,
+      "CHANGELOG.md": "# Changelog\n",
+    });
+    expect(loadBook(root).changelogs).toEqual([]);
+    expect(messages(root)).toEqual([
+      `the format does not know this file — a book root holds roadmap.md, glossary.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
+    ]);
+  });
+
+  it("reads a folder named changelog.md as a folder the format does not know", () => {
+    const root = temporary({ "roadmap.md": milestones });
+    mkdirSync(join(root, "changelog.md"));
+    expect(messages(root)).toEqual([
+      `the format does not know this folder — a book root holds roadmap.md, glossary.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
+    ]);
+    expect(loadBook(root).changelogs).toEqual([]);
+  });
+});
+
 describe("loadBook on a tree the filesystem refuses", () => {
   it("keeps the unknown-file issue when domains is a regular file", () => {
     const root = temporary({ "roadmap.md": milestones, domains: "not here\n" });
     expect(messages(root)).toEqual([
-      `the format does not know this file — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
+      `the format does not know this file — a book root holds roadmap.md, glossary.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
     ]);
   });
 
@@ -220,7 +293,7 @@ describe("loadBook on a tree the filesystem refuses", () => {
     const root = temporary({ "roadmap.md": milestones });
     mkdirSync(join(root, "glossary.md"));
     expect(messages(root)).toEqual([
-      `the format does not know this folder — a book root holds roadmap.md, glossary.md, changelog.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
+      `the format does not know this folder — a book root holds roadmap.md, glossary.md, ${configFile}, decisions/*.md, debt/*.md, and domains/ — build/ is written by "domainbook build" and read by nothing`,
     ]);
   });
 

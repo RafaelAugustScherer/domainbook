@@ -29,9 +29,9 @@ Example: A record's own sentence is the line that describes it
   Then that record's line reads: Chosen option: a scoped index by default.
 
 Example: That sentence reads as markdown, the way it does on the record
-  Given a decision whose Decision Outcome opens "Chosen option: `get_changelog`, built on the rules `mcp/ADR-0002` set"
+  Given a decision whose Decision Outcome opens "Chosen option: `get_decisions`, built on the rules `mcp/ADR-0002` set"
   When a reader opens the log holding it
-  Then get_changelog reads as code rather than between backticks
+  Then get_decisions reads as code rather than between backticks
   And mcp/ADR-0002 opens that record from the line
 
 Example: A record with no outcome sentence to lend is listed without one

@@ -31,7 +31,7 @@ Example: Nothing but protocol reaches stdout
 Example: The server lists the questions it can answer
   Given a repo with a valid book at domainbook
   When a client asks for the tools
-  Then it is offered search_book, get_domain, get_context_map, explain_terms, get_feature, get_decisions, get_changelog and where_to_document
+  Then it is offered search_book, get_domain, get_context_map, explain_terms, get_feature, get_decisions and where_to_document
   And each says what it answers and what it needs
   And each says it only reads
 

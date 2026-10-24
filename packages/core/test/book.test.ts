@@ -59,7 +59,6 @@ const bodyOnly = [
   "glossary.md",
   "domains/seating/glossary.md",
   "domains/ticketing/glossary.md",
-  "domains/ticketing/changelog.md",
 ];
 
 describe("the valid fixture book", () => {

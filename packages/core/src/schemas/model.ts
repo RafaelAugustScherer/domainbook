@@ -1,5 +1,4 @@
 import * as z from "zod";
-import { changelogSchema } from "./changelog.js";
 import { decisionRef, slug } from "./common.js";
 import { debtSchema } from "./debt.js";
 import { decisionSchema } from "./decision.js";
@@ -41,7 +40,6 @@ const modelDomainSchema = z.strictObject({
   features: z.array(modelFeatureSchema),
   decisions: z.array(modelDecisionSchema),
   debt: z.array(modelDebtSchema),
-  changelog: changelogSchema.nullable(),
 });
 
 export const modelSchema = z
@@ -49,7 +47,6 @@ export const modelSchema = z
     root: z.string(),
     roadmap: roadmapSchema.nullable(),
     glossary: z.array(modelTermSchema),
-    changelog: changelogSchema.nullable(),
     decisions: z.array(modelDecisionSchema),
     debt: z.array(modelDebtSchema),
     domains: z.array(modelDomainSchema),

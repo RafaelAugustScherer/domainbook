@@ -1,5 +1,5 @@
 ---
-status: open
+status: repaid
 date: 2026-07-30
 severity: medium
 quadrant: inadvertent-prudent
@@ -53,6 +53,10 @@ Stal's template. The changelog claims conformance with no such note, so a reader
 comparing the two has no way to tell deliberate narrowing from an oversight.
 
 ## Remedy
+
+Repaid by removal: `ADR-0017` drops the changelog from the book, so the parser
+and schema this record is about no longer exist and neither half is owed. What
+follows is the remedy as it stood before that.
 
 Two independent halves, and the first is cheap.
 

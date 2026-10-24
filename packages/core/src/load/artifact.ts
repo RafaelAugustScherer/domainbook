@@ -1,11 +1,10 @@
-import { join } from "node:path";
 import { isMap, isScalar, isSeq, parseDocument, YAMLParseError } from "yaml";
 import type { ZodType } from "zod";
 import { type Node, parseMarkdown } from "../body/markdown.js";
 import { parseFrontmatter } from "../frontmatter.js";
 import { dotted, type Issue, schemaIssues } from "../issue.js";
 import type { FieldLines } from "../model.js";
-import { isFile, readText, relate } from "./disk.js";
+import { readText } from "./disk.js";
 
 export type Artifact = {
   data: unknown;
@@ -45,36 +44,6 @@ export function readArtifact(path: string, file: string): Artifact {
     nodes: parseMarkdown(split.body, head.split("\n").length),
     lines: split.data === undefined ? {} : fieldLines(head),
     issues: [],
-  };
-}
-
-export function readBody(
-  dir: string,
-  name: string,
-  label: string,
-  instead: string
-):
-  | { file: string; readable: boolean; nodes: Node[]; issues: Issue[] }
-  | undefined {
-  const path = join(dir, name);
-  if (!isFile(path)) return undefined;
-  const file = relate(path);
-  const artifact = readArtifact(path, file);
-  return {
-    file,
-    readable: artifact.readable,
-    nodes: artifact.nodes,
-    issues:
-      artifact.data === undefined
-        ? artifact.issues
-        : [
-            ...artifact.issues,
-            {
-              file,
-              line: 1,
-              message: `a ${label} carries no frontmatter — delete the --- block; ${instead}`,
-            },
-          ],
   };
 }
 

@@ -1,12 +1,11 @@
 import { checkBook } from "./check.js";
-import type { Issue } from "./issue.js";
-import { loadBook } from "./load.js";
-import type { Book } from "./model.js";
+import { type Loaded, loadBook } from "./load.js";
 
-export function validateBook(root: string): { book: Book; issues: Issue[] } {
+export function validateBook(root: string): Loaded {
   const loaded = loadBook(root);
   return {
     book: loaded.book,
     issues: [...loaded.issues, ...checkBook(loaded.book)],
+    changelogs: loaded.changelogs,
   };
 }

@@ -1,3 +1,5 @@
+import type { Book } from "@domainbook/core";
+
 export type Answer = {
   content: { type: "text"; text: string }[];
   isError?: boolean;
@@ -22,4 +24,10 @@ function joined(lines: (string | undefined)[]): string {
     .filter((line) => line !== undefined)
     .join("\n")
     .trimEnd();
+}
+
+export function noDomain(book: Book, id: string): string {
+  return `no domain "${id}" in this book — it holds ${listed(
+    book.domains.map((one) => one.id)
+  )}`;
 }

@@ -21,7 +21,7 @@ Example: A branch that left a domain's book stale fails the action
   And nothing under domainbook/domains/billing/ changes anywhere in the range
   And no commit in the range carries a Skip-Docs trailer
   When the domainbook action runs
-  Then it prints: billing: src/billing/refund.ts changed and domainbook/domains/billing/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
+  Then it prints: billing: src/billing/refund.ts changed and domainbook/domains/billing/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
   And the action fails
 
 Example: A book that does not validate fails the action on its own
@@ -33,7 +33,7 @@ Example: A book that does not validate fails the action on its own
 
 Example: A branch with nothing stale and a valid book passes
   Given a pull request whose range changes src/billing/refund.ts
-  And domainbook/domains/billing/changelog.md changes in the range
+  And domainbook/domains/billing/glossary.md changes in the range
   When the domainbook action runs
   Then the action passes
 
@@ -51,7 +51,7 @@ Example: Generated instruction files that have gone stale are said out loud, not
 ```gherkin
 Example: The book update may arrive in a later commit than the code
   Given a pull request whose first commit changes src/billing/refund.ts
-  And whose second commit changes domainbook/domains/billing/changelog.md
+  And whose second commit changes domainbook/domains/billing/glossary.md
   When the domainbook action runs
   Then the action passes
 

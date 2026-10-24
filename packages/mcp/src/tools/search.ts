@@ -7,7 +7,6 @@ import { alone, drafted, footer, home, type Peers } from "../peers.js";
 export type Kind =
   | "roadmap"
   | "glossary"
-  | "changelog"
   | "domain"
   | "feature"
   | "decision"
@@ -106,15 +105,6 @@ function searchable(book: Book): Located[] {
             id: "glossary",
           },
         ]),
-    ...(book.changelog === undefined
-      ? []
-      : [
-          {
-            kind: "changelog" as const,
-            file: book.changelog.file,
-            id: "changelog",
-          },
-        ]),
     ...book.decisions.filter(live).map((one) => ({
       kind: "decision" as const,
       file: one.file,
@@ -140,16 +130,6 @@ function within(domain: DomainRecord): Located[] {
             file: domain.glossary.file,
             domain: domain.id,
             id: `${domain.id}/glossary`,
-          },
-        ]),
-    ...(domain.changelog === undefined
-      ? []
-      : [
-          {
-            kind: "changelog" as const,
-            file: domain.changelog.file,
-            domain: domain.id,
-            id: `${domain.id}/changelog`,
           },
         ]),
     ...domain.features.map((one) => ({

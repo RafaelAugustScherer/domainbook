@@ -17,7 +17,7 @@ So that browsing to an artifact and pasting it into a session is one step, not a
 
 ```gherkin
 Example: The whole book is listable
-  Given a book holding a roadmap, a glossary, a changelog, two domains, four features, eleven decisions and two debt records
+  Given a book holding a roadmap, a glossary, two domains, four features, eleven decisions and two debt records
   When the client lists resources
   Then every one of those files is offered
   And nothing outside the book root is

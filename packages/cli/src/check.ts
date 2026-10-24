@@ -2,9 +2,12 @@ import { readFileSync } from "node:fs";
 import { relative, resolve } from "node:path";
 import {
   checkChange,
+  formatIssue,
+  sortIssues,
   validateBook,
   type Book,
   type Change,
+  type Issue,
 } from "@domainbook/core";
 import { claimStaged } from "./claims.js";
 import { missingBook, rooted } from "./files.js";
@@ -53,8 +56,14 @@ export function check(root: string, source: Source): Result {
   if (repo === undefined) return refuse(noRepo);
   const missing = missingBook(root);
   if (missing !== undefined) return refuse(missing);
-  const { book, issues } = validateBook(root);
-  if (issues.length > 0)
+  const { book, issues, changelogs } = validateBook(root);
+  const changelogFiles = new Set(changelogs);
+  const stray: Issue[] = [];
+  const others: Issue[] = [];
+  for (const issue of issues)
+    if (changelogFiles.has(issue.file)) stray.push(issue);
+    else others.push(issue);
+  if (others.length > 0)
     return refuse(
       `domainbook: this book does not validate, so the code it claims cannot be trusted — run "${rooted(
         "domainbook validate",
@@ -65,12 +74,15 @@ export function check(root: string, source: Source): Result {
   if (typeof read === "string") return refuse(read);
   const bookPath = relative(repo, resolve(root));
   const change = checkChange(book, bookPath, pathsOf(repo, read, bookPath));
-  const docs = report(book, bookPath, change, repo, read);
-  if (read.kind !== "staged") return docs;
+  const refused = sortIssues(stray).map(formatIssue);
+  const docs = report(book, bookPath, change, repo, read, refused);
+  const code = refused.length > 0 ? 1 : docs.code;
+  const lines = [...docs.lines, ...refused];
+  if (read.kind !== "staged") return { code, lines };
   const claims = claimStaged(root, book, repo, bookPath);
   return {
-    code: Math.max(docs.code, claims.code),
-    lines: [...docs.lines, ...claims.lines],
+    code: Math.max(code, claims.code),
+    lines: [...lines, ...claims.lines],
   };
 }
 
@@ -109,7 +121,8 @@ function report(
   bookPath: string,
   change: Change,
   repo: string,
-  read: Read
+  read: Read,
+  refused: string[]
 ): Result {
   const { mode, trailer } = book.config.enforcement;
   const debt = change.debt.map(
@@ -119,7 +132,11 @@ function report(
       } before you change this`
   );
   if (change.stale.length === 0)
-    return { code: 0, lines: [passed(read, change.checked), ...debt] };
+    return {
+      code: 0,
+      lines:
+        refused.length > 0 ? debt : [passed(read, change.checked), ...debt],
+    };
   const waiver = waive(book, repo, read);
   if (waiver.kind === "waived")
     return { code: 0, lines: [waiver.line, ...debt] };
@@ -127,7 +144,7 @@ function report(
   const blocked = change.stale.flatMap((one) => [
     `${one.id}: ${named(one.paths)} changed and ${bookPath}/domains/${
       one.id
-    }/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "${trailer}: <reason>" trailer`,
+    }/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "${trailer}: <reason>" trailer`,
     ...nearMisses(status, `${bookPath}/domains/${one.id}`),
   ]);
   if (waiver.kind === "refused") blocked.push(waiver.line);

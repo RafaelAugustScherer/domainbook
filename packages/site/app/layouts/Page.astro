@@ -1,7 +1,7 @@
 ---
 import { getEntry } from "astro:content";
 import Search from "../components/Search.astro";
-import { changelogPath, glossaryPath, href } from "../lib.ts";
+import { glossaryPath, href } from "../lib.ts";
 import "../styles/site.css";
 
 type Props = { title: string; lede?: string };
@@ -37,7 +37,6 @@ const holds = (data?.totals ?? {}) as Record<string, number | boolean>;
               {holds.glossary ? <li><a href={href(glossaryPath(undefined))}>Glossary</a></li> : null}
               {Number(holds.decisions) > 0 ? <li><a href={href("/decisions/")}>Decisions</a></li> : null}
               {Number(holds.debt) > 0 ? <li><a href={href("/debt/")}>Debt register</a></li> : null}
-              {holds.changelog ? <li><a href={href(changelogPath(undefined))}>Changelog</a></li> : null}
             </ul>
             <p class="rows note">Contexts</p>
             <ul>

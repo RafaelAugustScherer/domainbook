@@ -63,8 +63,8 @@ undocumented; the skills are how it stops being so.
   instruction layer is steering only (`enforcement/ADR-0001`).
 - A waiver is a git commit trailer, and what it must contain depends on who is
   committing (`enforcement/ADR-0002`).
-- A changelog entry is demanded only for user-visible behaviour changes, not for
-  every commit (`enforcement/ADR-0003`).
+- A user-visible behaviour change is documented in the feature that covers it;
+  the book holds no changelog, and a book changelog clears nothing (`ADR-0017`).
 - The book's own writing has procedures — a migration skill and three maintenance
   skills — shipped in the plugin as steering an agent follows, never as a gate
   (`ADR-0005`, `ADR-0007`).

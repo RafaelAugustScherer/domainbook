@@ -7,8 +7,8 @@ would like it.
 ## Artifact
 
 One file in the book of a type the format knows: roadmap, domain page, glossary,
-feature, decision, debt record, or changelog. An artifact is documentation, never
-a build output — nothing this project produces from a build is called an
+feature, decision, or debt record. An artifact is documentation, never a build
+output — nothing this project produces from a build is called an
 artifact.
 
 - **Aliases:** book file
@@ -84,7 +84,7 @@ number.
 ## Domain
 
 One bounded context: a folder under `domains/` with a canvas, and optionally its
-own glossary, changelog, features, and decisions. The `classification.domain`
+own glossary, features, and decisions. The `classification.domain`
 frontmatter field is a different thing — it names the subdomain type (core,
 supporting, generic), not the domain itself.
 

@@ -1,5 +1,5 @@
 ---
-status: accepted
+status: superseded by mcp/ADR-0004
 date: 2026-07-30
 decision-makers: [RafaelAugustScherer]
 ---

@@ -7,7 +7,6 @@ export type Heading = Extract<Node, { kind: "heading" }>;
 export type Fence = Extract<Node, { kind: "fence" }>;
 export type Text = Extract<Node, { kind: "text" }>;
 export type Section = { heading: Heading; nodes: Node[] };
-export type Item = { text: string; line: number };
 
 const opener = /^[ \t]*(`{3,}|~{3,})(.*)/;
 const title = /^(#{1,6})[ \t](.*)/;
@@ -61,21 +60,6 @@ export function sections(nodes: Node[], depth: number): Section[] {
       continue;
     }
     found.at(-1)?.nodes.push(node);
-  }
-  return found;
-}
-
-export function items(nodes: Node[]): Item[] {
-  const found: Item[] = [];
-  for (const node of nodes) {
-    if (node.kind !== "text") continue;
-    if (node.text.startsWith("- ")) {
-      found.push({ text: node.text.slice(2).trim(), line: node.line });
-      continue;
-    }
-    const last = found.at(-1);
-    const text = node.text.trim();
-    if (last !== undefined && text !== "") last.text = `${last.text} ${text}`;
   }
   return found;
 }

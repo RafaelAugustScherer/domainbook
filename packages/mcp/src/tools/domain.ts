@@ -6,9 +6,8 @@ import type {
   Edge,
 } from "@domainbook/core";
 import { contextMap, sectionsOf, tdrRef } from "@domainbook/core";
-import { type Answer, listed, refuse, said } from "../answer.js";
+import { type Answer, listed, noDomain, refuse, said } from "../answer.js";
 import { alone, drafted, type Peers } from "../peers.js";
-import { noDomain } from "../scope.js";
 
 export function getDomain(book: Book, id: string, peers: Peers = alone): Answer {
   const domain = book.domains.find((one) => one.id === id);
@@ -103,9 +102,6 @@ function holdings(domain: DomainRecord, unmerged: number): string[] {
     terms === 0
       ? "- No glossary"
       : `- ${terms} terms — read them with explain_terms`,
-    domain.changelog === undefined
-      ? "- No changelog"
-      : "- A changelog — read it with get_changelog",
   ];
 }
 

@@ -1,6 +1,6 @@
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
-import { getChangelog } from "../src/tools/changelog.js";
+import { listing } from "../src/resources.js";
 import { getDecisions } from "../src/tools/decisions.js";
 import { getContextMap, getDomain } from "../src/tools/domain.js";
 import { whereToDocument } from "../src/tools/document.js";
@@ -114,6 +114,10 @@ describe("get_domain", () => {
     );
     expect(said).toContain("terms — read them with explain_terms");
     expect(said).not.toContain("As a fan buying tickets");
+  });
+
+  it("lists no changelog among what the context holds", () => {
+    expect(textOf(getDomain(book, "ticketing"))).not.toMatch(/changelog/i);
   });
 
   it("names the domains there are when one is not there", () => {
@@ -256,68 +260,6 @@ describe("get_decisions", () => {
   });
 });
 
-describe("get_changelog", () => {
-  it("gives the newest release and anything unreleased", () => {
-    const said = textOf(getChangelog(book, { domain: "ticketing" }));
-    expect(said).toContain("## [Unreleased]");
-    expect(said).toContain("## [1.2.0] - 2026-06-30");
-    expect(said).not.toContain("## [1.0.0]");
-  });
-
-  it("names the release before, so the caller knows what to ask for", () => {
-    expect(textOf(getChangelog(book, { domain: "ticketing" }))).toContain(
-      "The release before is 1.1.0"
-    );
-  });
-
-  it("gives an older release whole when its version is named", () => {
-    const said = textOf(
-      getChangelog(book, { domain: "ticketing", version: "1.0.0" })
-    );
-    expect(said).toContain("## [1.0.0] - 2026-04-02");
-    expect(said).not.toContain("## [1.2.0]");
-  });
-
-  it("says a release was yanked", () => {
-    expect(
-      textOf(getChangelog(book, { domain: "ticketing", version: "1.1.0" }))
-    ).toContain("[YANKED]");
-  });
-
-  it("reaches every release on or after a date", () => {
-    const said = textOf(
-      getChangelog(book, { domain: "ticketing", since: "2026-05-01" })
-    );
-    expect(said).toContain("## [1.2.0]");
-    expect(said).toContain("## [1.1.0]");
-    expect(said).not.toContain("## [1.0.0]");
-  });
-
-  it("returns entries under the bucket they were written in", () => {
-    const said = textOf(getChangelog(book, { domain: "ticketing" }));
-    expect(said).toContain("### Added");
-    expect(said).toContain(
-      "- Automatic refund when a payment is captured after the hold expired."
-    );
-  });
-
-  it("names the versions there are when one is not there", () => {
-    expect(
-      textOf(getChangelog(book, { domain: "ticketing", version: "9.9.9" }))
-    ).toContain("it holds 1.2.0, 1.1.0, 1.0.0");
-  });
-
-  it("says when a context keeps no changelog", () => {
-    const answer = getChangelog(book, { domain: "seating" });
-    expect(answer.isError).toBe(true);
-    expect(textOf(answer)).toContain("seating keeps no changelog");
-  });
-
-  it("refuses a call with no scope at all", () => {
-    expect(getChangelog(book, {}).isError).toBe(true);
-  });
-});
-
 describe("search_book", () => {
   it("returns locators rather than bodies", () => {
     const said = textOf(searchBook(book, "ten minutes", {}));
@@ -355,8 +297,20 @@ describe("where_to_document", () => {
     expect(said).toContain("## ticketing");
     expect(said).toContain("/domains/ticketing/");
     expect(said).toContain(
-      "the canvas, the glossary, the changelog, a feature, a decision or a debt record"
+      "the canvas, the glossary, a feature, a decision and a debt record all count"
     );
+  });
+
+  it("clears two domains with one decision at the book root", () => {
+    const said = textOf(
+      whereToDocument(book, ["src/ticketing/hold.ts", "src/seating/map.ts"])
+    );
+    expect(said).toContain("## ticketing");
+    expect(said).toContain("## seating");
+    expect(said).toContain(
+      `A decision under ${book.root}/decisions/ clears seating and ticketing at once.`
+    );
+    expect(said).not.toMatch(/changelog/i);
   });
 
   it("says nothing is claimed when no domain claims the paths", () => {
@@ -369,7 +323,7 @@ describe("where_to_document", () => {
     const said = textOf(
       whereToDocument(book, [
         "src/ticketing/hold.ts",
-        `${book.root}/domains/ticketing/changelog.md`,
+        `${book.root}/domains/ticketing/glossary.md`,
       ])
     );
     expect(said).toContain("the book already covers this change");
@@ -422,5 +376,17 @@ describe("where_to_document", () => {
     expect(textOf(whereToDocument(book, []))).toBe(
       "there are no paths to place"
     );
+  });
+});
+
+describe("the book as resources", () => {
+  it("offers no changelog", () => {
+    const offered = listing(book);
+    expect(offered.length).toBeGreaterThan(0);
+    expect(
+      offered.filter((one) =>
+        /changelog/i.test(`${one.uri} ${one.title} ${one.description}`)
+      )
+    ).toEqual([]);
   });
 });

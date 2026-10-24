@@ -1,7 +1,7 @@
 ---
 id: read-what-changed
 name: Read what changed
-status: implemented
+status: deprecated
 owners: [RafaelAugustScherer]
 terms: [book, domain, artifact, decision]
 decisions: [ADR-0006, site/ADR-0001]

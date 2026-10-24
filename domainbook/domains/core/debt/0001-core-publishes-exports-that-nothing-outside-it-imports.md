@@ -73,3 +73,9 @@ Two names were added to the surface for that consumer rather than removed:
 is the rule this record asks for. Repaying this record and answering the
 context's Open Question about splitting the surface are the same piece of work,
 and doing them together costs less than doing either twice.
+
+`ADR-0017` took five names off the surface with the changelog —
+`changelogReleaseSchema`, one of the seven unread values above, with
+`changelogSchema`, `Changelog`, `ChangelogRelease` and `ChangelogRecord` — and
+added one, `rooted`, which the CLI imports. The counts in Debt are as measured
+when this record was written; six of the seven values are still unread.

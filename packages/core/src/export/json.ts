@@ -14,7 +14,6 @@ export function toModelJson(book: Book): Export {
     root: book.root,
     roadmap: book.roadmap?.frontmatter ?? null,
     glossary: terms(book.glossary),
-    changelog: book.changelog?.changelog ?? null,
     decisions: book.decisions.map(decision),
     debt: book.debt.map(debt),
     domains: book.domains.flatMap((one) =>
@@ -65,7 +64,6 @@ function domain(record: DomainRecord, frontmatter: Domain) {
     features: record.features.map(feature),
     decisions: record.decisions.map(decision),
     debt: record.debt.map(debt),
-    changelog: record.changelog?.changelog ?? null,
   };
 }
 

@@ -21,11 +21,11 @@ Example: The agent is sent back with the domain named
   And the session edited src/ticketing/hold.ts and nothing under domainbook/domains/ticketing/
   When the session tries to stop
   Then the stop is blocked
-  And the agent is told: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, changelog, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
+  And the agent is told: ticketing: src/ticketing/hold.ts changed and domainbook/domains/ticketing/ did not — update that domain's book (canvas, glossary, a feature, a decision, or a debt record), or waive this commit with a "Skip-Docs: <reason>" trailer
 
 Example: The block clears once the book is written
   Given a session that was blocked for the ticketing book
-  When the agent writes domainbook/domains/ticketing/changelog.md and tries to stop again
+  When the agent writes domainbook/domains/ticketing/glossary.md and tries to stop again
   Then the stop is allowed
   And nothing is printed to the agent
 

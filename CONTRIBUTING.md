@@ -134,7 +134,8 @@ complexity, duplicated branches). Fix the code rather than disabling a rule; a
 - Work on a branch, open a PR against `main`. Keep each PR to one concern —
   spotted an unrelated issue? Note it in the PR or open a follow-up.
 - A change in behavior, format, or a decision updates the book under
-  `domainbook/` in the same PR (changelog entry, ADR, or glossary edit as fits),
+  `domainbook/` in the same PR (a feature's scenarios, an ADR, or a glossary edit as
+  fits),
   or carries an explicit waiver.
 - **`npm install` and `npm ci` install the commit hook** through `prepare`,
   which runs `scripts/prepare.mjs`. It builds first if `dist` is missing, and it
@@ -187,12 +188,6 @@ per-package `CHANGELOG.md` files are generated, never hand-edited (`ADR-0014`).
   plugin's version: a change under `integrations/plugin/` bumps `version` in its
   `.claude-plugin/plugin.json` in the same pull request, or a consumer who already
   installed the plugin keeps the copy Claude Code cached.
-- **The book's changelogs are cut by hand.** Changesets writes each package's
-  `CHANGELOG.md` but never touches the book. In the "Version Packages" PR, before
-  merging it, move everything under `## [Unreleased]` in `domainbook/changelog.md`
-  and in each `domainbook/domains/*/changelog.md` into a `## [X.Y.Z] - YYYY-MM-DD`
-  section for the `domainbook` version that PR releases, and leave the
-  `## [Unreleased]` heading empty above it.
 - **The Action's floating major tag moves itself.** `.github/workflows/major-tag.yml`
   runs on every published release tagged `vX.Y.Z` and force-moves `vX` to it, so
   a consumer can pin `uses: RafaelAugustScherer/domainbook@v1` instead of a full

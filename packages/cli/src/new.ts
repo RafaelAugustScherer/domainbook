@@ -62,22 +62,19 @@ export function newDomain(root: string, id: string): Result {
   const dir = join(root, "domains", id);
   const page = join(dir, "index.md");
   const glossary = join(dir, "glossary.md");
-  const changelog = join(dir, "changelog.md");
   const context = `the ${id} context`;
   const wrong =
     noBook(root) ??
     notSlug(id, "domain id") ??
     unwritable(id, "domain id") ??
     taken(page) ??
-    taken(glossary) ??
-    taken(changelog);
+    taken(glossary);
   if (wrong !== undefined) return refuse(wrong);
   const held = hold(root, `domains/${id}/index.md`, `domains/${id}`, id);
   if (typeof held === "string") return refuse(held);
   const failed =
     write(page, domainPage(id)) ??
     write(glossary, glossaryPage(`${titled(id)} glossary`, context)) ??
-    write(changelog, changelogPage(context)) ??
     write(join(dir, "features", ".gitkeep"), "") ??
     write(join(dir, "decisions", ".gitkeep"), "") ??
     write(join(dir, "debt", ".gitkeep"), "");
@@ -87,7 +84,7 @@ export function newDomain(root: string, id: string): Result {
     lines: [
       `wrote ${relate(
         dir
-      )}/ — index.md, glossary.md, changelog.md, features/, decisions/ and debt/`,
+      )}/ — index.md, glossary.md, features/, decisions/ and debt/`,
       ...held.said,
       ...published(held.draft, root),
       `next: set the three classification axes, fill in the eight canvas sections, and replace the placeholder term in glossary.md, then "${rooted(
@@ -553,19 +550,6 @@ in ${scope} — a sentence or two, in the business's own language.>
 - **Aliases:** <other names for the same thing — separate them with commas>
 - **Status:** draft
 - **Example:** <a concrete case the word covers>
-`;
-}
-
-export function changelogPage(scope: string): string {
-  return `# Changelog
-
-What changed in ${scope}, newest release first, in the
-[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) format: one H2 per
-release, written "## [1.2.0] - 2026-06-30" with " [YANKED]" appended if the
-release was pulled, holding Added, Changed, Deprecated, Removed, Fixed or
-Security as H3s, each of them a bullet list.
-
-## [Unreleased]
 `;
 }
 

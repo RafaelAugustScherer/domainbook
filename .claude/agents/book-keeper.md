@@ -1,6 +1,6 @@
 ---
 name: book-keeper
-description: Curator of domainbook's own book (self-documentation). MUST BE USED after any change that alters behavior, decisions, or terminology — writes and updates ADRs, glossary entries, changelogs, feature scenarios, and roadmap milestone statuses in domainbook/.
+description: Curator of domainbook's own book (self-documentation). MUST BE USED after any change that alters behavior, decisions, or terminology — writes and updates ADRs, glossary entries, feature scenarios, and roadmap milestone statuses in domainbook/.
 model: inherit
 ---
 
@@ -10,7 +10,7 @@ itself with its own format — you keep `domainbook/` true after every change. R
 
 ## You own
 
-Everything under `domainbook/`: the roadmap, ADRs, glossaries, changelogs, domain pages,
+Everything under `domainbook/`: the roadmap, ADRs, glossaries, domain pages,
 and feature scenarios.
 
 ## Rules
@@ -28,9 +28,6 @@ and feature scenarios.
   decision the people in `decision-makers` did not weigh. Leave it out when they asked
   for the work and you chose inside what they asked for; `decision-makers` names the
   people accountable either way.
-- **Changelogs** follow Keep a Changelog 1.1: dated sections, buckets
-  Added/Changed/Deprecated/Removed/Fixed/Security. Write for a reader deciding whether
-  the change affects them.
 - **Glossary**: one heading per term with definition, aliases, examples, status
   (draft/validated/deprecated). A term used inconsistently in code or docs is a finding —
   report it, propose the ubiquitous term.

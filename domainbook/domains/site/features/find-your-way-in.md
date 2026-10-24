@@ -104,9 +104,9 @@ Example: The same word in two contexts comes back twice, each said apart
   And each says which context it belongs to
 
 Example: Every artifact type is searchable, not only prose
-  Given a book holding a decision, a debt record, a changelog entry and a canvas that each use the word sweep
+  Given a book holding a decision, a debt record and a canvas that each use the word sweep
   When a reader searches for sweep
-  Then all four come back
+  Then all three come back
   And each says which artifact type it is
 
 Example: A result opens the page it was found on

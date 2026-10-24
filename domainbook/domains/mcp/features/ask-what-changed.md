@@ -1,7 +1,7 @@
 ---
 id: ask-what-changed
 name: Ask what changed
-status: implemented
+status: deprecated
 owners: [RafaelAugustScherer]
 terms: [book, domain, artifact]
 decisions: [mcp/ADR-0003, mcp/ADR-0002, ADR-0006]

@@ -21,13 +21,13 @@ Example: One domain's code maps to that domain's book
   When the client calls where_to_document with paths ["src/ticketing/hold.ts"]
   Then the answer names ticketing
   And it names domainbook/domains/ticketing/ as the folder to write in
-  And it names the canvas, the glossary, the changelog, a feature, a decision and a debt record as what counts as writing in it
+  And it names the canvas, the glossary, a feature, a decision and a debt record as what counts as writing in it
 
 Example: Two domains in one change are two answers, and one root record clears both
   Given a book whose ticketing domain claims src/ticketing/** and whose billing domain claims src/billing/**
   When the client calls where_to_document with paths ["src/ticketing/hold.ts", "src/billing/refund.ts"]
   Then the answer names ticketing and billing
-  And it says a decision under domainbook/decisions/ or an entry in domainbook/changelog.md clears both at once
+  And it says a decision under domainbook/decisions/ clears both at once
 
 Example: A path no domain claims is not the tool's business
   Given a book whose ticketing domain claims src/ticketing/**
@@ -52,13 +52,13 @@ Example: A folder answers for everything under it
 ```gherkin
 Example: The domain's book is in the change, so nothing is left to write
   Given a book whose ticketing domain claims src/ticketing/**
-  When the client calls where_to_document with paths ["src/ticketing/hold.ts", "domainbook/domains/ticketing/changelog.md"]
+  When the client calls where_to_document with paths ["src/ticketing/hold.ts", "domainbook/domains/ticketing/glossary.md"]
   Then the answer names no domain as needing a change
   And it says the book already covers this change
 
 Example: One domain written and another not leaves only the one that is not
   Given a book whose ticketing domain claims src/ticketing/** and whose billing domain claims src/billing/**
-  When the client calls where_to_document with paths ["src/ticketing/hold.ts", "src/billing/refund.ts", "domainbook/domains/ticketing/changelog.md"]
+  When the client calls where_to_document with paths ["src/ticketing/hold.ts", "src/billing/refund.ts", "domainbook/domains/ticketing/glossary.md"]
   Then the answer names billing
   And no line names ticketing
 ```
@@ -104,7 +104,7 @@ Example: Debt that is accepted or repaid is not raised
 Example: Debt is named on a change the book already covers
   Given a book whose ticketing domain claims src/ticketing/**
   And TDR-0002 in domains/ticketing/debt/ is open and claims src/ticketing/**
-  When the client calls where_to_document with paths ["src/ticketing/hold.ts", "domainbook/domains/ticketing/changelog.md"]
+  When the client calls where_to_document with paths ["src/ticketing/hold.ts", "domainbook/domains/ticketing/glossary.md"]
   Then the answer says the book already covers this change
   And it still names TDR-0002
 ```
