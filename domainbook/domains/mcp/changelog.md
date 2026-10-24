@@ -10,6 +10,8 @@ book-wide changelog. Versions match the book-wide changelog.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-09-16
+
 ### Added
 
 - Every tool that reads the book answers with what peers have in progress,

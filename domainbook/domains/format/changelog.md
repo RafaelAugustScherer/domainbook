@@ -9,6 +9,8 @@ release it shipped in.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-09-16
+
 ### Added
 
 - `collaboration.enabled` and `collaboration.remote` in `domainbook.config.yaml`:
@@ -17,6 +19,24 @@ release it shipped in.
   carries both with their defaults, so an editor completes them and rejects a
   misspelt key as it is typed. A repo with `enabled: false`, or with no remote,
   behaves as before (`ADR-0015`).
+
+### Changed
+
+- A log's numbers are unique and rising, and a gap between them is no longer an
+  issue: a book with `0001` and `0003` validates. A number claimed on the remote
+  and never merged stays out of the log forever, which the no-gaps rule would
+  have failed on every clone. A number used twice is still one message naming
+  both files, asking for the number after the highest in the log. `format/ADR-0015`
+  is superseded; its other two rules, the H1 title and `### Consequences`, stand
+  (`format/ADR-0021`, `ADR-0015`).
+
+  **This fails nothing that passed before** — a book the old rule refused for a
+  gap now passes, and every other message is unchanged.
+
+## [1.0.0] - 2026-08-15
+
+### Added
+
 - `build/` is reserved inside a book root: `validate` reads past it and no
   artifact may live there. It is where `domainbook build` writes and is read by
   nothing (`format/ADR-0020`). The closed set that makes a book root a format now
@@ -37,16 +57,6 @@ release it shipped in.
 
 ### Changed
 
-- A log's numbers are unique and rising, and a gap between them is no longer an
-  issue: a book with `0001` and `0003` validates. A number claimed on the remote
-  and never merged stays out of the log forever, which the no-gaps rule would
-  have failed on every clone. A number used twice is still one message naming
-  both files, asking for the number after the highest in the log. `format/ADR-0015`
-  is superseded; its other two rules, the H1 title and `### Consequences`, stand
-  (`format/ADR-0021`, `ADR-0015`).
-
-  **This fails nothing that passed before** — a book the old rule refused for a
-  gap now passes, and every other message is unchanged.
 - `format/ADR-0012` is retired under the bar in `CONTRIBUTING.md` and reads
   `deprecated`. Nothing about frontmatter parsing changed: an empty block still
   gives `{}` and a missing one still gives `undefined`. The behaviour is now four

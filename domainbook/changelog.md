@@ -5,13 +5,26 @@ All notable changes to domainbook are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-Nothing is published to npm yet, so a version here marks the day a change reached
-`main`, not a release you can install — the CLI is built and run from a checkout.
-A released section records what shipped and is not edited afterwards; a
-correction is an entry in the next version. The *why* behind a change lives in
-the decision it references, not here (`ADR-0006`).
+A version here is the `domainbook` CLI release a change shipped in, dated by its
+npm release; each package's own `CHANGELOG.md`, written by changesets, lists what
+that release bumped. Sections before 1.0.0 predate npm and mark the day a change
+reached `main`, not a release you can install. A released section records what
+shipped and is not edited afterwards; a correction is an entry in the next
+version. The *why* behind a change lives in the decision it references, not here
+(`ADR-0006`).
 
 ## [Unreleased]
+
+### Removed
+
+- The MCP server is no longer described for the MCP Registry (`ADR-0016`, which
+  supersedes `ADR-0014`). It never had an entry there; it ships through npm
+  only, as `@domainbook/mcp` and inside the `domainbook` CLI, and is reached
+  through the `.mcp.json` that `init` writes or through `domainbook serve mcp`.
+  `server.json` and the `mcpName` in `@domainbook/mcp` are gone, and a release
+  has no publish step after npm.
+
+## [2.0.0] - 2026-09-16
 
 ### Added
 
@@ -30,6 +43,10 @@ the decision it references, not here (`ADR-0006`).
   of reach over its URL is retried over its SSH or HTTPS twin. A repo with no
   remote, or with `collaboration.enabled: false` in the config, works as before.
   A log may now have gaps and still never reuses a number (`format/ADR-0021`).
+
+## [1.0.0] - 2026-08-15
+
+### Added
 
 - domainbook 1.0.0 publishes to npm. The CLI (`domainbook`), the shared model
   (`@domainbook/core`), the MCP server (`@domainbook/mcp`), and the website
@@ -276,15 +293,6 @@ the decision it references, not here (`ADR-0006`).
 - Records elsewhere in the book still cite the seven, and those citations are
   left as they are. The records exist and can still be read; an accepted record
   is not edited to chase a status change (`format/ADR-0013`).
-
-### Removed
-
-- The MCP server is no longer described for the MCP Registry (`ADR-0016`, which
-  supersedes `ADR-0014`). It never had an entry there; it ships through npm
-  only, as `@domainbook/mcp` and inside the `domainbook` CLI, and is reached
-  through the `.mcp.json` that `init` writes or through `domainbook serve mcp`.
-  `server.json` and the `mcpName` in `@domainbook/mcp` are gone, and a release
-  has no publish step after npm.
 
 ## [0.3.0] - 2026-07-30
 
