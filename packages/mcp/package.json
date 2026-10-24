@@ -1,6 +1,6 @@
 {
   "name": "@domainbook/mcp",
-  "version": "2.0.2",
+  "version": "3.0.0",
   "description": "Serve a domainbook book over MCP",
   "license": "MIT",
   "repository": {
@@ -23,7 +23,7 @@
     "build": "tsc --build"
   },
   "dependencies": {
-    "@domainbook/core": "2.0.1",
+    "@domainbook/core": "3.0.0",
     "@modelcontextprotocol/server": "2.4.0",
     "zod": "4.6.7"
   },
