@@ -1,6 +1,6 @@
 {
   "name": "domainbook",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Scaffold and validate a domainbook book",
   "license": "MIT",
   "repository": {
@@ -27,7 +27,7 @@
   },
   "dependencies": {
     "@domainbook/core": "2.0.1",
-    "@domainbook/mcp": "2.0.1"
+    "@domainbook/mcp": "2.0.2"
   },
   "peerDependencies": {
     "@domainbook/site": "*"

@@ -1,5 +1,11 @@
 # @domainbook/mcp
 
+## 2.0.2
+
+### Patch Changes
+
+- 9469db5: Drop the `mcpName` field: the server is no longer listed on the MCP Registry and ships through npm only.
+
 ## 2.0.1
 
 ### Patch Changes
